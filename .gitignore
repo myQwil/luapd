@@ -1,0 +1,5 @@
+# build files
+src/*.o
+
+# VSCode folder
+.vscode
