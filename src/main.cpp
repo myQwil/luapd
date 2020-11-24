@@ -10,11 +10,12 @@ using namespace std;
 using namespace pd;
 
 class Buffer {
-	vector<unsigned char> data;
+	vector<uint8_t> data;
 public:
-	Buffer(size_t n) { data.reserve(n); }
-	~Buffer()        { data.shrink_to_fit(); }
-	void *ptr()      { return &data[0]; }
+	Buffer   (size_t n)   { data.reserve(n);        }
+	~Buffer  ()           { data.shrink_to_fit();   }
+	void *ptr(size_t i=0) { return &data[i];        }
+	int   at (size_t i=0) { return *(int*)&data[i]; }
 };
 
 extern "C" { int LUA_API luaopen_luapd(lua_State *L); }
@@ -40,9 +41,9 @@ static int pdbase_del(lua_State *L) {
 
 static int l_init(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	int chIn  = luaL_checkinteger         (L ,2);
-	int chOut = luaL_checkinteger         (L ,3);
-	int srate = luaL_checkinteger         (L ,4);
+	int chIn    = luaL_checkinteger       (L ,2);
+	int chOut   = luaL_checkinteger       (L ,3);
+	int srate   = luaL_checkinteger       (L ,4);
 	bool queued = !lua_isnoneornil        (L ,5) ? lua_toboolean(L ,5) : false;
 	lua_pushboolean(L ,b->init(chIn ,chOut ,srate ,queued));
 	return 1;
@@ -352,8 +353,8 @@ static int l_sendSysRealTime(lua_State *L) {
 
 static int l_processRaw(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	float *out = (float*)lua_touserdata    (L ,2);
-	float *in  = (float*)lua_touserdata    (L ,3);
+	float *in  = (float*)lua_touserdata    (L ,2);
+	float *out = (float*)lua_touserdata    (L ,3);
 	bool success = b->processRaw(in ,out);
 	lua_pushboolean(L ,success);
 	return 1;
@@ -362,8 +363,8 @@ static int l_processRaw(lua_State *L) {
 static int l_processShort(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int ticks  = luaL_checkinteger         (L ,2);
-	short *out = (short*)lua_touserdata    (L ,3);
-	short *in  = (short*)lua_touserdata    (L ,4);
+	short *in  = (short*)lua_touserdata    (L ,3);
+	short *out = (short*)lua_touserdata    (L ,4);
 	bool success = b->processShort(ticks ,in ,out);
 	lua_pushboolean(L ,success);
 	return 1;
@@ -372,8 +373,8 @@ static int l_processShort(lua_State *L) {
 static int l_processFloat(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int ticks  = luaL_checkinteger         (L ,2);
-	float *out = (float*)lua_touserdata    (L ,3);
-	float *in  = (float*)lua_touserdata    (L ,4);
+	float *in  = (float*)lua_touserdata    (L ,3);
+	float *out = (float*)lua_touserdata    (L ,4);
 	bool success = b->processFloat(ticks ,in ,out);
 	lua_pushboolean(L ,success);
 	return 1;
@@ -382,8 +383,8 @@ static int l_processFloat(lua_State *L) {
 static int l_processDouble(lua_State *L) {
 	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int ticks   = luaL_checkinteger         (L ,2);
-	double *out = (double*)lua_touserdata   (L ,3);
-	double *in  = (double*)lua_touserdata   (L ,4);
+	double *in  = (double*)lua_touserdata   (L ,3);
+	double *out = (double*)lua_touserdata   (L ,4);
 	bool success = b->processDouble(ticks ,in ,out);
 	lua_pushboolean(L ,success);
 	return 1;
@@ -469,9 +470,22 @@ static int pdbase_shl(lua_State *L) {
 // -------------------------------- PdPatch --------------------------------
 // -------------------------------------------------------------------------
 static int pdpatch_new(lua_State *L) {
-	const char *patch = luaL_checkstring(L ,1);
-	const char *path  = !lua_isnoneornil(L ,2) ? luaL_checkstring(L ,2) : ".";
-	*(Patch**)lua_newuserdata(L ,sizeof(Patch*)) = new Patch(patch ,path);
+	Patch p;
+	if      (lua_isnoneornil     (L ,1))
+		p = Patch();
+	else if (lua_isuserdata      (L ,1))
+		p = Patch(**(Patch**)luaL_checkudata  (L ,1 ,LUA_PDPATCH));
+	else if (lua_islightuserdata (L ,1))
+	{	void *handle      = lua_touserdata    (L ,1);
+		int dollarZero    = luaL_checkinteger (L ,2);
+		const char *patch = luaL_checkstring  (L ,3);
+		const char *path  = !lua_isnoneornil  (L ,4) ? luaL_checkstring(L ,4) : ".";
+		p = Patch(handle ,dollarZero ,patch ,path);   }
+	else
+	{	const char *patch = luaL_checkstring  (L ,1);
+		const char *path  = !lua_isnoneornil  (L ,2) ? luaL_checkstring(L ,2) : ".";
+		p = Patch(patch ,path);   }
+	*(Patch**)lua_newuserdata(L ,sizeof(Patch*)) = new Patch(p);
 	luaL_setmetatable(L ,LUA_PDPATCH);
 	return 1;
 }
@@ -558,7 +572,15 @@ static int pdbuffer_del(lua_State *L) {
 
 static int l_ptr(lua_State *L) {
 	Buffer *b = *(Buffer**)luaL_checkudata(L ,1 ,LUA_PDBUFFER);
-	lua_pushlightuserdata(L ,b->ptr());
+	int i     = !lua_isnoneornil          (L ,2) ? lua_tointeger(L ,2) : 0;
+	lua_pushlightuserdata(L ,b->ptr(i));
+	return 1;
+}
+
+static int l_at(lua_State *L) {
+	Buffer *b = *(Buffer**)luaL_checkudata(L ,1 ,LUA_PDBUFFER);
+	int i     = !lua_isnoneornil          (L ,2) ? lua_tointeger(L ,2) : 0;
+	lua_pushinteger(L ,b->at(i));
 	return 1;
 }
 
@@ -663,6 +685,7 @@ static void pdbuffer_reg(lua_State *L) {
 	lua_pushvalue    (L,-1                    );lua_setfield(L,-2,"__index"             );
 	lua_pushcfunction(L,pdbuffer_del          );lua_setfield(L,-2,"__gc"                );
 	lua_pushcfunction(L,l_ptr                 );lua_setfield(L,-2,"ptr"                 );
+	lua_pushcfunction(L,l_at                  );lua_setfield(L,-2,"at"                  );
 
 	lua_pop          (L,1);
 }

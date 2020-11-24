@@ -11,7 +11,7 @@ static const char* const msgname[]  =
 {	"print" ,"bang" ,"float" ,"symbol" ,"list" ,"message"   };
 
 static const char* const midiname[] =
-{	 "noteOn" ,"controlChange" ,"programChange" ,"pitchBend"
+{	 "noteOn"     ,"controlChange"  ,"programChange" ,"pitchBend"
 	,"aftertouch" ,"polyAftertouch" ,"midiByte"   };
 
 void PdObject::setFuncs() {
