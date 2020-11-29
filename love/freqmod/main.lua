@@ -37,7 +37,7 @@ function pan(x ,y)
 	pd:sendFloat   ('pan' ,span(x ,-45 ,45 ,width))
 end
 
-function none(x ,y) end
+function none(...) end
 
 function fmod(x ,y)
 	pd:sendFloat('mod-freq'  ,x/4)

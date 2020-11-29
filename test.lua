@@ -76,7 +76,7 @@ pd:computeAudio(true)
 
 -- a generic buffer type, added mainly for test cases
 float  = 4 -- 32-bit float = 4 bytes
-blk    = pd:blockSize()
+blk    = PdBase.blockSize()
 inbuf  = Buffer(float * blk * inChannels)
 outbuf = Buffer(float * blk * outChannels)
 

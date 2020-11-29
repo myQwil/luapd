@@ -398,8 +398,7 @@ static int l_computeAudio(lua_State *L) {
 }
 
 static int l_blockSize(lua_State *L) {
-	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	lua_pushinteger(L ,b->blockSize());
+	lua_pushinteger(L ,PdBase::blockSize());
 	return 1;
 }
 
@@ -588,9 +587,14 @@ static int l_at(lua_State *L) {
 // -------------------------------- registers --------------------------------
 // ---------------------------------------------------------------------------
 static void pdbase_reg(lua_State *L) {
-	lua_register     (L,LUA_PDBASE,pdbase_new);
+	// static functions
+	lua_newtable     (L);
+	lua_pushcfunction(L,l_blockSize           );lua_setfield(L,-2,"blockSize"           );
+
+	// non-static functions
 	luaL_newmetatable(L,LUA_PDBASE);
 	lua_pushvalue    (L,-1                    );lua_setfield(L,-2,"__index"             );
+	lua_pushcfunction(L,pdbase_new            );lua_setfield(L,-2,"__call"              );
 	lua_pushcfunction(L,pdbase_del            );lua_setfield(L,-2,"__gc"                );
 	lua_pushcfunction(L,pdbase_shl            );lua_setfield(L,-2,"__shl"               );
 	lua_pushcfunction(L,l_init                );lua_setfield(L,-2,"init"                );
@@ -650,6 +654,8 @@ static void pdbase_reg(lua_State *L) {
 	lua_pushcfunction(L,l_writeArray          );lua_setfield(L,-2,"writeArray"          );
 	lua_pushcfunction(L,l_clearArray          );lua_setfield(L,-2,"clearArray"          );
 
+	lua_setmetatable (L,-2);
+	lua_setglobal    (L,LUA_PDBASE);
 	lua_pop          (L,1);
 }
 

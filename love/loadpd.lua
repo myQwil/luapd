@@ -23,7 +23,7 @@ function lpd.init()
 	pd:computeAudio(true)
 	pd:setReceiver(obj)
 
-	bsize  = pd:blockSize() * ticks * chOut
+	bsize  = PdBase.blockSize() * ticks * chOut
 	sdata  = love.sound.newSoundData(bsize ,srate ,bitdepth ,chOut)
 	source = love.audio.newQueueableSource( srate ,bitdepth ,chOut ,nbufs)
 	bsize  = bsize * 2
