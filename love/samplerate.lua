@@ -1,7 +1,6 @@
-
 -- get the playback device's sample rate
 local ffi = require('ffi')
-local liblove = (ffi.os == "Windows") and ffi.load('love') or ffi.C
+local liblove = (ffi.os == 'Windows') and ffi.load('love') or ffi.C
 ffi.cdef[[
 typedef struct ALCcontext ALCcontext;
 typedef struct ALCdevice ALCdevice;

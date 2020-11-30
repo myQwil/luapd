@@ -587,11 +587,13 @@ static int l_at(lua_State *L) {
 // -------------------------------- registers --------------------------------
 // ---------------------------------------------------------------------------
 static void pdbase_reg(lua_State *L) {
-	// static functions
 	lua_newtable     (L);
 	lua_pushcfunction(L,l_blockSize           );lua_setfield(L,-2,"blockSize"           );
+	lua_newtable     (L);
+	lua_pushcfunction(L,pdbase_new            );lua_setfield(L,-2,"__call"              );
+	lua_setmetatable (L,-2);
+	lua_setglobal    (L,LUA_PDBASE);
 
-	// non-static functions
 	luaL_newmetatable(L,LUA_PDBASE);
 	lua_pushvalue    (L,-1                    );lua_setfield(L,-2,"__index"             );
 	lua_pushcfunction(L,pdbase_new            );lua_setfield(L,-2,"__call"              );
@@ -654,8 +656,6 @@ static void pdbase_reg(lua_State *L) {
 	lua_pushcfunction(L,l_writeArray          );lua_setfield(L,-2,"writeArray"          );
 	lua_pushcfunction(L,l_clearArray          );lua_setfield(L,-2,"clearArray"          );
 
-	lua_setmetatable (L,-2);
-	lua_setglobal    (L,LUA_PDBASE);
 	lua_pop          (L,1);
 }
 
@@ -680,6 +680,7 @@ static void pdobject_reg(lua_State *L) {
 	luaL_newmetatable(L,LUA_PDOBJECT);
 	lua_pushvalue    (L,-1                    );lua_setfield(L,-2,"__index"             );
 	lua_pushcfunction(L,pdobject_del          );lua_setfield(L,-2,"__gc"                );
+	lua_pushcfunction(L,l_setFunc             );lua_setfield(L,-2,"__newindex"          );
 	lua_pushcfunction(L,l_setFunc             );lua_setfield(L,-2,"setFunc"             );
 
 	lua_pop          (L,1);
