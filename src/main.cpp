@@ -4,6 +4,7 @@
 
 #if LUA_VERSION_NUM == 501
 #define lua_rawlen(L,i) lua_objlen(L,(i))
+#define luaL_setmetatable(L,n) (luaL_getmetatable(L,(n)) ,lua_setmetatable (L,-2))
 #endif
 
 using namespace std;

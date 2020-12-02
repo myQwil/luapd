@@ -13,8 +13,8 @@
  */
 #pragma once
 
-#include <libpd/PdBase.hpp>
-#include "lua.hpp"
+#include "PdBase.hpp"
+#include <luajit-2.1/lua.hpp>
 
 #define NMSG  6
 #define NMIDI 7

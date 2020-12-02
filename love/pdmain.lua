@@ -1,4 +1,6 @@
-package.cpath = '../../?.so;'..package.cpath
+ffi = require('ffi')
+local ext = (ffi.os == 'Windows') and 'dll' or 'so'
+package.cpath = '../../?.'..ext..';'..package.cpath
 require('luapd')
 
 srate = require('samplerate')

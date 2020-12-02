@@ -18,13 +18,17 @@ obj.float = function(dest ,num)
 	end
 end
 
-lines =
-{	 {width/2   ,0          ,width/2   ,height     }
-	,{width/4   ,0          ,width/4   ,height     }
+grid =
+{	 {width/4   ,0          ,width/4   ,height     }
+	,{width/2   ,0          ,width/2   ,height     }
 	,{width*.75 ,0          ,width*.75 ,height     }
-	,{0         ,height/2   ,width     ,height/2   }
 	,{0         ,height/4   ,width     ,height/4   }
+	,{0         ,height/2   ,width     ,height/2   }
 	,{0         ,height*.75 ,width     ,height*.75 }  }
+
+function span(f ,min ,max ,scale)
+	return f * (max - min) / scale + min;
+end
 
 function love.load()
 	lpd.init()
@@ -41,33 +45,39 @@ function love.update(dt)
 end
 
 function love.draw()
+	-- grid
 	love.graphics.setLineWidth(1)
 	love.graphics.setColor(.25 ,0 ,0)
-	for _,v in pairs(lines) do
+	for _,v in pairs(grid) do
 		love.graphics.line(v)  end
 
+	-- values
 	love.graphics.setColor(1 ,1 ,1)
-	love.graphics.print(lpd.msg                ,0     ,0  )
-	love.graphics.print('mod-freq: ' ..modfrq  ,0     ,20 )
-	love.graphics.print('mod-index: '..modidx  ,0     ,40 )
+	love.graphics.print(lpd.msg               ,0 ,0  )
+	love.graphics.print('mod-freq: ' ..modfrq ,0 ,20 )
+	love.graphics.print('mod-index: '..modidx ,0 ,40 )
 
+	-- hints
 	love.graphics.printf('[-] / [+]\n[tab]\n[space]\n[escape]'
 		,hintx     ,0 ,120 ,'right')
 	love.graphics.print('portamento\nmouse-grab\nauto\nquit'
 		,hintx+130 ,0  );
 
+	-- mouse press
 	if press[1] then
 		love.graphics.setColor(1  ,.8 ,.8)
 		love.graphics.print('Mouse1' ,150 ,0)  end
 	if press[2] then
 		love.graphics.setColor(.8 ,1  ,.8)
 		love.graphics.print('Mouse2' ,300 ,0)  end
-	love.graphics.setLineWidth(2)
-	love.graphics.circle('line' ,modfrq*4 ,height-(modidx/4) ,1+carfrq/8)
-end
 
-function span(f ,min ,max ,scale)
-	return f * (max - min) / scale + min;
+	-- circle
+	love.graphics.setLineWidth(2)
+	love.graphics.circle('line'
+		,span(modfrq ,0      ,width ,200  )
+		,span(modidx ,height ,0     ,3200 )
+		,1+carfrq/8
+	)
 end
 
 function pan(x ,y)
@@ -83,13 +93,13 @@ end
 function none(...) end
 
 function fmod(x ,y)
-	pd:sendFloat('mod-freq'  ,x/4)
-	pd:sendFloat('mod-index' ,(height-y)*4)
+	pd:sendFloat('mod-freq'  ,span(x ,0    ,200 ,width  ))
+	pd:sendFloat('mod-index' ,span(y ,3200 ,0   ,height ))
 end
 
 function tone(x ,y)
-	pd:sendFloat   ('tone-pos' ,span(x ,-45 ,45 ,width))
-	pd:sendMessage ('tone' ,'pitch' ,{(height-y) / 8})
+	pd:sendFloat   ('tone-pos'      , span(x ,-45 ,45 ,width  )  )
+	pd:sendMessage ('tone' ,'pitch' ,{span(y ,100 ,0  ,height )} )
 	pd:sendBang    ('tone')
 end
 
