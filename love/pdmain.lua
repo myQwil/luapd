@@ -1,5 +1,10 @@
 ffi = require('ffi')
-local ext = (ffi.os == 'Windows') and 'dll' or 'so'
+local ext = 'so'
+if     ffi.os == 'Windows' then
+	ext = 'dll'
+elseif ffi.os == 'OSX'     then
+	ext = 'dylib'  end
+
 package.cpath = '../../?.'..ext..';'..package.cpath
 require('luapd')
 
@@ -13,7 +18,8 @@ pd  = PdBase()
 obj = PdObject{
 	print = function(msg)
 		print(msg)
-		lpd.msg = msg  end
+		lpd.msg = msg
+	end
 }
 
 function lpd.init()
@@ -48,7 +54,7 @@ function lpd.open(file ,vol ,play)
 	return pat
 end
 
-function lpd.update(dt)
+function lpd.update()
 	while source:getFreeBufferCount() > 0 do
 		pd:processShort(ticks ,nil ,sdata:getPointer())
 		source:queue(sdata ,0 ,bsize)

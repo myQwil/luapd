@@ -14,7 +14,7 @@
 #pragma once
 
 #include "PdBase.hpp"
-#include <luajit-2.1/lua.hpp>
+#include "lua.hpp"
 
 #define NMSG  6
 #define NMIDI 7

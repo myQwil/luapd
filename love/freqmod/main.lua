@@ -2,29 +2,25 @@ package.path = '../?.lua;'..package.path
 require('pdmain')
 
 width ,height = love.graphics.getWidth()-1 ,love.graphics.getHeight()-1
-press = {false ,false}
+press      = {false ,false}
+hintx      = width - 250
+mx ,my     = 0 ,0
 portamento = 0
-modfrq ,modidx ,carfrq = 1 ,150 ,400
-hintx = width - 250
-mx ,my = 0 ,0
 
+fm =
+{	 modfrq = 1
+	,modidx = 150
+	,carfrq = 400   }
 obj.float = function(dest ,num)
-	if     dest == 'modfrq' then
-	   modfrq = num
-	elseif dest == 'modidx' then
-		modidx = num
-	elseif dest == 'carfrq' then
-		carfrq = num
-	end
+	fm[dest] = num
 end
 
-grid =
-{	 {width/4   ,0          ,width/4   ,height     }
-	,{width/2   ,0          ,width/2   ,height     }
-	,{width*.75 ,0          ,width*.75 ,height     }
-	,{0         ,height/4   ,width     ,height/4   }
-	,{0         ,height/2   ,width     ,height/2   }
-	,{0         ,height*.75 ,width     ,height*.75 }  }
+grid = {}
+local iter = 1/4
+for i=iter ,.99 ,iter do
+	grid[#grid+1] = {width*i ,0        ,width*i ,height   }
+	grid[#grid+1] = {0       ,height*i ,width   ,height*i }
+end
 
 function span(f ,min ,max ,scale)
 	return f * (max - min) / scale + min;
@@ -39,8 +35,8 @@ function love.load()
 	pd:subscribe('carfrq')
 end
 
-function love.update(dt)
-	lpd.update(dt)
+function love.update()
+	lpd.update()
 	-- pd:receiveMessages()
 end
 
@@ -53,9 +49,9 @@ function love.draw()
 
 	-- values
 	love.graphics.setColor(1 ,1 ,1)
-	love.graphics.print(lpd.msg               ,0 ,0  )
-	love.graphics.print('mod-freq: ' ..modfrq ,0 ,20 )
-	love.graphics.print('mod-index: '..modidx ,0 ,40 )
+	love.graphics.print(lpd.msg ,0 ,0)
+	love.graphics.print('mod-freq: ' ..fm.modfrq ,0 ,20)
+	love.graphics.print('mod-index: '..fm.modidx ,0 ,40)
 
 	-- hints
 	love.graphics.printf('[-] / [+]\n[tab]\n[space]\n[escape]'
@@ -74,9 +70,9 @@ function love.draw()
 	-- circle
 	love.graphics.setLineWidth(2)
 	love.graphics.circle('line'
-		,span(modfrq ,0      ,width ,200  )
-		,span(modidx ,height ,0     ,3200 )
-		,1+carfrq/8
+		,span(fm.modfrq ,0      ,width ,200  )
+		,span(fm.modidx ,height ,0     ,3200 )
+		,1 + fm.carfrq / 8
 	)
 end
 

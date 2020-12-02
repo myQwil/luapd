@@ -3,3 +3,6 @@ src/*.o
 
 # VSCode folder
 .vscode
+
+# OSX attributes
+.DS_Store
