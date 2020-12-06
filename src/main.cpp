@@ -354,8 +354,9 @@ static int l_sendSysRealTime(lua_State *L) {
 
 static int l_processRaw(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	float *in  = (float*)lua_touserdata    (L ,2);
-	float *out = (float*)lua_touserdata    (L ,3);
+	int i      = lua_gettop(L) == 3;
+	float *in  = i?(float*)lua_touserdata  (L ,2):0;
+	float *out =   (float*)lua_touserdata  (L ,2+i);
 	bool success = b->processRaw(in ,out);
 	lua_pushboolean(L ,success);
 	return 1;
@@ -364,8 +365,9 @@ static int l_processRaw(lua_State *L) {
 static int l_processShort(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int ticks  = luaL_checkinteger         (L ,2);
-	short *in  = (short*)lua_touserdata    (L ,3);
-	short *out = (short*)lua_touserdata    (L ,4);
+	int i      = lua_gettop(L) == 4;
+	short *in  = i?(short*)lua_touserdata  (L ,3):0;
+	short *out =   (short*)lua_touserdata  (L ,3+i);
 	bool success = b->processShort(ticks ,in ,out);
 	lua_pushboolean(L ,success);
 	return 1;
@@ -374,8 +376,9 @@ static int l_processShort(lua_State *L) {
 static int l_processFloat(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int ticks  = luaL_checkinteger         (L ,2);
-	float *in  = (float*)lua_touserdata    (L ,3);
-	float *out = (float*)lua_touserdata    (L ,4);
+	int i      = lua_gettop(L) == 4;
+	float *in  = i?(float*)lua_touserdata  (L ,3):0;
+	float *out =   (float*)lua_touserdata  (L ,3+i);
 	bool success = b->processFloat(ticks ,in ,out);
 	lua_pushboolean(L ,success);
 	return 1;
@@ -384,8 +387,9 @@ static int l_processFloat(lua_State *L) {
 static int l_processDouble(lua_State *L) {
 	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int ticks   = luaL_checkinteger         (L ,2);
-	double *in  = (double*)lua_touserdata   (L ,3);
-	double *out = (double*)lua_touserdata   (L ,4);
+	int i       = lua_gettop(L) == 4;
+	double *in  = i?(double*)lua_touserdata (L ,3):0;
+	double *out =   (double*)lua_touserdata (L ,3+i);
 	bool success = b->processDouble(ticks ,in ,out);
 	lua_pushboolean(L ,success);
 	return 1;

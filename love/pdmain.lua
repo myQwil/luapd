@@ -1,17 +1,10 @@
 ffi = require('ffi')
-local ext = 'so'
-if     ffi.os == 'Windows' then
-	ext = 'dll'
-elseif ffi.os == 'OSX'     then
-	ext = 'dylib'  end
-
+local ext
+if     ffi.os == 'Windows' then ext = 'dll'
+elseif ffi.os == 'OSX'     then ext = 'dylib'
+else  ext = 'so'  end
 package.cpath = '../../?.'..ext..';'..package.cpath
 require('luapd')
-
-srate = require('samplerate')
-chIn ,chOut ,queued ,bitdepth ,ticks ,nbufs =
-0    ,2     ,false  ,16       ,1     ,33
--- ticks * nbufs * blockSize / (srate/1000) = delay in ms
 
 lpd = {msg = ''}
 pd  = PdBase()
@@ -22,6 +15,12 @@ obj = PdObject{
 	end
 }
 
+local sdata ,source
+local srate = (ffi.os == 'Windows') and 48000 or require('samplerate')
+local chIn ,chOut ,queued ,bitdepth ,ticks ,nbufs =
+      0    ,2     ,false  ,16       ,1     ,33
+-- print('delay = '..ticks * nbufs * pd.blockSize() / (srate/1000)..' ms')
+
 function lpd.init()
 	if not pd:init(chIn ,chOut ,srate ,queued) then
 		print('Could not init pd')
@@ -30,10 +29,9 @@ function lpd.init()
 	pd:computeAudio(true)
 	pd:setReceiver(obj)
 
-	bsize  = PdBase.blockSize() * ticks * chOut
-	sdata  = love.sound.newSoundData(bsize ,srate ,bitdepth ,chOut)
-	source = love.audio.newQueueableSource( srate ,bitdepth ,chOut ,nbufs)
-	bsize  = bsize * 2
+	local size = pd.blockSize() * ticks
+	sdata  = love.sound.newSoundData(size ,srate ,bitdepth ,chOut)
+	source = love.audio.newQueueableSource(srate ,bitdepth ,chOut ,nbufs)
 	love.graphics.setFont(love.graphics.newFont(16))
 end
 
@@ -47,16 +45,16 @@ function lpd.open(file ,vol ,play)
 
 	local pat = pd:openPatch(file)
 	local dlr = pat:dollarZero()
-	if dlr == 0 then return pat end
-	pd:sendFloat(dlr..'vol' ,vol)
-	if play then
-		pd:sendBang(dlr..'play')  end
+	if dlr ~= 0 then
+		pd:sendFloat(dlr..'vol' ,vol)
+		if play then
+			pd:sendBang(dlr..'play')  end  end
 	return pat
 end
 
 function lpd.update()
 	while source:getFreeBufferCount() > 0 do
-		pd:processShort(ticks ,nil ,sdata:getPointer())
-		source:queue(sdata ,0 ,bsize)
+		pd:processShort(ticks ,sdata:getPointer())
+		source:queue(sdata)
 		source:play()  end
 end

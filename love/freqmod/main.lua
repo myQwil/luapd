@@ -2,15 +2,16 @@ package.path = '../?.lua;'..package.path
 require('pdmain')
 
 width ,height = love.graphics.getWidth()-1 ,love.graphics.getHeight()-1
-press      = {false ,false}
-hintx      = width - 250
-mx ,my     = 0 ,0
-portamento = 0
+maxfrq ,maxidx ,mx ,my ,portamento =
+200    ,3200   ,0  ,0  ,0
+press = {false ,false}
+hintx = width - 250
 
 fm =
 {	 modfrq = 1
 	,modidx = 150
 	,carfrq = 400   }
+
 obj.float = function(dest ,num)
 	fm[dest] = num
 end
@@ -28,7 +29,7 @@ end
 
 function love.load()
 	lpd.init()
-	patch = lpd.open('../../pd/test.pd' ,.5)
+	patch = lpd.open('../../pd/test.pd' ,.15)
 	love.keyboard.setKeyRepeat(true)
 	pd:subscribe('modfrq')
 	pd:subscribe('modidx')
@@ -70,8 +71,8 @@ function love.draw()
 	-- circle
 	love.graphics.setLineWidth(2)
 	love.graphics.circle('line'
-		,span(fm.modfrq ,0      ,width ,200  )
-		,span(fm.modidx ,height ,0     ,3200 )
+		,span(fm.modfrq ,0      ,width ,maxfrq)
+		,span(fm.modidx ,height ,0     ,maxidx)
 		,1 + fm.carfrq / 8
 	)
 end
@@ -86,11 +87,9 @@ function pancar(x ,y)
 		pd:sendFloat('carrier-freq' ,y>my and -1 or 1)  end
 end
 
-function none(...) end
-
 function fmod(x ,y)
-	pd:sendFloat('mod-freq'  ,span(x ,0    ,200 ,width  ))
-	pd:sendFloat('mod-index' ,span(y ,3200 ,0   ,height ))
+	pd:sendFloat('mod-freq'  ,span(x ,0      ,maxfrq ,width  ))
+	pd:sendFloat('mod-index' ,span(y ,maxidx ,0      ,height ))
 end
 
 function tone(x ,y)
@@ -98,6 +97,8 @@ function tone(x ,y)
 	pd:sendMessage ('tone' ,'pitch' ,{span(y ,100 ,0  ,height )} )
 	pd:sendBang    ('tone')
 end
+
+function none(...)  end
 
 fn = {[0]=none ,fmod}
 
