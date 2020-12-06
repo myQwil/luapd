@@ -19,8 +19,9 @@ end
 grid = {}
 local iter = 1/4
 for i=iter ,.99 ,iter do
-	grid[#grid+1] = {width*i ,0        ,width*i ,height   }
-	grid[#grid+1] = {0       ,height*i ,width   ,height*i }
+	local wi ,hi = width*i ,height*i
+	grid[#grid+1] = {wi ,0  ,wi    ,height }
+	grid[#grid+1] = {0  ,hi ,width ,hi     }
 end
 
 function span(f ,min ,max ,scale)
@@ -29,7 +30,8 @@ end
 
 function love.load()
 	lpd.init()
-	patch = lpd.open('../../pd/test.pd' ,.15)
+	local volume = 0.25
+	patch = lpd.open('../../pd/test.pd' ,volume)
 	love.keyboard.setKeyRepeat(true)
 	pd:subscribe('modfrq')
 	pd:subscribe('modidx')
@@ -78,7 +80,7 @@ function love.draw()
 end
 
 function pan(x ,y)
-	pd:sendFloat   ('pan' ,span(x ,-45 ,45 ,width))
+	pd:sendFloat('pan' ,span(x ,-45 ,45 ,width))
 end
 
 function pancar(x ,y)
@@ -141,4 +143,9 @@ function love.keypressed(k)
 	elseif k == 'escape' then
 		love.event.push('quit')
 	end
+end
+
+function love.quit()
+	pd:closePatch(patch)
+	pd:computeAudio(false)
 end

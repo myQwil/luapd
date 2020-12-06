@@ -196,5 +196,5 @@ for _=0 ,10 * sampleRate / blk do
 end
 
 -- be nice and clean up on exit
-pd:closePatch (patch)
+pd:closePatch(patch)
 pd:computeAudio(false)
