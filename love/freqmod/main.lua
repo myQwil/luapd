@@ -1,5 +1,5 @@
 package.path = '../?.lua;'..package.path
-require('pdmain')
+lpd ,pd ,obj = require('pdmain')()
 
 width ,height = love.graphics.getWidth()-1 ,love.graphics.getHeight()-1
 maxfrq ,maxidx ,mx ,my ,portamento =

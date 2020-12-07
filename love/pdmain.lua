@@ -6,9 +6,9 @@ else  ext = 'so'  end
 package.cpath = '../../?.'..ext..';'..package.cpath
 require('luapd')
 
-lpd = {msg = ''}
-pd  = PdBase()
-obj = PdObject{
+local lpd = {msg = ''}
+local pd  = PdBase()
+local obj = PdObject{
 	print = function(msg)
 		print(msg)
 		lpd.msg = msg
@@ -58,3 +58,5 @@ function lpd.update()
 		source:queue(sdata)
 		source:play()  end
 end
+
+return function() return lpd ,pd ,obj end
