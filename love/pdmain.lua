@@ -16,7 +16,7 @@ local obj = PdObject{
 }
 
 local sdata ,source
-local srate = (ffi.os == 'Windows') and 48000 or require('samplerate')
+local srate = require('samplerate')
 local chIn ,chOut ,queued ,bitdepth ,ticks ,nbufs =
       0    ,2     ,false  ,16       ,1     ,33
 -- print('delay = '..ticks * nbufs * pd.blockSize() / (srate/1000)..' ms')
