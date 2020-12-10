@@ -1,7 +1,16 @@
 diff --git a/src/m_pd.h b/src/m_pd.h
-index c3a12f43..2ad6e29b 100644
+index c3a12f43..73263995 100644
 --- a/src/m_pd.h
 +++ b/src/m_pd.h
+@@ -29,7 +29,7 @@ extern int pd_compatibilitylevel;   /* e.g., 43 for pd 0.43 compatibility */
+ #endif /* _MSC_VER */
+ 
+     /* the external storage class is "extern" in UNIX; in MSW it's ugly. */
+-#ifdef _WIN32
++#if defined(_WIN32) && !defined(PD_STATIC)
+ #ifdef PD_INTERNAL
+ #define EXTERN __declspec(dllexport) extern
+ #else
 @@ -536,7 +536,8 @@ EXTERN void poststring(const char *s);
  EXTERN void postfloat(t_floatarg f);
  EXTERN void postatom(int argc, const t_atom *argv);

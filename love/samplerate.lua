@@ -1,4 +1,5 @@
 -- get the playback device's sample rate, code courtesy of zorg
+local ffi = require('ffi')
 local openal = (ffi.os == 'Windows') and ffi.load('OpenAL32') or ffi.C
 ffi.cdef[[
 typedef struct ALCcontext ALCcontext;

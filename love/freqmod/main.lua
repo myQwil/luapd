@@ -3,7 +3,7 @@ lpd ,pd ,obj = require('pdmain')()
 
 width ,height = love.graphics.getWidth()-1 ,love.graphics.getHeight()-1
 maxfrq ,maxidx ,mx ,my ,portamento =
-200    ,3200   ,0  ,0  ,0
+300    ,3200   ,0  ,0  ,0
 press = {false ,false}
 hintx = width - 250
 
@@ -11,17 +11,8 @@ fm =
 {	 modfrq = 1
 	,modidx = 150
 	,carfrq = 400   }
-
 obj.float = function(dest ,num)
 	fm[dest] = num
-end
-
-grid = {}
-local iter = 1/4
-for i=iter ,.99 ,iter do
-	local wi ,hi = width*i ,height*i
-	grid[#grid+1] = {wi ,0  ,wi    ,height }
-	grid[#grid+1] = {0  ,hi ,width ,hi     }
 end
 
 function span(f ,min ,max ,scale)
@@ -29,8 +20,21 @@ function span(f ,min ,max ,scale)
 end
 
 function love.load()
+	grid = {}
+	local iter = 1/16
+	for i=iter   ,.999 ,iter*2 do
+		local wi ,hi = width*i ,height*i
+		grid[#grid+1] = {line={wi ,0  ,wi    ,height } ,color={.15 ,.05 ,.15 }}
+		grid[#grid+1] = {line={0  ,hi ,width ,hi     } ,color={.15 ,.05 ,.15 }}
+	end
+	for i=iter*2 ,.999 ,iter*2 do
+		local wi ,hi = width*i ,height*i
+		grid[#grid+1] = {line={wi ,0  ,wi    ,height } ,color={.33 ,0   ,0   }}
+		grid[#grid+1] = {line={0  ,hi ,width ,hi     } ,color={.33 ,0   ,0   }}
+	end
+
 	lpd.init()
-	local volume = 0.25
+	local volume = 0.5
 	patch = lpd.open('../../pd/test.pd' ,volume)
 	love.keyboard.setKeyRepeat(true)
 	pd:subscribe('modfrq')
@@ -46,9 +50,9 @@ end
 function love.draw()
 	-- grid
 	love.graphics.setLineWidth(1)
-	love.graphics.setColor(.25 ,0 ,0)
 	for _,v in pairs(grid) do
-		love.graphics.line(v)  end
+		love.graphics.setColor(v.color)
+		love.graphics.line(v.line)  end
 
 	-- values
 	love.graphics.setColor(1 ,1 ,1)
@@ -126,18 +130,16 @@ function love.wheelmoved(x ,y)
 end
 
 function love.keypressed(k)
-	if     k == 'tab'    then
+	if k=='-' or k=='='  then
+		local f = 25 * (k=='-' and -1 or 1)
+		portamento = math.max(0 ,portamento + f)
+		pd:sendFloat('portamento' ,portamento)
+	elseif k == 'tab'    then
 		local state = not love.mouse.isGrabbed()
 		love.mouse.setGrabbed(state)
 	elseif k == 'space'  then
 		fn[0] = fn[0]==none and fmod   or none
 		fn[1] = fn[1]==fmod and pancar or fmod
-	elseif k == '='      then
-		portamento = math.max(0 ,portamento + 25)
-		pd:sendFloat('portamento' ,portamento)
-	elseif k == '-'      then
-		portamento = math.max(0 ,portamento - 25)
-		pd:sendFloat('portamento' ,portamento)
 	elseif k == 'lctrl'  then
 		tone(love.mouse.getPosition())
 	elseif k == 'escape' then

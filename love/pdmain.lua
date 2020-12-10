@@ -1,7 +1,6 @@
-ffi = require('ffi')
-local ext
-if     ffi.os == 'Windows' then ext = 'dll'
-elseif ffi.os == 'OSX'     then ext = 'dylib'
+local stros = love.system.getOS() ,ext
+if     stros == 'Windows' then ext = 'dll'
+elseif stros == 'OS X'    then ext = 'dylib'
 else  ext = 'so'  end
 package.cpath = '../../?.'..ext..';'..package.cpath
 require('luapd')
@@ -17,9 +16,9 @@ local obj = PdObject{
 
 local sdata ,source
 local srate = require('samplerate')
-local chIn ,chOut ,queued ,bitdepth ,ticks ,nbufs =
+local chIn ,chOut ,queued ,bitdepth ,ticks ,bufs =
       0    ,2     ,false  ,16       ,1     ,33
--- print('delay = '..ticks * nbufs * pd.blockSize() / (srate/1000)..' ms')
+-- print('delay = '..ticks * bufs * pd.blockSize() / (srate/1000)..' ms')
 
 function lpd.init()
 	if not pd:init(chIn ,chOut ,srate ,queued) then
@@ -31,7 +30,7 @@ function lpd.init()
 
 	local size = pd.blockSize() * ticks
 	sdata  = love.sound.newSoundData(size ,srate ,bitdepth ,chOut)
-	source = love.audio.newQueueableSource(srate ,bitdepth ,chOut ,nbufs)
+	source = love.audio.newQueueableSource(srate ,bitdepth ,chOut ,bufs)
 	love.graphics.setFont(love.graphics.newFont(16))
 end
 
@@ -59,4 +58,6 @@ function lpd.update()
 		source:play()  end
 end
 
-return function() return lpd ,pd ,obj end
+return function()
+	return lpd ,pd ,obj
+end

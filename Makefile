@@ -33,7 +33,7 @@ CXXFLAGS += \
 .PHONY: dynamic clean
 
 $(TARGET): PREFIX    = lib
-$(TARGET): CXXFLAGS += -DBUILD_STATIC
+$(TARGET): CXXFLAGS += -DPD_STATIC
 $(TARGET): ${SRC:.cpp=.o}
 	g++ $(LDFLAGS) -o $(TARGET) $^ $(LIBPD).a $(LDLIBS)
 
