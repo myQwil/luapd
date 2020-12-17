@@ -11,6 +11,7 @@ fm =
 {	 modfrq = 1
 	,modidx = 150
 	,carfrq = 400   }
+
 obj.float = function(dest ,num)
 	fm[dest] = num
 end
@@ -34,7 +35,7 @@ function love.load()
 	end
 
 	lpd.init()
-	local volume = 0.5
+	local volume = 0.25
 	patch = lpd.open('../../pd/test.pd' ,volume)
 	love.keyboard.setKeyRepeat(true)
 	pd:subscribe('modfrq')
@@ -52,7 +53,7 @@ function love.draw()
 	love.graphics.setLineWidth(1)
 	for _,v in pairs(grid) do
 		love.graphics.setColor(v.color)
-		love.graphics.line(v.line)  end
+		love.graphics.line(v.line)   end
 
 	-- values
 	love.graphics.setColor(1 ,1 ,1)
@@ -69,17 +70,17 @@ function love.draw()
 	-- mouse press
 	if press[1] then
 		love.graphics.setColor(1  ,.8 ,.8)
-		love.graphics.print('Mouse1' ,150 ,0)  end
+		love.graphics.print('Mouse1' ,150 ,0)   end
 	if press[2] then
 		love.graphics.setColor(.8 ,1  ,.8)
-		love.graphics.print('Mouse2' ,300 ,0)  end
+		love.graphics.print('Mouse2' ,300 ,0)   end
 
 	-- circle
 	love.graphics.setLineWidth(2)
 	love.graphics.circle('line'
 		,span(fm.modfrq ,0      ,width ,maxfrq)
 		,span(fm.modidx ,height ,0     ,maxidx)
-		,1 + fm.carfrq / 8
+		,1 + fm.carfrq/8
 	)
 end
 
@@ -90,7 +91,7 @@ end
 function pancar(x ,y)
 	pan(x ,y)
 	if y ~= my then
-		pd:sendFloat('carrier-freq' ,y>my and -1 or 1)  end
+		pd:sendFloat('carrier-freq' ,y>my and -1 or 1)   end
 end
 
 function fmod(x ,y)
@@ -104,13 +105,13 @@ function tone(x ,y)
 	pd:sendBang    ('tone')
 end
 
-function none(...)  end
+function none(...) end
 
 fn = {[0]=none ,fmod}
 
 function love.mousepressed(x ,y ,btn)
 	if     btn == 1 then fn[1] (x ,y)
-	elseif btn == 2 then tone  (x ,y)  end
+	elseif btn == 2 then tone  (x ,y)   end
 	press[btn] = true
 end
 
@@ -121,7 +122,7 @@ end
 function love.mousemoved(x ,y)
 	if love.mouse.isDown(1) then
 	     fn[1](x ,y)
-	else fn[0](x ,y)  end
+	else fn[0](x ,y)   end
 	mx ,my = x ,y
 end
 

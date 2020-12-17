@@ -10,21 +10,12 @@
 using namespace std;
 using namespace pd;
 
-class Buffer {
-	vector<uint8_t> data;
-public:
-	Buffer   (size_t n)   { data.reserve(n);        }
-	~Buffer  ()           { data.shrink_to_fit();   }
-	void *ptr(size_t i=0) { return &data[i];        }
-	int   at (size_t i=0) { return *(int*)&data[i]; }
-};
-
 extern "C" { int LUA_API luaopen_luapd(lua_State *L); }
 
 #define LUA_PDBASE   "PdBase"
 #define LUA_PDPATCH  "Patch"
 #define LUA_PDOBJECT "PdObject"
-#define LUA_PDBUFFER "Buffer"
+#define LUA_PDARRAY  "Array"
 
 // ------------------------------------------------------------------------
 // -------------------------------- PdBase --------------------------------
@@ -414,46 +405,23 @@ static int l_arraySize(lua_State *L) {
 	return 1;
 }
 
-static void vecToTable(lua_State *L ,int idx ,vector<float> dest) {
-	for(int i=0; i<dest.size(); i++)
-	{	lua_pushnumber (L ,dest[i]);
-		lua_rawseti    (L ,idx ,i+1);   }
-}
-
-static vector<float> tableToVec(lua_State *L ,int idx) {
-	vector<float> source(lua_rawlen(L ,idx)); 
-	for (int i=0; i<=lua_rawlen(L ,idx); i++)
-	{	lua_pushinteger   (L ,i+1);
-		lua_gettable      (L ,idx);
-		if      (lua_type (L ,-1) == LUA_TNIL)
-			break;
-		else if (lua_type (L ,-1) == LUA_TNUMBER)
-			source[i] = lua_tonumber(L ,-1);
-		lua_pop(L ,1);   }
-	return source;
-}
-
 static int l_readArray(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *name = luaL_checkstring   (L ,2);
-	luaL_checktype                        (L ,3 ,LUA_TTABLE);
+	vector<float> *a = *(vector<float>**)luaL_checkudata (L ,3 ,LUA_PDARRAY);
 	int readLen      = !lua_isnoneornil   (L ,4) ? luaL_checkinteger (L ,4) :-1;
 	int offset       = !lua_isnoneornil   (L ,5) ? luaL_checkinteger (L ,5) : 0;
-	vector<float> dest;
-	bool success = b->readArray(name ,dest ,readLen ,offset);
-	if (success) vecToTable(L ,3 ,dest);
-	lua_pushboolean(L ,success);
+	lua_pushboolean(L ,b->readArray(name ,*a ,readLen ,offset));
 	return 1;
 }
 
 static int l_writeArray(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *name = luaL_checkstring   (L ,2);
-	luaL_checktype                        (L ,3 ,LUA_TTABLE);
+	vector<float> *a = *(vector<float>**)luaL_checkudata (L ,3 ,LUA_PDARRAY);
 	int writeLen     = !lua_isnoneornil   (L ,4) ? luaL_checkinteger (L ,4) :-1;
 	int offset       = !lua_isnoneornil   (L ,5) ? luaL_checkinteger (L ,5) : 0;
-	vector<float> source = tableToVec(L ,3);
-	lua_pushboolean(L ,b->writeArray(name ,source ,writeLen ,offset));
+	lua_pushboolean(L ,b->writeArray(name ,*a ,writeLen ,offset));
 	return 1;
 }
 
@@ -559,32 +527,52 @@ static int l_setFunc(lua_State *L) {
 	return 0;
 }
 
-// ------------------------------------------------------------------------
-// -------------------------------- Buffer --------------------------------
-// ------------------------------------------------------------------------
-static int pdbuffer_new(lua_State *L) {
-	int n = luaL_checkinteger(L ,1);
-	*(Buffer**)lua_newuserdata(L ,sizeof(Buffer*)) = new Buffer(n);
-	luaL_setmetatable(L ,LUA_PDBUFFER);
+// -----------------------------------------------------------------------
+// -------------------------------- Array --------------------------------
+// -----------------------------------------------------------------------
+static int pdarray_new(lua_State *L) {
+	int n  = !lua_isnoneornil(L ,1) ? luaL_checkinteger (L ,1) :0;
+	*(vector<float>**)lua_newuserdata(L ,sizeof(vector<float>*)) = new vector<float>(n);
+	luaL_setmetatable(L ,LUA_PDARRAY);
 	return 1;
 }
 
-static int pdbuffer_del(lua_State *L) {
-	delete *(Buffer**)lua_touserdata(L ,1);
+static int pdarray_del(lua_State *L) {
+	delete *(vector<float>**)lua_touserdata(L ,1);
 	return 0;
 }
 
-static int l_ptr(lua_State *L) {
-	Buffer *b = *(Buffer**)luaL_checkudata(L ,1 ,LUA_PDBUFFER);
-	int i     = !lua_isnoneornil          (L ,2) ? lua_tointeger(L ,2) : 0;
-	lua_pushlightuserdata(L ,b->ptr(i));
+static int l_len(lua_State *L) {
+	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
+	lua_pushinteger(L ,a->size());
 	return 1;
 }
 
+static int l_ptr(lua_State *L) {
+	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
+	int i    = !lua_isnoneornil(L ,2) ? lua_tointeger(L ,2) : 0;
+	lua_pushlightuserdata(L ,&(*a)[i]);
+	return 1;
+}
+
+static int l_set(lua_State *L) {
+	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
+	int i    = !lua_isnoneornil         (L ,2) ? lua_tointeger(L ,2) : 0;
+	float f  = luaL_checknumber         (L ,3);
+	if (i < 1)
+		return luaL_error(L ,"Array: index cannot be less than zero");
+	if (a->size() < i)
+		a->resize(i, 0);
+	(*a)[i-1] = f;
+	return 0;
+}
+
 static int l_at(lua_State *L) {
-	Buffer *b = *(Buffer**)luaL_checkudata(L ,1 ,LUA_PDBUFFER);
-	int i     = !lua_isnoneornil          (L ,2) ? lua_tointeger(L ,2) : 0;
-	lua_pushinteger(L ,b->at(i));
+	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
+	int i = luaL_checkinteger(L ,2);
+	if (a->size() < i)
+		return luaL_error(L ,"Array: index out of bounds");
+	lua_pushnumber(L ,(*a)[i-1]);
 	return 1;
 }
 
@@ -691,13 +679,14 @@ static void pdobject_reg(lua_State *L) {
 	lua_pop          (L,1);
 }
 
-static void pdbuffer_reg(lua_State *L) {
-	lua_register     (L,LUA_PDBUFFER,pdbuffer_new);
-	luaL_newmetatable(L,LUA_PDBUFFER);
-	lua_pushvalue    (L,-1                    );lua_setfield(L,-2,"__index"             );
-	lua_pushcfunction(L,pdbuffer_del          );lua_setfield(L,-2,"__gc"                );
-	lua_pushcfunction(L,l_ptr                 );lua_setfield(L,-2,"ptr"                 );
-	lua_pushcfunction(L,l_at                  );lua_setfield(L,-2,"at"                  );
+static void pdarray_reg(lua_State *L) {
+	lua_register     (L,LUA_PDARRAY,pdarray_new);
+	luaL_newmetatable(L,LUA_PDARRAY);
+	lua_pushcfunction(L,pdarray_del           );lua_setfield(L,-2,"__gc"                );
+	lua_pushcfunction(L,l_len                 );lua_setfield(L,-2,"__len"               );
+	lua_pushcfunction(L,l_at                  );lua_setfield(L,-2,"__index"             );
+	lua_pushcfunction(L,l_set                 );lua_setfield(L,-2,"__newindex"          );
+	lua_pushcfunction(L,l_ptr                 );lua_setfield(L,-2,"__call"              );
 
 	lua_pop          (L,1);
 }
@@ -706,6 +695,6 @@ int LUA_API luaopen_luapd(lua_State *L) {
 	pdbase_reg   (L);
 	pdpatch_reg  (L);
 	pdobject_reg (L);
-	pdbuffer_reg (L);
+	pdarray_reg  (L);
 	return 0;
 }

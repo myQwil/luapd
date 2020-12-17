@@ -1,7 +1,7 @@
 # LuaPd
 libpd bindings for lua and love2d
 
-## Getting Started
+## Building Luapd
 
 ### Download libpd & checkout the submodules with git:
 
@@ -9,19 +9,14 @@ libpd bindings for lua and love2d
 
 Luapd's Makefile assumes that the libpd folder is adjacent to the luapd folder. This section will work under that assumption.
 
-### Apply luapd's git patches to libpd and pure-data:
+### Apply luapd's git patch to libpd's pure-data folder:
 
-    cd libpd
-    git apply ../luapd/diff/libpd.diff
-    cd pure-data
+    cd libpd/pure-data
     git apply ../../luapd/diff/pure-data.diff
-    cd ..
 
-A quick overview of what these patches do:
+**pure-data.diff** changes the name of a function called `error` because Lua also has a function with the same name, which can confuse Lua and cause crashes.
 
-- libpd.diff - Changes the declarations in the libpd_wrapper z headers from EXTERN to EXPORT, which will be left undefined for static builds. This makes it easier to link with libpd in MSYS2/MinGW.
-
-- pure-data.diff - Lua and Pd both have a function called `error`, which can confuse lua and cause crashes. We can prevent this with a little bit of preprocessor trickery in m_pd.h.
+There is also a diff patch called **libpd-extra.diff** but it only needs to be applied if you plan on building libpd with additional libraries that some of the LÖVE examples use.
 
 ### Build libpd:
 

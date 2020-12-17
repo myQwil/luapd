@@ -1,0 +1,28 @@
+goto 2
+192
+
+goto 3
+384
+
+goto 4
+144
+
+goto 1
+48
+
+goto 2
+192
+
+goto 5
+384
+
+goto 4
+144
+
+goto 1
+48
+
+goto 5
+192
+
+loop

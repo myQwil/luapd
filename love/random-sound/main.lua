@@ -3,7 +3,8 @@ luapd ,pd = require('pdmain')()
 
 function love.load()
 	luapd.init()
-	patch = luapd.open(.1)
+	local vol = .2
+	patch = luapd.open(vol)
 end
 
 function love.update()

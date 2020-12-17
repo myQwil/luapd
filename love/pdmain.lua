@@ -1,7 +1,7 @@
 local stros = love.system.getOS() ,ext
 if     stros == 'Windows' then ext = 'dll'
 elseif stros == 'OS X'    then ext = 'dylib'
-else  ext = 'so'  end
+else  ext = 'so'   end
 package.cpath = '../../?.'..ext..';'..package.cpath
 require('luapd')
 
@@ -21,12 +21,12 @@ local chIn ,chOut ,queued ,bitdepth ,ticks ,bufs =
 -- print('delay = '..ticks * bufs * pd.blockSize() / (srate/1000)..' ms')
 
 function lpd.init()
+	pd:setReceiver(obj)
 	if not pd:init(chIn ,chOut ,srate ,queued) then
 		print('Could not init pd')
-		love.event.push('quit')  end
+		love.event.push('quit')   end
 	pd:addToSearchPath('../../pd/lib')
 	pd:computeAudio(true)
-	pd:setReceiver(obj)
 
 	local size = pd.blockSize() * ticks
 	sdata  = love.sound.newSoundData(size ,srate ,bitdepth ,chOut)
@@ -35,10 +35,13 @@ function lpd.init()
 end
 
 function lpd.open(file ,vol ,play)
-	if type(file) == 'number' then
+	if type(vol)  == 'boolean' then
+		play = vol
+		vol  = nil   end
+	if type(file) == 'number'  then
 		vol  = file
-		file = nil  end
-	play = play or true
+		file = nil   end
+	play = play == nil and true
 	file = file or 'main.pd'
 	vol  = vol and math.min(1 ,math.max(-1 ,vol)) or 1
 
@@ -47,7 +50,7 @@ function lpd.open(file ,vol ,play)
 	if dlr ~= 0 then
 		pd:sendFloat(dlr..'vol' ,vol)
 		if play then
-			pd:sendBang(dlr..'play')  end  end
+			pd:sendBang(dlr..'play')   end   end
 	return pat
 end
 
@@ -55,7 +58,7 @@ function lpd.update()
 	while source:getFreeBufferCount() > 0 do
 		pd:processShort(ticks ,sdata:getPointer())
 		source:queue(sdata)
-		source:play()  end
+		source:play()   end
 end
 
 return function()

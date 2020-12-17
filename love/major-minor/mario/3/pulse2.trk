@@ -1,0 +1,55 @@
+rest	6
+scl x 60, scl n 8, scl default
+note	dur	vol	atk	dcy	sus	rel	vbspd	vbdep	vblin	pmt
+7	3	.55	.05	3.25	0	1.25	2	0	0	0
+scl n 7, scl @2 4
+8.5	3
+8	3
+6	6
+7	6
+
+scl default
+2	3
+3	3
+4	6
+
+0	3
+2	3
+3	9
+
+scl n 8
+7	3
+scl n 7, scl @2 4
+8.5	3
+8	3
+6	6
+7	6
+
+scl default
+10	6
+10	3
+10	18
+
+scl n 8
+7	3
+scl n 7, scl @2 4
+8.5	3
+8	3
+6	6
+7	6
+
+scl default
+2	3
+3	3
+4	6
+
+0	3
+2	3
+3	9
+
+scl x d-4
+7	9
+scl x d+2
+4	9
+scl x d+2
+2	24

@@ -47,11 +47,9 @@ obj = PdObject{
 	end
 }
 
--- a generic buffer type, added mainly for test cases
-float  = 4 -- 32-bit float = 4 bytes
 blk    = PdBase.blockSize()
-inbuf  = Buffer(float * blk * inChannels)
-outbuf = Buffer(float * blk * outChannels)
+inbuf  = Array(blk * inChannels)
+outbuf = Array(blk * outChannels)
 
 
 -- init pd
@@ -98,7 +96,7 @@ print('BEGIN Patch Test')
 	--
 	-- in a normal case (not a test like this), you would call this in
 	-- your application main loop
-	pd:processFloat(1 ,inbuf:ptr() ,outbuf:ptr())
+	pd:processFloat(1 ,inbuf() ,outbuf())
 	pd:receiveMessages()
 print('FINISH Patch Test\n')
 
@@ -152,8 +150,9 @@ print('BEGIN Array Test')
 	-- array check length
 	print('array1 len: '..pd:arraySize('array1'))
 
+	array1 = Array()
+
 	function readArray1()
-		array1 = {}
 		pd:readArray('array1' ,array1)
 		msg = 'array1'
 		for i=1 ,#array1 do msg = msg..' '..array1[i] end
@@ -190,7 +189,7 @@ pd:sendBang('tone');
 -- functions pass messages to our PdObject
 print('Processing PD')
 for _=0 ,10 * sampleRate / blk do
-	pd:processFloat(1 ,inbuf:ptr() ,outbuf:ptr())
+	pd:processFloat(1 ,inbuf() ,outbuf())
 	pd:receiveMessages()
 	pd:receiveMidi()
 end
