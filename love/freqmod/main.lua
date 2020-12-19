@@ -12,7 +12,7 @@ fm =
 	,modidx = 150
 	,carfrq = 400   }
 
-obj.float = function(dest ,num)
+function obj.float(dest ,num)
 	fm[dest] = num
 end
 
@@ -57,7 +57,7 @@ function love.draw()
 
 	-- values
 	love.graphics.setColor(1 ,1 ,1)
-	love.graphics.print(lpd.msg ,0 ,0)
+	lpd.draw()
 	love.graphics.print('mod-freq: ' ..fm.modfrq ,0 ,20)
 	love.graphics.print('mod-index: '..fm.modidx ,0 ,40)
 

@@ -1,17 +1,24 @@
 diff --git a/src/m_pd.h b/src/m_pd.h
-index c3a12f43..73263995 100644
+index c3a12f43..9007cf55 100644
 --- a/src/m_pd.h
 +++ b/src/m_pd.h
-@@ -29,7 +29,7 @@ extern int pd_compatibilitylevel;   /* e.g., 43 for pd 0.43 compatibility */
+@@ -29,6 +29,7 @@ extern int pd_compatibilitylevel;   /* e.g., 43 for pd 0.43 compatibility */
  #endif /* _MSC_VER */
  
      /* the external storage class is "extern" in UNIX; in MSW it's ugly. */
--#ifdef _WIN32
-+#if defined(_WIN32) && !defined(PD_STATIC)
++#ifndef EXTERN
+ #ifdef _WIN32
  #ifdef PD_INTERNAL
  #define EXTERN __declspec(dllexport) extern
+@@ -38,6 +39,7 @@ extern int pd_compatibilitylevel;   /* e.g., 43 for pd 0.43 compatibility */
  #else
-@@ -536,7 +536,8 @@ EXTERN void poststring(const char *s);
+ #define EXTERN extern
+ #endif /* _WIN32 */
++#endif /* EXTERN */
+ 
+     /* On most c compilers, you can just say "struct foo;" to declare a
+     structure whose elements are defined elsewhere.  On MSVC, when compiling
+@@ -536,7 +538,8 @@ EXTERN void poststring(const char *s);
  EXTERN void postfloat(t_floatarg f);
  EXTERN void postatom(int argc, const t_atom *argv);
  EXTERN void endpost(void);

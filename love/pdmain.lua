@@ -61,6 +61,10 @@ function lpd.update()
 		source:play()   end
 end
 
+function lpd.draw()
+	love.graphics.print(lpd.msg ,0 ,0)
+end
+
 return function()
 	return lpd ,pd ,obj
 end

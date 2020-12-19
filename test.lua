@@ -1,6 +1,6 @@
 ffi = require('ffi')
 if ffi.os == 'OSX' then
-	package.cpath = './?.dylib;'..package.cpath  end
+	package.cpath = './?.dylib;'..package.cpath   end
 require('luapd')
 
 inChannels ,outChannels ,sampleRate ,queued =
