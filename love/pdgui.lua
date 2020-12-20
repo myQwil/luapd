@@ -17,32 +17,34 @@ end
 -------------------------------------------------------------------------
 -------------------------------- Sliders --------------------------------
 -------------------------------------------------------------------------
-local function slider_send(self ,k)
-	if k then
-		pd:sendFloat(self.t[k].dest ,self.t[k].cur)
+local function slider_send(self ,x)
+	if x then
+		pd:sendFloat(self.t[x].dest ,self.t[x].cur)
 	else for _,v in pairs(self.t) do
 		pd:sendFloat(v.dest ,v.cur)   end   end
 end
 
-local function slider_check(self ,ck ,v ,x)
+local function slider_check(self ,v ,x ,cx)
 	if     x < v.xmin then x = v.xmin
 	elseif x > v.xmax then x = v.xmax   end
-	if self[ck] ~= x then
-		self[ck]  = x
-		v.cur = (x - v.xmin) * v.f + v.min
+	if self[cx] ~= x then
+		self[cx]  = x
+		if v.log then
+		     v.cur = v.min * math.exp((x - v.xmin) * v.k)
+		else v.cur = v.min + (x - v.xmin) * v.k   end
 		pd:sendFloat(v.dest ,v.cur)   end
 end
 
 local function slider_update(self ,x ,y)
 	if love.mouse.isDown(1) then
 		if     gui.focus == self then
-			if self.t.x then slider_check(self ,'cx' ,self.t.x ,x) end
-			if self.t.y then slider_check(self ,'cy' ,self.t.y ,y) end
+			if self.t.x then slider_check(self ,self.t.x ,x ,'cx') end
+			if self.t.y then slider_check(self ,self.t.y ,y ,'cy') end
 		elseif gui.focus == nil
 		 and x >= self.x and x <= self.xx
 		 and y >= self.y and y <= self.yy then
-			if self.t.x then slider_check(self ,'cx' ,self.t.x ,x) end
-			if self.t.y then slider_check(self ,'cy' ,self.t.y ,y) end
+			if self.t.x then slider_check(self ,self.t.x ,x ,'cx') end
+			if self.t.y then slider_check(self ,self.t.y ,y ,'cy') end
 			gui.focus = self   end
 	elseif gui.focus then gui.focus = nil   end
 end
@@ -62,36 +64,55 @@ local function slider_draw(self)
 		love.graphics.print(v.label.text..': '..v.cur ,v.label.x ,v.label.y)   end
 end
 
-local function slider_setup(sl ,k ,v)
-	local diam      ,klen      ,kk    ,ck =
-	      sl.rad*2  ,k..'len'  ,k..k  ,'c'..k
+local function slider_minmax(v ,min ,max ,diam)
+	if min == 0.0 and max == 0.0 then
+		max = 1.0   end
+	if max > 0.0 then
+		if min <= 0.0 then
+			min = 0.01 * max   end
+	else
+		if min > 0.0 then
+			max = 0.01 * min   end
+	end
+	v.min = min
+	v.max = max
+	return math.log(v.max/v.min) / (v.len-diam)
+end
+
+local function slider_setup(sl ,v ,x)
+	local diam      ,xlen      ,xx    ,cx =
+	      sl.rad*2  ,x..'len'  ,x..x  ,'c'..x
 	if v then
 		if v.len < diam then v.len = diam end
-		if k == 'y' then
+		sl[xlen] = v.len
+		sl[xx] = sl[x]  + v.len
+		v.xmin = sl[x]  + sl.rad
+		v.xmax = sl[xx] - sl.rad
+
+		if x == 'y' then
 			local temp = v.min
 			v.min = v.max
 			v.max = temp   end
-		sl[klen] = v.len
-		sl[kk]   = v.len + sl[k]
-		v.xmin = sl[k]  + sl.rad
-		v.xmax = sl[kk] - sl.rad
-		v.f = (v.max-v.min) / (v.len-diam)
+		if v.cur then v.cur = v.min > v.max and
+			bounds(v.cur ,v.max ,v.min) or bounds(v.cur ,v.min ,v.max)
+		else v.cur = v.min   end
+
+		if v.log then
+		     v.k = slider_minmax(v ,v.min ,v.max ,diam)
+		else v.k = (v.max-v.min) / (v.len-diam)   end
+
+		if  v.k == 0 then sl[cx] = v.xmin
+		elseif v.log then sl[cx] = v.xmin + math.log(v.cur / v.min) / v.k
+		else              sl[cx] = v.xmin + (v.cur - v.min) / v.k   end
 
 		if not v.label then v.label = {} end
 		v.label.text = v.label.text or v.dest
 		v.label.x    = math.floor((v.label.x or 0) + sl.x + sl.rad)
 		v.label.y    = math.floor((v.label.y or 0) + sl.y - 24)
-
-		if v.cur then v.cur = v.min > v.max and
-			bounds(v.cur ,v.max ,v.min) or bounds(v.cur ,v.min ,v.max)
-		else v.cur = v.min   end
-
-		sl[ck] = sl[k] + sl.rad + (v.cur-v.min) * (v.len-diam) / (v.max-v.min)
-		if sl[ck] ~= sl[ck] then sl[ck] = sl.rad + sl[k] end
 	else
-		sl[klen] = diam
-		sl[kk]   = diam   + sl[k]
-		sl[ck]   = sl.rad + sl[k]   end
+		sl[cx]   = sl[x] + sl.rad
+		sl[xx]   = sl[x] + diam
+		sl[xlen] = diam   end
 end
 
 function gui.slider(x ,y ,t ,opt)
@@ -105,8 +126,8 @@ function gui.slider(x ,y ,t ,opt)
 		,update = slider_update
 		,draw   = slider_draw   }
 
-	slider_setup(sl ,'x' ,sl.t.x)
-	slider_setup(sl ,'y' ,sl.t.y)
+	slider_setup(sl ,sl.t.x ,'x')
+	slider_setup(sl ,sl.t.y ,'y')
 	return sl
 end
 
@@ -132,35 +153,34 @@ local function gui_box(x ,y ,dest ,opt)
 end
 
 local function button_update(self ,dt)
-	if self.circle.on then
-		self.circle.dt = self.circle.dt + dt
-		if self.circle.dt >= self.circle.delay then
-			self.circle.on = false   end   end
+	if self.circ.on then
+		self.circ.dt = self.circ.dt + dt
+		if self.circ.dt >= self.circ.delay then
+			self.circ.on = false   end   end
 end
 
 local function button_mousepressed(self ,x ,y ,btn)
 	if btn == 1
 	and x >= self.x and x <= self.xx
 	and y >= self.y and y <= self.yy then
-		self.circle.dt = 0
-		self.circle.on = true
+		self.circ.dt = 0
+		self.circ.on = true
 		pd:sendBang(self.dest)   end
 end
 
 local function button_draw(self)
 	love.graphics.setColor(.25 ,.25 ,.25 )
 	love.graphics.rectangle('fill' ,self.x ,self.y ,self.size ,self.size ,5)
+
+	if self.circ.on then
+		love.graphics.setColor(.85 ,.85 ,.85 )
+		love.graphics.circle('fill' ,self.circ.x ,self.circ.y ,self.circ.rad)   end
+	love.graphics.setColor(.5  ,.5  ,.5  )
+	love.graphics.circle('line' ,self.circ.x ,self.circ.y ,self.circ.rad)
+
 	love.graphics.setColor(1   ,1   ,1   )
 	love.graphics.rectangle('line' ,self.x ,self.y ,self.size ,self.size ,5)
 
-	if self.circle.on then
-		love.graphics.setColor(.5 ,.5 ,.5)
-		love.graphics.circle('fill' ,self.circle.x ,self.circle.y ,self.circle.rad)
-		love.graphics.setColor(.1 ,.1 ,.1)
-		love.graphics.circle('line' ,self.circle.x ,self.circle.y ,self.circle.rad)
-	end
-
-	love.graphics.setColor(1 ,1 ,1)
 	love.graphics.print(self.label.text ,self.label.x ,self.label.y)
 end
 
@@ -170,10 +190,10 @@ function gui.button(x ,y ,dest ,opt)
 	btn.update = button_update
 	btn.mousepressed = button_mousepressed
 
-	btn.circle = {dt=0 ,on=false ,delay=.15}
-	btn.circle.rad = btn.size * 4/9
-	btn.circle.x = btn.x+btn.circle.rad + btn.circle.rad * 1/9
-	btn.circle.y = btn.y+btn.circle.rad + btn.circle.rad * 1/9
+	btn.circ = {dt=0 ,on=false ,delay=.2}
+	btn.circ.rad = btn.size * 5/11
+	btn.circ.x = btn.x + btn.size/2
+	btn.circ.y = btn.y + btn.size/2
 	return btn
 end
 

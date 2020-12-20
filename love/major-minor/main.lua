@@ -15,7 +15,7 @@ function love.load()
 	local tvol  = {dest=dlr..'vol' ,min=0  ,max=1  ,cur=vol ,len=height-100 ,label=lbl}
 	local phase = {dest='phase'    ,min=0  ,max=.5 ,cur=.5  ,len=width-wo}
 	local scale = {dest='scale'    ,min=-6 ,max=6  ,cur=-1  ,len=width-wo}
-	local tempo = {dest='tempo'    ,min=.5 ,max=2  ,cur=1   ,len=width-wo ,log=true}
+	local tempo = {dest='tempo'    ,min=.5 ,max=4  ,cur=1   ,len=width-wo ,log=true}
 
 	sliders =
 	{	 gui.slider(width-90 ,60         ,{y=tvol}  ,{rad=rad ,rgb={.75 ,.5  ,.75}})

@@ -562,7 +562,7 @@ static int l_set(lua_State *L) {
 	if (i < 1)
 		return luaL_error(L ,"Array: index cannot be less than zero");
 	if (a->size() < i)
-		a->resize(i, 0);
+		a->resize(i ,0);
 	(*a)[i-1] = f;
 	return 0;
 }
