@@ -6,7 +6,7 @@ doremi = 're:\nmi:\nfa:\nso:\nla:\nti:'
 
 function love.load()
 	luapd.init()
-	patch = luapd.open(0 ,false)
+	patch = luapd.open(false)
 
 	local vol ,x  ,wo  ,rad ,dlr                ,width ,height =
 	      .33 ,20 ,140 ,30  ,patch:dollarZero() ,love.window.getMode()

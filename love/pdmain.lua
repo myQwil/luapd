@@ -34,16 +34,18 @@ function lpd.init()
 	love.graphics.setFont(love.graphics.newFont(16))
 end
 
-function lpd.open(file ,vol ,play)
-	if type(vol)  == 'boolean' then
-		play = vol
-		vol  = nil   end
-	if type(file) == 'number'  then
-		vol  = file
-		file = nil   end
-	play = play == nil and true
+function lpd.open(opt)
+	local typ = type(opt)
+	if     typ == 'string'  then file = opt
+	elseif typ == 'number'  then vol  = opt
+	elseif typ == 'boolean' then play = opt
+	elseif typ == 'table'   then
+		file = opt.file
+		vol  = opt.vol
+		play = opt.play   end
 	file = file or 'main.pd'
 	vol  = vol and math.min(1 ,math.max(-1 ,vol)) or 1
+	play = play or play==nil
 
 	local pat = pd:openPatch(file)
 	local dlr = pat:dollarZero()

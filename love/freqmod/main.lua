@@ -36,7 +36,7 @@ function love.load()
 
 	lpd.init()
 	local volume = 0.25
-	patch = lpd.open('../../pd/test.pd' ,volume)
+	patch = lpd.open{file='../../pd/test.pd' ,vol=volume}
 	love.keyboard.setKeyRepeat(true)
 	pd:subscribe('modfrq')
 	pd:subscribe('modidx')
