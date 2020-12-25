@@ -589,7 +589,6 @@ static void pdbase_reg(lua_State *L) {
 
 	luaL_newmetatable(L,LUA_PDBASE);
 	lua_pushvalue    (L,-1                    );lua_setfield(L,-2,"__index"             );
-	lua_pushcfunction(L,pdbase_new            );lua_setfield(L,-2,"__call"              );
 	lua_pushcfunction(L,pdbase_del            );lua_setfield(L,-2,"__gc"                );
 	lua_pushcfunction(L,pdbase_shl            );lua_setfield(L,-2,"__shl"               );
 	lua_pushcfunction(L,l_init                );lua_setfield(L,-2,"init"                );

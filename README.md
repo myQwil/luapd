@@ -48,3 +48,8 @@ By default, `make` will try to link statically with libpd. You can also link dyn
 You can test luapd with:
 
     luajit test.lua
+
+## Running Examples
+
+For Linux and Mac users, the examples should run normally without any necessary changes.
+For Windows users, the 3 lib\*.dll files in the main folder need to be copied into an example folder before they can be detected by luapd.dll.

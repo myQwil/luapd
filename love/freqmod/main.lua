@@ -16,8 +16,9 @@ function obj.float(dest ,num)
 	fm[dest] = num
 end
 
-function span(f ,min ,max ,scale)
-	return f * (max - min) / scale + min;
+function slope(x ,min ,max ,len)
+	local m = (max - min) / len
+	return m*x + min;
 end
 
 function love.load()
@@ -78,14 +79,14 @@ function love.draw()
 	-- circle
 	love.graphics.setLineWidth(2)
 	love.graphics.circle('line'
-		,span(fm.modfrq ,0      ,width ,maxfrq)
-		,span(fm.modidx ,height ,0     ,maxidx)
+		,slope(fm.modfrq ,0      ,width ,maxfrq)
+		,slope(fm.modidx ,height ,0     ,maxidx)
 		,1 + fm.carfrq/8
 	)
 end
 
 function pan(x ,y)
-	pd:sendFloat('pan' ,span(x ,-45 ,45 ,width))
+	pd:sendFloat('pan' ,slope(x ,-45 ,45 ,width))
 end
 
 function pancar(x ,y)
@@ -95,13 +96,13 @@ function pancar(x ,y)
 end
 
 function fmod(x ,y)
-	pd:sendFloat('mod-freq'  ,span(x ,0      ,maxfrq ,width  ))
-	pd:sendFloat('mod-index' ,span(y ,maxidx ,0      ,height ))
+	pd:sendFloat('mod-freq'  ,slope(x ,0      ,maxfrq ,width  ))
+	pd:sendFloat('mod-index' ,slope(y ,maxidx ,0      ,height ))
 end
 
 function tone(x ,y)
-	pd:sendFloat   ('tone-pos'      , span(x ,-45 ,45 ,width  )  )
-	pd:sendMessage ('tone' ,'pitch' ,{span(y ,100 ,0  ,height )} )
+	pd:sendFloat   ('tone-pos'      , slope(x ,-45 ,45 ,width  )  )
+	pd:sendMessage ('tone' ,'pitch' ,{slope(y ,100 ,0  ,height )} )
 	pd:sendBang    ('tone')
 end
 

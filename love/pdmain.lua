@@ -1,3 +1,8 @@
+
+function math.clip(x ,min ,max)
+	return (x < min and min) or (x > max and max) or x
+end
+
 local stros = love.system.getOS() ,ext
 if     stros == 'Windows' then ext = 'dll'
 elseif stros == 'OS X'    then ext = 'dylib'
@@ -44,7 +49,7 @@ function lpd.open(opt)
 		vol  = opt.vol
 		play = opt.play   end
 	file = file or 'main.pd'
-	vol  = vol and math.min(1 ,math.max(-1 ,vol)) or 1
+	vol  = vol and math.clip(vol ,-1 ,1) or 1
 	play = play or play==nil
 
 	local pat = pd:openPatch(file)

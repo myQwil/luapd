@@ -1,12 +1,6 @@
 
 local gui = { focus = nil }
 
-local function bounds(num ,min ,max)
-	if     num < min then num = min
-	elseif num > max then num = max   end
-	return num
-end
-
 local function copy(t)
 	local cpy = {}
 	for k,v in pairs(t) do
@@ -25,8 +19,7 @@ local function slider_send(self ,x)
 end
 
 local function slider_check(self ,v ,x ,cx)
-	if     x < v.xmin then x = v.xmin
-	elseif x > v.xmax then x = v.xmax   end
+	x = math.clip(x ,v.xmin ,v.xmax)
 	if self[cx] ~= x then
 		self[cx]  = x
 		if v.log then
@@ -94,7 +87,7 @@ local function slider_setup(sl ,v ,x)
 			v.min = v.max
 			v.max = temp   end
 		if v.cur then v.cur = v.min > v.max and
-			bounds(v.cur ,v.max ,v.min) or bounds(v.cur ,v.min ,v.max)
+			math.clip(v.cur ,v.max ,v.min) or math.clip(v.cur ,v.min ,v.max)
 		else v.cur = v.min   end
 
 		if v.log then
@@ -139,7 +132,7 @@ local function gui_box(x ,y ,dest ,opt)
 	{	 x = x
 		,y = y
 		,dest = dest   }
-	box.size  = opt and opt.size or 25
+	box.size = opt and opt.size or 25
 	box.xx = box.x + box.size
 	box.yy = box.y + box.size
 
@@ -186,8 +179,8 @@ end
 
 function gui.button(x ,y ,dest ,opt)
 	local btn = gui_box(x ,y ,dest ,opt)
-	btn.draw   = button_draw
-	btn.update = button_update
+	btn.draw         = button_draw
+	btn.update       = button_update
 	btn.mousepressed = button_mousepressed
 
 	btn.circ = {dt=0 ,on=false ,delay=.2}
@@ -220,7 +213,7 @@ end
 
 function gui.toggle(x ,y ,dest ,opt)
 	local tgl = gui_box(x ,y ,dest ,opt)
-	tgl.draw = toggle_draw
+	tgl.draw         = toggle_draw
 	tgl.mousepressed = toggle_mousepressed
 
 	tgl.non0 = opt and opt.non0 or 1
