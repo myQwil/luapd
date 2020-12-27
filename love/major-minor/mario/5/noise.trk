@@ -1,12 +1,11 @@
-scl x 1, scl n 1, scl default
+scl @ 1, scl n 1, scl default
 note	dur	vol	atk	dcy	sus	rel	vbspd	vbdep	vblin	pmt
-12	9	.45	~	.5	0	1.25	2	0	0	0
-
+12	9	.37	~	.5	0	1.25	2	0	0	0
 ~	3
-11	6	.37	~	2.5
-12	~	.45	~	.5
+11	6	.3	~	2.5
+12	~	.37	~	.5
 
 ~	9
 ~	3
-11	6	.37	~	2.5
-12	~	.45	~	.5
+11	6	.3	~	2.5
+12	~	.37	~	.5

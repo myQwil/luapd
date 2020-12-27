@@ -23,8 +23,8 @@ local function slider_check(self ,v ,x ,cx)
 	if self[cx] ~= x then
 		self[cx]  = x
 		if v.log then
-		     v.cur = v.min * math.exp((x - v.xmin) * v.k)
-		else v.cur = v.min + (x - v.xmin) * v.k   end
+		     v.cur = math.exp(v.k * (x - v.xmin)) * v.min
+		else v.cur =          v.k * (x - v.xmin)  + v.min   end
 		pd:sendFloat(v.dest ,v.cur)   end
 end
 
@@ -96,7 +96,7 @@ local function slider_setup(sl ,v ,x)
 
 		if  v.k == 0 then sl[cx] = v.xmin
 		elseif v.log then sl[cx] = v.xmin + math.log(v.cur / v.min) / v.k
-		else              sl[cx] = v.xmin + (v.cur - v.min) / v.k   end
+		else              sl[cx] = v.xmin +         (v.cur - v.min) / v.k   end
 
 		if not v.label then v.label = {} end
 		v.label.text = v.label.text or v.dest
@@ -114,7 +114,7 @@ function gui.slider(x ,y ,t ,opt)
 		,y = y
 		,t = copy(t)
 		,rad = math.abs(opt and opt.rad or 25)
-		,rgb = opt and opt.rgb or {.5,.5,.5}
+		,rgb = opt and opt.rgb and copy(opt.rgb) or {.5,.5,.5}
 		,send   = slider_send
 		,update = slider_update
 		,draw   = slider_draw   }

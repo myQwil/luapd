@@ -6,16 +6,16 @@ doremi = 're:\nmi:\nfa:\nso:\nla:\nti:'
 
 function love.load()
 	luapd.init()
-	patch = luapd.open(false)
+	patch = luapd.open{play=false}
 
 	local vol ,x  ,wo  ,rad ,dlr                ,width ,height =
-	      .33 ,20 ,140 ,30  ,patch:dollarZero() ,love.window.getMode()
+	      .1  ,20 ,140 ,30  ,patch:dollarZero() ,love.window.getMode()
 
 	local lbl = {text='volume' ,x=-100}
-	local tvol  = {dest=dlr..'vol' ,min=0  ,max=1  ,cur=vol ,len=height-100 ,label=lbl}
-	local phase = {dest='phase'    ,min=0  ,max=.5 ,cur=.5  ,len=width-wo}
-	local scale = {dest='scale'    ,min=-6 ,max=6  ,cur=-1  ,len=width-wo}
-	local tempo = {dest='tempo'    ,min=.5 ,max=4  ,cur=1   ,len=width-wo ,log=true}
+	local tvol  = {dest=dlr..'vol' ,min=0   ,max=1 ,cur=vol ,len=height-100 ,label=lbl}
+	local phase = {dest='phase'    ,min=0   ,max=1 ,cur=.5  ,len=width-wo}
+	local scale = {dest='scale'    ,min=-6  ,max=6 ,cur=0   ,len=width-wo}
+	local tempo = {dest='tempo'    ,min=.25 ,max=4 ,cur=1   ,len=width-wo ,log=true}
 
 	sliders =
 	{	 gui.slider(width-90 ,60         ,{y=tvol}  ,{rad=rad ,rgb={.75 ,.5  ,.75}})
@@ -28,7 +28,8 @@ function love.load()
 		,gui.button(275  ,50  ,'inv+' ,{size=33})   }
 
 	toggles =
-	{	 gui.toggle(425  ,50  ,'pause'    ,{size=33})
+	{	 gui.toggle(350  ,50  ,'repeat'   ,{size=33})
+		,gui.toggle(425  ,50  ,'pause'    ,{size=33})
 		,gui.toggle(200  ,100 ,'pulse1'   ,{size=33 ,label={y=60} ,on=true})
 		,gui.toggle(275  ,100 ,'pulse2'   ,{size=33 ,label={y=60} ,on=true})
 		,gui.toggle(350  ,100 ,'triangle' ,{size=33 ,label={y=60} ,on=true})
@@ -61,11 +62,10 @@ function love.draw()
 
 	pd:readArray('default' ,scale)
 	local str = ''
-	for i=1,#scale-1 do
+	for i=1,#scale do
 		str = str..string.format('%.2f' ,scale[i])..'\n'   end
 	love.graphics.printf(doremi ,10 ,10 ,30 ,'right')
 	love.graphics.printf(str    ,45 ,10 ,50 ,'right')
-	love.graphics.print('exception: '..string.format('%.2f' ,scale[#scale]) ,10 ,124)
 end
 
 function love.quit()
