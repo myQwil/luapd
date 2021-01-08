@@ -8,10 +8,10 @@
 #X floatatom 70 290 0 0 0 0 - - -;
 #X obj 180 290 f;
 #X obj 180 260 b, f 2;
-#X obj 180 320 adsr, f 20;
-#X obj 220 290 *;
-#X obj 260 290 *;
-#X obj 310 290 *;
+#X obj 200 320 adsr, f 20;
+#X obj 230 290 *;
+#X obj 270 290 *;
+#X obj 320 290 *;
 #X msg 430 250 . \$1;
 #X obj 420 220 r ms;
 #X obj 100 150 spigot;
@@ -20,7 +20,7 @@
 #X obj 90 80 r \$0txt;
 #X obj 110 350 zp~;
 #X obj 110 410 outlet~;
-#X obj 180 410 outlet~;
+#X obj 200 410 outlet~;
 #X obj 110 380 +~;
 #X obj 30 20 bng 15 250 50 0 empty empty empty 17 7 0 10 -1 -262144
 -262144;
@@ -61,11 +61,11 @@
 #X connect 13 1 10 0;
 #X connect 14 0 3 0;
 #X connect 15 0 1 0;
-#X restore 370 320 pd vib;
+#X restore 380 320 pd vib;
 #X obj 440 90 t b a;
 #X obj 440 120 s \$0txt;
 #X obj 180 220 unpak a a f f f f f f f f f;
-#X obj 430 350 *;
+#X obj 440 330 *;
 #X obj 250 20 inlet;
 #N canvas 670 570 351 301 scl 0;
 #X obj 70 30 inlet;
@@ -99,7 +99,7 @@
 #X obj 50 20 r start;
 #X obj 160 20 sym \$1;
 #X obj 310 47 t b f;
-#X msg 260 190 0;
+#X msg 270 190 0;
 #X obj 50 220 inlet;
 #X msg 160 80 read \$3/\$2/\$1.trk cr \, rewind;
 #X obj 160 50 pak s 1 .;
@@ -153,7 +153,7 @@
 #X connect 33 0 38 0;
 #X connect 34 0 33 0;
 #X connect 34 1 38 1;
-#X connect 35 0 7 0;
+#X connect 35 0 9 0;
 #X connect 36 0 5 0;
 #X connect 37 0 0 0;
 #X connect 38 0 37 0;

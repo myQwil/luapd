@@ -24,8 +24,12 @@ function love.load()
 		,gui.slider(x        ,height*4/5 ,{x=tempo} ,{rad=rad ,rgb={.75 ,.25 ,.25}})   }
 
 	buttons =
-	{	 gui.button(200  ,50  ,'inv-' ,{size=33})
-		,gui.button(275  ,50  ,'inv+' ,{size=33})   }
+	{	 gui.button(200  ,50  ,'scdef' ,{size=33 ,label={text='inv-'}
+			,msg={ {m='<1'} ,{m='send' ,l={1}} }})
+		,gui.button(275  ,50  ,'scdef' ,{size=33 ,label={text='inv+'}
+			,msg={ {m='>1'} ,{m='send' ,l={1}} }})
+		,gui.button(500  ,50  ,'scdef' ,{size=33 ,label={text='min3'}
+			,msg={ {m='@2' ,l={3}} ,{m='send' ,l={1}} }})   }
 
 	toggles =
 	{	 gui.toggle(350  ,50  ,'repeat'   ,{size=33})

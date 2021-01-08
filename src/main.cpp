@@ -262,8 +262,7 @@ static int l_sendMessage(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *dest = luaL_checkstring   (L ,2);
 	const char *msg  = luaL_checkstring   (L ,3);
-	luaL_checktype                        (L ,4 ,LUA_TTABLE);
-	List list = tableToList(L ,4);
+	List list = lua_type(L ,4) == LUA_TTABLE ? tableToList(L ,4) : List();
 	b->sendMessage(dest ,msg ,list);
 	return 0;
 }

@@ -1,13 +1,6 @@
 
 local gui = { focus = nil }
 
-local function copy(t)
-	local cpy = {}
-	for k,v in pairs(t) do
-		cpy[k] = type(v) == 'table' and copy(v) or v   end
-	return cpy
-end
-
 -------------------------------------------------------------------------
 -------------------------------- Sliders --------------------------------
 -------------------------------------------------------------------------
@@ -112,9 +105,9 @@ function gui.slider(x ,y ,t ,opt)
 	local sl =
 	{	 x = x
 		,y = y
-		,t = copy(t)
+		,t = t
 		,rad = math.abs(opt and opt.rad or 25)
-		,rgb = opt and opt.rgb and copy(opt.rgb) or {.5,.5,.5}
+		,rgb = opt and opt.rgb or {.5,.5,.5}
 		,send   = slider_send
 		,update = slider_update
 		,draw   = slider_draw   }
@@ -158,7 +151,8 @@ local function button_mousepressed(self ,x ,y ,btn)
 	and y >= self.y and y <= self.yy then
 		self.circ.dt = 0
 		self.circ.on = true
-		pd:sendBang(self.dest)   end
+		for _,v in ipairs(self.msg) do
+			pd:sendMessage(self.dest ,v.m ,v.l)   end   end
 end
 
 local function button_draw(self)
@@ -183,10 +177,11 @@ function gui.button(x ,y ,dest ,opt)
 	btn.update       = button_update
 	btn.mousepressed = button_mousepressed
 
-	btn.circ = {dt=0 ,on=false ,delay=.2}
+	btn.circ = {dt=0 ,on=false ,delay = opt and opt.delay or .2}
 	btn.circ.rad = btn.size * 5/11
 	btn.circ.x = btn.x + btn.size/2
 	btn.circ.y = btn.y + btn.size/2
+	btn.msg = opt and opt.msg or {m='bang'}
 	return btn
 end
 
