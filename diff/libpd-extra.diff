@@ -1,137 +1,17 @@
 diff --git a/Makefile b/Makefile
-index 180c9ff..26e3d00 100644
+index b664fa9..451a4c3 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -58,60 +58,34 @@ endif
- 
- PDNATIVE_SOLIB_EXT ?= $(SOLIB_EXT)
- 
--PD_FILES = \
--    pure-data/src/d_arithmetic.c pure-data/src/d_array.c pure-data/src/d_ctl.c \
--    pure-data/src/d_dac.c pure-data/src/d_delay.c pure-data/src/d_fft.c \
--    pure-data/src/d_fft_fftsg.c \
--    pure-data/src/d_filter.c pure-data/src/d_global.c pure-data/src/d_math.c \
--    pure-data/src/d_misc.c pure-data/src/d_osc.c pure-data/src/d_resample.c \
--    pure-data/src/d_soundfile.c pure-data/src/d_ugen.c \
--    pure-data/src/g_all_guis.c pure-data/src/g_array.c pure-data/src/g_bang.c \
--    pure-data/src/g_canvas.c pure-data/src/g_clone.c pure-data/src/g_editor.c \
--    pure-data/src/g_editor_extras.c \
--    pure-data/src/g_graph.c pure-data/src/g_guiconnect.c pure-data/src/g_hdial.c \
--    pure-data/src/g_hslider.c pure-data/src/g_io.c pure-data/src/g_mycanvas.c \
--    pure-data/src/g_numbox.c pure-data/src/g_readwrite.c \
--    pure-data/src/g_rtext.c pure-data/src/g_scalar.c pure-data/src/g_template.c \
--    pure-data/src/g_text.c pure-data/src/g_toggle.c pure-data/src/g_traversal.c \
--    pure-data/src/g_undo.c \
--    pure-data/src/g_vdial.c pure-data/src/g_vslider.c pure-data/src/g_vumeter.c \
--    pure-data/src/m_atom.c pure-data/src/m_binbuf.c pure-data/src/m_class.c \
--    pure-data/src/m_conf.c pure-data/src/m_glob.c pure-data/src/m_memory.c \
--    pure-data/src/m_obj.c pure-data/src/m_pd.c pure-data/src/m_sched.c \
--    pure-data/src/s_audio.c pure-data/src/s_audio_dummy.c pure-data/src/s_inter.c \
--    pure-data/src/s_loader.c pure-data/src/s_main.c \
--    pure-data/src/s_net.c pure-data/src/s_path.c \
--    pure-data/src/s_print.c pure-data/src/s_utf8.c pure-data/src/x_acoustics.c \
--    pure-data/src/x_arithmetic.c pure-data/src/x_array.c pure-data/src/x_connective.c \
--    pure-data/src/x_gui.c pure-data/src/x_interface.c pure-data/src/x_list.c \
--    pure-data/src/x_midi.c pure-data/src/x_misc.c pure-data/src/x_net.c \
--    pure-data/src/x_scalar.c pure-data/src/x_text.c pure-data/src/x_time.c \
--    pure-data/src/x_vexp.c pure-data/src/x_vexp_if.c pure-data/src/x_vexp_fun.c \
--    libpd_wrapper/s_libpdmidi.c libpd_wrapper/x_libpdreceive.c \
--    libpd_wrapper/z_hooks.c libpd_wrapper/z_libpd.c
--
--PD_EXTRA_FILES = \
--    pure-data/extra/bob~/bob~.c pure-data/extra/bonk~/bonk~.c \
--    pure-data/extra/choice/choice.c \
--    pure-data/extra/fiddle~/fiddle~.c pure-data/extra/loop~/loop~.c \
--    pure-data/extra/lrshift~/lrshift~.c pure-data/extra/pique/pique.c \
--    pure-data/extra/sigmund~/sigmund~.c pure-data/extra/stdout/stdout.c
--
--LIBPD_UTILS = \
--    libpd_wrapper/util/z_print_util.c \
--    libpd_wrapper/util/z_queued.c \
--    libpd_wrapper/util/ringbuffer.c
--
--PDJAVA_JAR_CLASSES = \
--    java/org/puredata/core/PdBase.java \
--    java/org/puredata/core/PdBaseloader.java \
--    java/org/puredata/core/NativeLoader.java \
--    java/org/puredata/core/PdListener.java \
--    java/org/puredata/core/PdMidiListener.java \
--    java/org/puredata/core/PdMidiReceiver.java \
--    java/org/puredata/core/PdReceiver.java \
--    java/org/puredata/core/utils/IoUtils.java \
--    java/org/puredata/core/utils/PdDispatcher.java
-+PD_FILES := $(patsubst %, pure-data/src/%.c, \
-+d_arithmetic d_array d_ctl d_dac d_delay d_fft d_fft_fftsg d_filter d_global d_math \
-+d_misc d_osc d_resample d_soundfile d_ugen g_all_guis g_array g_bang g_canvas g_clone \
-+g_editor g_editor_extras g_graph g_guiconnect g_hdial g_hslider g_io g_mycanvas g_numbox \
-+g_readwrite g_rtext g_scalar g_template g_text g_toggle g_traversal g_undo g_vdial \
-+g_vslider g_vumeter m_atom m_binbuf m_class m_conf m_glob m_memory m_obj m_pd m_sched \
-+s_audio s_audio_dummy s_inter s_loader s_main s_net s_path s_print s_utf8 x_acoustics \
-+x_arithmetic x_array x_connective x_gui x_interface x_list x_midi x_misc x_net x_scalar \
-+x_text x_time x_vexp x_vexp_if x_vexp_fun) \
-+$(patsubst %, libpd_wrapper/%.c, s_libpdmidi x_libpdreceive z_hooks z_libpd)
-+
-+PD_EXTRA_FILES := $(patsubst %, pure-data/extra/%.c, \
-+bob~/bob~ bonk~/bonk~ choice/choice fiddle~/fiddle~ loop~/loop~ lrshift~/lrshift~ \
-+pique/pique sigmund~/sigmund~ stdout/stdout)
-+
-+LIBPD_UTILS := $(patsubst %, libpd_wrapper/util/%.c, \
-+z_print_util z_queued ringbuffer)
-+
-+PDJAVA_JAR_CLASSES := $(patsubst %, java/org/puredata/core/%.java, \
-+PdBase PdBaseloader NativeLoader PdListener PdMidiListener PdMidiReceiver PdReceiver \
-+utils/IoUtils utils/PdDispatcher)
-+
-+# object files which are somehow generated but not from sources listed above,
-+# there is probably a better fix but this works for now
-+PD_EXTRA_OBJS := $(patsubst %, pure-data/src/%.o, \
-+d_fft_fft_fftsg d_fft_fftw d_fft_fftsg_h x_qlist)
-+
-+include extra.make
- 
- # additional Java source jar files
- PDJAVA_SRC_FILES = \
-@@ -128,6 +102,7 @@ endif
- 
- # conditional pure-data/extra externals compilation
- EXTRA_FILES = $(PD_EXTRA_FILES)
-+EXTRA_OBJS  = $(PD_EXTRA_OBJS)
- EXTRA_CFLAGS = -DLIBPD_EXTRA
- ifeq ($(EXTRA), false)
-     EXTRA_FILES =
-@@ -163,12 +138,6 @@ ifeq ($(PORTAUDIO), true)
-     endif
- endif
- 
--# object files which are somehow generated but not from sources listed above,
--# there is probably a better fix but this works for now
--PD_EXTRA_OBJS = \
--    pure-data/src/d_fft_fft_fftsg.o pure-data/src/d_fft_fftw.o \
--    pure-data/src/d_fft_fftsg_h.o pure-data/src/x_qlist.o
--
- # default install location
- prefix ?= /usr/local
- includedir ?= $(prefix)/include
-@@ -192,12 +161,12 @@ PDJAVA_JAR = libs/libpd.jar
- PDJAVA_SRC = libs/libpd-sources.jar
- PDJAVA_DOC = javadoc
- 
--CFLAGS = -DPD -DHAVE_UNISTD_H -DUSEAPI_DUMMY \
--         -I./libpd_wrapper -I./libpd_wrapper/util \
--         -I./pure-data/src \
--         $(PLATFORM_CFLAGS) \
--         $(OPT_CFLAGS) $(EXTRA_CFLAGS) $(MULTI_CFLAGS) $(LOCALE_CFLAGS) \
--         $(ADDITIONAL_CFLAGS)
-+CFLAGS += -DPD -DHAVE_UNISTD_H -DUSEAPI_DUMMY \
-+          -I./libpd_wrapper -I./libpd_wrapper/util \
-+          -I./pure-data/src \
-+          $(PLATFORM_CFLAGS) \
-+          $(OPT_CFLAGS) $(EXTRA_CFLAGS) $(MULTI_CFLAGS) $(LOCALE_CFLAGS) \
-+          $(ADDITIONAL_CFLAGS)
+@@ -212,6 +212,8 @@ CFLAGS = -DPD -DHAVE_UNISTD_H -DUSEAPI_DUMMY \
  LDFLAGS += $(ADDITIONAL_LDFLAGS)
  CSHARP_LDFLAGS += $(ADDITIONAL_LDFLAGS)
  JAVA_LDFLAGS += $(ADDITIONAL_LDFLAGS)
-@@ -212,10 +181,10 @@ else
++EXTRA_OBJS = $(PD_EXTRA_OBJS)
++include extra.make
+ 
+ .PHONY: libpd csharplib javalib javadoc javasrc install uninstall clean clobber
+ 
+@@ -223,10 +225,10 @@ else
  endif
  
  $(LIBPD): ${PD_FILES:.c=.o} ${UTIL_FILES:.c=.o} ${EXTRA_FILES:.c=.o}
@@ -144,7 +24,7 @@ index 180c9ff..26e3d00 100644
  
  javalib: $(JNIH_FILE) $(PDJAVA_JAR)
  
-@@ -246,7 +215,7 @@ $(PDCSHARP): ${PD_FILES:.c=.o} ${EXTRA_FILES:.c=.o}
+@@ -257,7 +259,7 @@ $(PDCSHARP): ${PD_FILES:.c=.o} ${EXTRA_FILES:.c=.o}
  	$(CC) -o $(PDCSHARP) $^ $(CSHARP_LDFLAGS) -lm -lpthread
  
  clean:
@@ -153,43 +33,31 @@ index 180c9ff..26e3d00 100644
  	rm -f ${UTIL_FILES:.c=.o} ${PD_EXTRA_FILES:.c=.o}
  
  clobber: clean
-@@ -261,9 +230,8 @@ install:
- 	install -m 644 libpd_wrapper/z_libpd.h $(includedir)/libpd
- 	install -m 644 pure-data/src/m_pd.h $(includedir)/libpd
- 	if [ -e libpd_wrapper/util/z_queued.o ]; then \
--	  install -d $(includedir)/libpd/util; \
--	  install -m 644 libpd_wrapper/util/z_print_util.h $(includedir)/libpd/util; \
--	  install -m 644 libpd_wrapper/util/z_queued.h $(includedir)/libpd/util; \
-+	  install -m 644 libpd_wrapper/util/z_print_util.h $(includedir)/libpd; \
-+	  install -m 644 libpd_wrapper/util/z_queued.h $(includedir)/libpd; \
- 	  install -m 644 cpp/*hpp $(includedir)/libpd; \
- 	fi
- 	install -d $(libdir)
 diff --git a/extra.make b/extra.make
 new file mode 100644
-index 0000000..7207f00
+index 0000000..2d27e2c
 --- /dev/null
 +++ b/extra.make
 @@ -0,0 +1,14 @@
 +
 +PD_EXTRA_FILES += $(patsubst %, ../pdxtra/%.c, \
 +muse chrd rand rind ntof fton sploat gloat slx sly same ceil radix \
-+0x21 0x21~ x is pak unpak 0x40pak 0x40unpak stopwatch myqwil \
++0x21 0x21~ x is pak unpak 0x40pak 0x40unpak stopwatch tabread2~ tabosc2~ myqwil \
 +blunt/hotop blunt/revop blunt/blunt)
 +
 +PD_EXTRA_FILES += $(patsubst %, ../pd-cyclone/cyclone_objects/binaries/audio/%.c, \
 +curve lessthan greaterthan triangle)
 +
-+CFLAGS := -I../pd-cyclone/shared
++CFLAGS += -I../pd-cyclone/shared
 +
-+PD_EXTRA_OBJS :=
++EXTRA_OBJS :=
 +
 +EXTRA_LIBS :=
 diff --git a/libpd_wrapper/z_libpd.c b/libpd_wrapper/z_libpd.c
-index dd535cc..550b2ff 100644
+index 8550a32..bed8b5e 100644
 --- a/libpd_wrapper/z_libpd.c
 +++ b/libpd_wrapper/z_libpd.c
-@@ -51,6 +51,11 @@ int sys_pollgui(void);
+@@ -52,6 +52,11 @@ int sys_pollgui(void);
    void pique_setup(void);
    void sigmund_tilde_setup(void);
    void stdout_setup(void);
@@ -201,7 +69,7 @@ index dd535cc..550b2ff 100644
  #endif
  
  static PERTHREAD t_atom *s_argv = NULL;
-@@ -102,6 +107,11 @@ int libpd_init(void) {
+@@ -104,6 +109,11 @@ int libpd_init(void) {
    pique_setup();
    sigmund_tilde_setup();
    stdout_setup();

@@ -342,12 +342,13 @@ static int l_sendSysRealTime(lua_State *L) {
 	return 0;
 }
 
-static int l_processRaw(lua_State *L) {
+static int l_processFloat(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	int i      = lua_gettop(L) == 3;
-	float *in  = i?(float*)lua_touserdata  (L ,2):0;
-	float *out =   (float*)lua_touserdata  (L ,2+i);
-	bool success = b->processRaw(in ,out);
+	int ticks  = luaL_checkinteger         (L ,2);
+	int i      = lua_gettop(L) == 4;
+	float *in  = i?(float*)lua_touserdata  (L ,3):0;
+	float *out =   (float*)lua_touserdata  (L ,3+i);
+	bool success = b->processFloat(ticks ,in ,out);
 	lua_pushboolean(L ,success);
 	return 1;
 }
@@ -363,17 +364,6 @@ static int l_processShort(lua_State *L) {
 	return 1;
 }
 
-static int l_processFloat(lua_State *L) {
-	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	int ticks  = luaL_checkinteger         (L ,2);
-	int i      = lua_gettop(L) == 4;
-	float *in  = i?(float*)lua_touserdata  (L ,3):0;
-	float *out =   (float*)lua_touserdata  (L ,3+i);
-	bool success = b->processFloat(ticks ,in ,out);
-	lua_pushboolean(L ,success);
-	return 1;
-}
-
 static int l_processDouble(lua_State *L) {
 	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int ticks   = luaL_checkinteger         (L ,2);
@@ -381,6 +371,36 @@ static int l_processDouble(lua_State *L) {
 	double *in  = i?(double*)lua_touserdata (L ,3):0;
 	double *out =   (double*)lua_touserdata (L ,3+i);
 	bool success = b->processDouble(ticks ,in ,out);
+	lua_pushboolean(L ,success);
+	return 1;
+}
+
+static int l_processRaw(lua_State *L) {
+	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	int i      = lua_gettop(L) == 3;
+	float *in  = i?(float*)lua_touserdata  (L ,2):0;
+	float *out =   (float*)lua_touserdata  (L ,2+i);
+	bool success = b->processRaw(in ,out);
+	lua_pushboolean(L ,success);
+	return 1;
+}
+
+static int l_processRawShort(lua_State *L) {
+	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	int i      = lua_gettop(L) == 3;
+	short *in  = i?(short*)lua_touserdata  (L ,2):0;
+	short *out =   (short*)lua_touserdata  (L ,2+i);
+	bool success = b->processRawShort(in ,out);
+	lua_pushboolean(L ,success);
+	return 1;
+}
+
+static int l_processRawDouble(lua_State *L) {
+	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	int i       = lua_gettop(L) == 3;
+	double *in  = i?(double*)lua_touserdata  (L ,2):0;
+	double *out =   (double*)lua_touserdata  (L ,2+i);
+	bool success = b->processRawDouble(in ,out);
 	lua_pushboolean(L ,success);
 	return 1;
 }
@@ -634,10 +654,12 @@ static void pdbase_reg(lua_State *L) {
 	lua_pushcfunction(L,l_sendSysRealTime     );lua_setfield(L,-2,"sendSysRealTime"     );
 
 	// audio processing
-	lua_pushcfunction(L,l_processRaw          );lua_setfield(L,-2,"processRaw"          );
-	lua_pushcfunction(L,l_processShort        );lua_setfield(L,-2,"processShort"        );
 	lua_pushcfunction(L,l_processFloat        );lua_setfield(L,-2,"processFloat"        );
+	lua_pushcfunction(L,l_processShort        );lua_setfield(L,-2,"processShort"        );
 	lua_pushcfunction(L,l_processDouble       );lua_setfield(L,-2,"processDouble"       );
+	lua_pushcfunction(L,l_processRaw          );lua_setfield(L,-2,"processRaw"          );
+	lua_pushcfunction(L,l_processRawShort     );lua_setfield(L,-2,"processRawShort"     );
+	lua_pushcfunction(L,l_processRawDouble    );lua_setfield(L,-2,"processRawDouble"    );
 	lua_pushcfunction(L,l_computeAudio        );lua_setfield(L,-2,"computeAudio"        );
 	lua_pushcfunction(L,l_blockSize           );lua_setfield(L,-2,"blockSize"           );
 
