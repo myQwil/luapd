@@ -30,11 +30,8 @@ note	dur	vol	atk	dcy	sus	rel	vbspd	vbdep	vblin	pmt
 3	~
 
 0	~
-scl @ v4
-7	9
-scl @ ^2
-7	~
-scl @ ^2
+7-4	9
+7-2	~
 7	~
 
 4	2, rest 1

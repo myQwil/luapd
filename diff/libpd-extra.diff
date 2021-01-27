@@ -41,8 +41,8 @@ index 0000000..2d27e2c
 @@ -0,0 +1,14 @@
 +
 +PD_EXTRA_FILES += $(patsubst %, ../pdxtra/%.c, \
-+muse chrd rand rind ntof fton sploat gloat slx sly same ceil radix \
-+0x21 0x21~ x is pak unpak 0x40pak 0x40unpak stopwatch tabread2~ tabosc2~ myqwil \
++muse chrd rand rind ntof fton sploat gloat slx sly same ceil radix delp \
++0x21 0x21~ x is pak unpak 0x40pak 0x40unpak chrono tabread2~ tabosc2~ myqwil \
 +blunt/hotop blunt/revop blunt/blunt)
 +
 +PD_EXTRA_FILES += $(patsubst %, ../pd-cyclone/cyclone_objects/binaries/audio/%.c, \
