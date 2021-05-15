@@ -7,13 +7,13 @@ note	dur	vol	atk	dcy	sus	rel	vbspd	vbdep	vblin	pmt
 
 ~	3
 8	6
-
 scl @ ^4
 4	3
 2	6
 
 ~	3
 0	12
+
 
 scl @ v4
 7	3
@@ -22,6 +22,5 @@ scl @ v4
 ~	~
 
 ~	3
-8	~
-scl @ ^4
+8	~, scl @ ^4
 4	27

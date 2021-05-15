@@ -4,7 +4,7 @@ if ffi.os == 'OSX' then
 require('luapd')
 
 inChannels ,outChannels ,sampleRate ,queued =
-1          ,2           ,48000      ,true
+1          ,2           ,48000      ,false
 
 -- our pd engine
 pd = PdBase()
@@ -102,7 +102,7 @@ print('FINISH Patch Test\n')
 
 
 -- reassign a callback function
-obj.print = function(msg)
+function obj.print(msg)
 	print('!!'..msg)
 end
 
@@ -170,7 +170,6 @@ print('BEGIN Array Test')
 	-- clear array
 	pd:clearArray('array1' ,10);
 	readArray1()
-
 print('FINISH Array Test\n')
 
 print('BEGIN PD Test')

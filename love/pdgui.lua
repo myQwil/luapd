@@ -1,14 +1,22 @@
-
-local gui = { focus = nil }
+local this = {
+	 size  = 25
+	,rad   = 25
+	,rgb   = {.5 ,.5 ,.5}
+	,msg   = {m='bang'}
+	,delay = 0.2
+	,non0  = 1
+	,on    = false
+}
+local focus
 
 -------------------------------------------------------------------------
 -------------------------------- Sliders --------------------------------
 -------------------------------------------------------------------------
 local function slider_send(self ,x)
 	if x then
-		pd:sendFloat(self.t[x].dest ,self.t[x].cur)
+		pd:sendFloat(self.t[x].dest ,self.t[x].num)
 	else for _,v in pairs(self.t) do
-		pd:sendFloat(v.dest ,v.cur)   end   end
+		pd:sendFloat(v.dest ,v.num)   end   end
 end
 
 local function slider_check(self ,v ,x ,cx)
@@ -16,23 +24,23 @@ local function slider_check(self ,v ,x ,cx)
 	if self[cx] ~= x then
 		self[cx]  = x
 		if v.log then
-		     v.cur = math.exp(v.k * (x - v.xmin)) * v.min
-		else v.cur =          v.k * (x - v.xmin)  + v.min   end
-		pd:sendFloat(v.dest ,v.cur)   end
+		     v.num = math.exp(v.k * (x - v.xmin)) * v.min
+		else v.num =          v.k * (x - v.xmin)  + v.min   end
+		pd:sendFloat(v.dest ,v.num)   end
 end
 
 local function slider_update(self ,x ,y)
 	if love.mouse.isDown(1) then
-		if     gui.focus == self then
+		if     focus == self then
 			if self.t.x then slider_check(self ,self.t.x ,x ,'cx') end
 			if self.t.y then slider_check(self ,self.t.y ,y ,'cy') end
-		elseif gui.focus == nil
-		 and x >= self.x and x <= self.xx
-		 and y >= self.y and y <= self.yy then
+		elseif focus == nil
+		 and x >= self.x and x < self.xx
+		 and y >= self.y and y < self.yy then
 			if self.t.x then slider_check(self ,self.t.x ,x ,'cx') end
 			if self.t.y then slider_check(self ,self.t.y ,y ,'cy') end
-			gui.focus = self   end
-	elseif gui.focus then gui.focus = nil   end
+			focus = self   end
+	elseif focus then focus = nil   end
 end
 
 local function slider_draw(self)
@@ -47,7 +55,7 @@ local function slider_draw(self)
 	love.graphics.circle('line' ,self.cx ,self.cy ,self.rad)
 
 	for _,v in pairs(self.t) do
-		love.graphics.print(v.label.text..': '..v.cur ,v.label.x ,v.label.y)   end
+		love.graphics.print(v.label.text..': '..v.num ,v.label.x ,v.label.y)   end
 end
 
 local function slider_minmax(v ,min ,max ,diam)
@@ -57,7 +65,7 @@ local function slider_minmax(v ,min ,max ,diam)
 		if min <= 0.0 then
 			min = 0.01 * max   end
 	else
-		if min > 0.0 then
+		if min  > 0.0 then
 			max = 0.01 * min   end
 	end
 	v.min = min
@@ -79,17 +87,17 @@ local function slider_setup(sl ,v ,x)
 			local temp = v.min
 			v.min = v.max
 			v.max = temp   end
-		if v.cur then v.cur = v.min > v.max and
-			math.clip(v.cur ,v.max ,v.min) or math.clip(v.cur ,v.min ,v.max)
-		else v.cur = v.min   end
+		if v.num then v.num = v.min > v.max and
+			math.clip(v.num ,v.max ,v.min) or math.clip(v.num ,v.min ,v.max)
+		else v.num = v.min   end
 
 		if v.log then
 		     v.k = slider_minmax(v ,v.min ,v.max ,diam)
 		else v.k = (v.max-v.min) / (v.len-diam)   end
 
 		if  v.k == 0 then sl[cx] = v.xmin
-		elseif v.log then sl[cx] = v.xmin + math.log(v.cur / v.min) / v.k
-		else              sl[cx] = v.xmin +         (v.cur - v.min) / v.k   end
+		elseif v.log then sl[cx] = v.xmin + math.log(v.num / v.min) / v.k
+		else              sl[cx] = v.xmin +         (v.num - v.min) / v.k   end
 
 		if not v.label then v.label = {} end
 		v.label.text = v.label.text or v.dest
@@ -101,13 +109,14 @@ local function slider_setup(sl ,v ,x)
 		sl[xlen] = diam   end
 end
 
-function gui.slider(x ,y ,t ,opt)
+function this.slider(x ,y ,t ,opt)
+	if type(opt) ~= 'table' then opt = this end
 	local sl =
 	{	 x = x
 		,y = y
 		,t = t
-		,rad = math.abs(opt and opt.rad or 25)
-		,rgb = opt and opt.rgb or {.5,.5,.5}
+		,rad = math.abs(opt.rad or this.rad)
+		,rgb = opt.rgb or this.rgb
 		,send   = slider_send
 		,update = slider_update
 		,draw   = slider_draw   }
@@ -124,35 +133,18 @@ local function gui_box(x ,y ,dest ,opt)
 	local box =
 	{	 x = x
 		,y = y
-		,dest = dest   }
-	box.size = opt and opt.size or 25
+		,dest = dest
+		,size = opt.size or this.size   }
 	box.xx = box.x + box.size
 	box.yy = box.y + box.size
 
-	label = opt and opt.label or {}
+	local label = opt.label or {}
 	label.text = label.text or dest
 	label.x    = math.floor((label.x or 0) + box.x)
 	label.y    = math.floor((label.y or 0) + box.y - 24)
 	box.label  = label
 
 	return box
-end
-
-local function button_update(self ,dt)
-	if self.circ.on then
-		self.circ.dt = self.circ.dt + dt
-		if self.circ.dt >= self.circ.delay then
-			self.circ.on = false   end   end
-end
-
-local function button_mousepressed(self ,x ,y ,btn)
-	if btn == 1
-	and x >= self.x and x <= self.xx
-	and y >= self.y and y <= self.yy then
-		self.circ.dt = 0
-		self.circ.on = true
-		for _,v in ipairs(self.msg) do
-			pd:sendMessage(self.dest ,v.m ,v.l)   end   end
 end
 
 local function button_draw(self)
@@ -171,24 +163,42 @@ local function button_draw(self)
 	love.graphics.print(self.label.text ,self.label.x ,self.label.y)
 end
 
-function gui.button(x ,y ,dest ,opt)
+local function button_update(self ,dt)
+	if self.circ.on then
+		self.circ.dt = self.circ.dt + dt
+		if self.circ.dt >= self.circ.delay then
+			self.circ.on = false   end   end
+end
+
+local function button_mousepressed(self ,x ,y ,btn)
+	if btn == 1
+	and x >= self.x and x < self.xx
+	and y >= self.y and y < self.yy then
+		self.circ.dt = 0
+		self.circ.on = true
+		for _,v in ipairs(self.msg) do
+			pd:sendMessage(self.dest ,v.m ,v.l)   end   end
+end
+
+function this.button(x ,y ,dest ,opt)
+	if type(opt) ~= 'table' then opt = this end
 	local btn = gui_box(x ,y ,dest ,opt)
 	btn.draw         = button_draw
 	btn.update       = button_update
 	btn.mousepressed = button_mousepressed
 
-	btn.circ = {dt=0 ,on=false ,delay = opt and opt.delay or .2}
+	btn.circ = {dt=0 ,on=false ,delay = opt.delay or this.delay}
 	btn.circ.rad = btn.size * 5/11
 	btn.circ.x = btn.x + btn.size/2
 	btn.circ.y = btn.y + btn.size/2
-	btn.msg = opt and opt.msg or {m='bang'}
+	btn.msg = opt.msg or this.msg
 	return btn
 end
 
 local function toggle_mousepressed(self ,x ,y ,btn)
 	if btn == 1
-	and x >= self.x and x <= self.xx
-	and y >= self.y and y <= self.yy then
+	and x >= self.x and x < self.xx
+	and y >= self.y and y < self.yy then
 		self.on = not self.on
 		pd:sendFloat(self.dest ,self.on and self.non0 or 0)   end
 end
@@ -206,14 +216,15 @@ local function toggle_draw(self)
 	love.graphics.print(self.label.text ,self.label.x ,self.label.y)
 end
 
-function gui.toggle(x ,y ,dest ,opt)
+function this.toggle(x ,y ,dest ,opt)
+	if type(opt) ~= 'table' then opt = this end
 	local tgl = gui_box(x ,y ,dest ,opt)
 	tgl.draw         = toggle_draw
 	tgl.mousepressed = toggle_mousepressed
 
-	tgl.non0 = opt and opt.non0 or 1
-	tgl.on   = opt and opt.on   or false
+	tgl.non0 = opt.non0 or this.non0
+	tgl.on   = opt.on   or this.on
 	return tgl
 end
 
-return gui
+return this
