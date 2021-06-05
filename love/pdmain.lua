@@ -10,7 +10,12 @@ else  ext = 'so'   end
 package.cpath = '../../?.'..ext..';'..package.cpath
 require('luapd')
 
-local lpd = {msg = ''}
+local lpd =
+{	 msg  = ''
+	,file = 'main.pd'
+	,vol  = 1
+	,play = true   }
+
 local pd  = PdBase()
 local obj = PdObject{
 	print = function(msg)
@@ -40,17 +45,13 @@ function lpd.init()
 end
 
 function lpd.open(opt)
-	local typ = type(opt)
-	if     typ == 'string'  then file = opt
-	elseif typ == 'number'  then vol  = opt
-	elseif typ == 'boolean' then play = opt
-	elseif typ == 'table'   then
-		file = opt.file
-		vol  = opt.vol
-		play = opt.play   end
-	file = file or 'main.pd'
-	vol  = vol and math.clip(vol ,-1 ,1) or 1
-	play = play or play==nil
+	if type(opt) ~= 'table' then opt = lpd end
+	local file ,vol ,play
+	file = opt.file or lpd.file
+	vol  = opt.vol and math.clip(opt.vol ,-1 ,1) or lpd.vol
+	if opt.play ~= nil then
+	     play = opt.play
+	else play = lpd.play   end
 
 	local pat = pd:openPatch(file)
 	local dlr = pat:dollarZero()

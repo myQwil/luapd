@@ -1,6 +1,7 @@
-scl @ 60, scl n 7, scl default
-note	dur	vol	atk	dcy	sus	rel	vbspd	vbdep	vblin	pmt
-4-1	3	.52	.05	3.25	0	1.25	2	0	0	0
+scl # 60, scl n 7, scl default
+
+note	dur	inst
+4-1	3	puls
 ~	6
 
 ~	~
@@ -8,6 +9,8 @@ note	dur	vol	atk	dcy	sus	rel	vbspd	vbdep	vblin	pmt
 ~	3
 ~	6
 
-7-1	12
+3+6	12
+
+
 
 4	~

@@ -1,13 +1,14 @@
-scl @ 44, scl n 7, scl default
-note	dur	vol	atk	dcy	sus	rel	vbspd	vbdep	vblin	pmt
-0	9	.93	.05	4	0	1	2	0	0	0
+scl # 48, scl n 7, scl default
+
+note	dur	inst
+0-4	9	bass
 
 
-4	~
+4-4	~
 
 
-7	6
-scl @ ^4
+7-4	6
+
 4	9
 
 
@@ -15,15 +16,15 @@ scl @ ^4
 
 
 -3	6
-scl @ v4
-0	9
+
+0-4	9
 
 
-4	~
+4-4	~
 
 
-7	6
-scl @ ^4
+7-4	6
+
 4	9
 
 

@@ -8,13 +8,13 @@
 #X restore 355 47 graph;
 #X floatatom 557 377 0 0 0 0 - - -;
 #X obj 472 381 tgl 15 0 empty empty empty 17 7 0 10 -1 -262144 -262144
-1 1;
+0 1;
 #X obj 391 357 *~;
 #X obj 199 232 tgl 17 0 empty empty start 19 7 0 12 -1 -262144 -262144
-1 1;
+0 1;
 #X obj 175 327 s tog;
 #X obj 49 89 tgl 15 0 empty empty pause 19 7 0 12 -1 -262144 -262144
-1 1;
+0 1;
 #X obj 472 407 metro 18.87;
 #N canvas 937 453 402 304 pause 0;
 #X msg 80 167 0, f 2;
@@ -229,9 +229,9 @@
 #X floatatom 73 48 5 0 0 0 - - -;
 #X obj 231 121 % 32;
 #X obj 101 123 moses 32;
-#X floatatom 161 206 3 0 0 0 - - -;
-#X obj 101 151 span 50 750 32;
-#X obj 231 151 span 750 6000 31;
+#X floatatom 161 206 0 0 0 0 - - -;
+#X obj 101 151 sly 50 750 32;
+#X obj 231 151 sly 750 6000 31;
 #X connect 0 0 4 0;
 #X connect 2 0 4 0;
 #X connect 3 0 7 0;

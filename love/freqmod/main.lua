@@ -85,14 +85,10 @@ function love.draw()
 	)
 end
 
-function pan(x ,y)
-	pd:sendFloat('pan' ,slope(x ,-45 ,45 ,width))
-end
-
 function pancar(x ,y)
-	pan(x ,y)
+	pd:sendFloat('pan' ,slope(x ,-45 ,45 ,width))
 	if y ~= my then
-		pd:sendFloat('carrier-freq' ,y>my and -1 or 1)   end
+		pd:sendFloat('carrier-freq' ,(y > my) and -1 or 1)   end
 end
 
 function fmod(x ,y)
@@ -131,22 +127,25 @@ function love.wheelmoved(x ,y)
 	pd:sendFloat('carrier-freq' ,y*25)
 end
 
+kpress =
+{	 ['=']  = function()
+		portamento = math.max(0 ,portamento + 25)
+		pd:sendFloat('portamento' ,portamento) end
+	,['-']  = function()
+		portamento = math.max(0 ,portamento - 25)
+		pd:sendFloat('portamento' ,portamento) end
+	,tab    = function()
+		local state = love.mouse.isGrabbed()
+		love.mouse.setGrabbed(not state) end
+	,space  = function()
+		fn[0] = (fn[0] == none) and fmod   or none
+		fn[1] = (fn[1] == fmod) and pancar or fmod end
+	,lctrl  = function() tone(love.mouse.getPosition()) end
+	,escape = function() love.event.push('quit') end   }
+
 function love.keypressed(k)
-	if k=='-' or k=='='  then
-		local f = 25 * (k=='-' and -1 or 1)
-		portamento = math.max(0 ,portamento + f)
-		pd:sendFloat('portamento' ,portamento)
-	elseif k == 'tab'    then
-		local state = not love.mouse.isGrabbed()
-		love.mouse.setGrabbed(state)
-	elseif k == 'space'  then
-		fn[0] = fn[0]==none and fmod   or none
-		fn[1] = fn[1]==fmod and pancar or fmod
-	elseif k == 'lctrl'  then
-		tone(love.mouse.getPosition())
-	elseif k == 'escape' then
-		love.event.push('quit')
-	end
+	if kpress[k] then
+		kpress[k]() end
 end
 
 function love.quit()

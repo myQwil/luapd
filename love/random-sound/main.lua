@@ -3,20 +3,11 @@ luapd ,pd = require('pdmain')()
 
 function love.load()
 	luapd.init()
-	local vol = .2
-	patch = luapd.open(vol)
+	patch = luapd.open{vol=0.2}
 end
 
 function love.update()
 	luapd.update()
-end
-
-function love.keypressed(k)
-	pd:sendBang('press')
-end
-
-function love.keyreleased(k)
-	pd:sendBang('release')
 end
 
 function love.quit()
