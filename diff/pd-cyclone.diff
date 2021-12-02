@@ -1,0 +1,22 @@
+diff --git a/cyclone_objects/binaries/audio/greaterthan.c b/cyclone_objects/binaries/audio/greaterthan.c
+index de75b758..c6e2a6a3 100644
+--- a/cyclone_objects/binaries/audio/greaterthan.c
++++ b/cyclone_objects/binaries/audio/greaterthan.c
+@@ -74,4 +74,5 @@ CYCLONE_OBJ_API void greaterthan_tilde_setup(void)
+                              sizeof(t_greaterthan), CLASS_DEFAULT, A_DEFFLOAT, 0);
+     class_addmethod(greaterthan_class, nullfn, gensym("signal"), 0);
+     class_addmethod(greaterthan_class, (t_method)greaterthan_dsp, gensym("dsp"), A_CANT, 0);
++    class_addcreator((t_newmethod)greaterthan_new, gensym(">~"), A_DEFFLOAT, 0);
+ }
+\ No newline at end of file
+diff --git a/cyclone_objects/binaries/audio/lessthan.c b/cyclone_objects/binaries/audio/lessthan.c
+index 5395b95b..1cae4111 100644
+--- a/cyclone_objects/binaries/audio/lessthan.c
++++ b/cyclone_objects/binaries/audio/lessthan.c
+@@ -74,4 +74,5 @@ CYCLONE_OBJ_API void lessthan_tilde_setup(void)
+                                   sizeof(t_lessthan), CLASS_DEFAULT, A_DEFFLOAT, 0);
+     class_addmethod(lessthan_class, nullfn, gensym("signal"), 0);
+     class_addmethod(lessthan_class, (t_method)lessthan_dsp, gensym("dsp"), A_CANT, 0);
++    class_addcreator((t_newmethod)lessthan_new, gensym("<~"), A_DEFFLOAT, 0);
+ }
+\ No newline at end of file

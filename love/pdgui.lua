@@ -1,3 +1,5 @@
+local pd -- the pd base object
+
 -- Default Callbacks
 local function slider_change(self ,num)
 	self.num = num
@@ -291,4 +293,8 @@ end
 setmetatable(gui.slider ,{__call = slider_new})
 setmetatable(gui.button ,{__call = button_new})
 setmetatable(gui.toggle ,{__call = toggle_new})
-return gui
+
+return function(base)
+	pd = base
+	return gui
+end

@@ -1,6 +1,5 @@
-
 function love.load()
-	thread = love.thread.newThread('thread.lua')
+	local thread = love.thread.newThread('thread.lua')
 	thread:start()
 end
 

@@ -28,14 +28,17 @@ LDLIBS   += -lm -lpthread $(LIBLUA)
 PREFIX   ?= lib
 CXXFLAGS += \
 -I$(LIBPD_DIR)/pure-data/src -I$(LIBPD_DIR)/libpd_wrapper \
--I$(LIBPD_DIR)/libpd_wrapper/util -I$(LIBPD_DIR)/cpp -I./src -fPIC -O3
+-I$(LIBPD_DIR)/libpd_wrapper/util -I$(LIBPD_DIR)/cpp -I./src -fPIC -g -O3
 
 .PHONY: dynamic clean
 
 $(TARGET): PREFIX    = lib
 $(TARGET): CXXFLAGS += -DEXTERN=extern
-$(TARGET): ${SRC:.cpp=.o}
-	g++ $(LDFLAGS) -o $(TARGET) $^ $(LIBPD).a $(LDLIBS)
+$(TARGET): ${SRC:.cpp=.o} $(LIBPD).a
+	g++ $(LDFLAGS) -o $(TARGET) $^ $(LDLIBS)
+
+$(LIBPD).a:
+	cd $(LIBPD_DIR) && make STATIC=true
 
 dynamic: ${SRC:.cpp=.o}
 	g++ $(LDFLAGS) -o $(TARGET) $^ $(LIBPD).$(EXT) $(LIBLUA)

@@ -1,9 +1,9 @@
-
 function math.clip(x ,min ,max)
 	return (x < min and min) or (x > max and max) or x
 end
 
-local stros = love.system.getOS() ,ext
+local ext
+local stros = love.system.getOS()
 if     stros == 'Windows' then ext = 'dll'
 elseif stros == 'OS X'    then ext = 'dylib'
 else  ext = 'so'   end
@@ -24,13 +24,19 @@ local obj = PdObject{
 	end
 }
 
-local sdata ,source
+local sdata ,source ,ticks
 local srate = require('samplerate')
-local chIn ,chOut ,queued ,bitdepth ,ticks ,bufs =
-      0    ,2     ,false  ,16       ,1     ,33
--- print('delay = '..ticks * bufs * pd.blockSize() / (srate/1000)..' ms')
+local chIn ,chOut ,queued ,bitdepth =
+      0    ,2     ,false  ,16
 
-function lpd.init()
+---@param tics number
+---@param bufs number
+function lpd.init(tics ,bufs)
+	ticks = tics or 1
+	bufs  = bufs or 33
+	-- print('delay = '..ticks..' * '..bufs..' * '..
+	-- 	pd.blockSize()..' / '..(srate/1000)..
+	-- 	' = '..ticks * bufs * pd.blockSize() / (srate/1000)..' ms')
 	pd:setReceiver(obj)
 	if not pd:init(chIn ,chOut ,srate ,queued) then
 		print('Could not init pd')
@@ -44,6 +50,8 @@ function lpd.init()
 	love.graphics.setFont(love.graphics.newFont(16))
 end
 
+---@param opt table # a list of options
+---@return Patch
 function lpd.open(opt)
 	if type(opt) ~= 'table' then opt = lpd end
 	local file ,vol ,play

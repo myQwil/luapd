@@ -1,18 +1,19 @@
-ffi = require('ffi')
+local ffi = require('ffi')
 if ffi.os == 'OSX' then
-	package.cpath = './?.dylib;'..package.cpath   end
+	package.cpath = './?.dylib;'..package.cpath
+end
 require('luapd')
 
-inChannels ,outChannels ,sampleRate ,queued =
-1          ,2           ,48000      ,false
+local inChannels ,outChannels ,sampleRate ,queued =
+      1          ,2           ,48000      ,false
 
 -- our pd engine
-pd = PdBase()
+local pd = PdBase()
 
 -- custom receiver object for messages and midi
-obj = PdObject{
+local obj = PdObject{
 	-- message callbacks
-	 print   = function(msg)       print('Lua$ '..msg) end
+	 print   = function(msg)       print('Lua: print ' ..msg) end
 	,bang    = function(dest)      print('Lua: bang '  ..dest) end
 	,float   = function(dest ,num) print('Lua: float ' ..dest..': '..num) end
 	,symbol  = function(dest ,sym) print('Lua: symbol '..dest..': '..sym) end
@@ -47,9 +48,9 @@ obj = PdObject{
 	end
 }
 
-blk    = PdBase.blockSize()
-inbuf  = Array(blk * inChannels)
-outbuf = Array(blk * outChannels)
+local blk    = PdBase.blockSize()
+local inbuf  = Array(blk * inChannels)
+local outbuf = Array(blk * outChannels)
 
 
 -- init pd
@@ -65,7 +66,7 @@ if not pd:init(inChannels ,outChannels ,sampleRate ,queued) then
 	os.exit()
 end
 
-midiChan = 1 -- midi channels are 0-15
+local midiChan = 1 -- midi channels are 0-15
 
 -- subscribe to receive source names
 pd:subscribe('toLua')
@@ -84,7 +85,7 @@ pd:computeAudio(true)
 
 print('BEGIN Patch Test')
 	-- open patch
-	patch = pd:openPatch('pd/test.pd' ,'.')
+	local patch = pd:openPatch('pd/test.pd' ,'.')
 
 	-- close patch
 	pd:closePatch(patch)
@@ -103,7 +104,7 @@ print('FINISH Patch Test\n')
 
 -- reassign a callback function
 function obj.print(msg)
-	print('!!'..msg)
+	print('foobar: '..msg)
 end
 
 
@@ -126,7 +127,7 @@ print('BEGIN Message Test')
 	pd:finishList(patch:dollarZeroStr()..'-fromLua')
 
 	-- send a list using a table
-	t = {1.23 ,'sent from a Lua table'}
+	local t = {1.23 ,'sent from a Lua table'}
 	pd:sendList    ('fromLua' ,t)
 	pd:sendMessage ('fromLua' ,'msg' ,t)
 print('FINISH Message Test\n')
@@ -150,11 +151,11 @@ print('BEGIN Array Test')
 	-- array check length
 	print('array1 len: '..pd:arraySize('array1'))
 
-	array1 = Array()
+	local array1 = Array()
 
-	function readArray1()
+	local function readArray1()
 		pd:readArray('array1' ,array1)
-		msg = 'array1'
+		local msg = 'array1'
 		for i=1 ,#array1 do msg = msg..' '..array1[i] end
 		print(msg)
 	end

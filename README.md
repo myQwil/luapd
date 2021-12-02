@@ -7,19 +7,9 @@ libpd bindings for lua and love2d
 
     git clone --recurse-submodules https://github.com/libpd/libpd.git
 
-Luapd's Makefile assumes that the libpd folder is adjacent to the luapd folder. This section will work under that assumption.
-
-### Apply luapd's git patch to libpd's pure-data folder:
-
-    cd libpd/pure-data
-    git apply ../../luapd/diff/pure-data.diff
-
-**pure-data.diff** changes the name of a function called `error` because Lua also has a function with the same name, which can confuse Lua and cause crashes.
-
-There is also a diff patch called **libpd-extra.diff** but it only needs to be applied if you plan on building libpd with additional libraries that some of the LÖVE examples use.
-
 ### Build libpd:
 
+    cd libpd
     make STATIC=true
 
 ### Install LuaJIT
@@ -38,6 +28,8 @@ On MacOS with Brew:
 
 ### Build luapd:
 
+Luapd's Makefile assumes that the libpd folder is adjacent to the luapd folder.
+
     cd luapd
     make
 
@@ -50,6 +42,20 @@ You can test luapd with:
     luajit test.lua
 
 ## Running Examples
+
+### Clone the PdXtra and Cyclone libraries adjacent to libpd:
+
+    git clone https://github.com/myQwil/pdxtra.git
+    git clone https://github.com/porres/pd-cyclone.git
+
+### Apply luapd's git patches to their respective folders:
+
+    cd libpd
+    git apply ../luapd/diff/libpd.diff
+    cd ../pd-cyclone
+    git apply ../luapd/diff/pd-cyclone.diff
+
+Then re-build libpd and luapd.
 
 For Linux and Mac users, the examples should run normally without any necessary changes.
 For Windows users, the 3 lib\*.dll files in the main folder need to be copied into an example folder before they can be detected by luapd.dll.

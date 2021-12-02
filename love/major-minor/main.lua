@@ -1,31 +1,32 @@
 package.path = '../?.lua;'..package.path
-luapd ,pd = require('pdmain')()
-gui    = require('pdgui')
-scale  = Array()
-doremi = 're:\nmi:\nfa:\nso:\nla:\nti:'
+local luapd ,pd = require('pdmain')()
+local gui    = require('pdgui')(pd)
+local scale  = Array()
+local doremi = 're:\nmi:\nfa:\nso:\nla:\nti:'
+local patch ,sliders ,buttons ,toggles
 
 -- Button Callbacks
-function invup(self)
+local function invup(self)
 	pd:sendMessage(self.dest ,'>1')
 	pd:sendMessage(self.dest ,'send')
 end
 
-function invdn(self)
+local function invdn(self)
 	pd:sendMessage(self.dest ,'<1')
 	pd:sendMessage(self.dest ,'send')
 end
 
-function melmin(self)
+local function melmin(self)
 	pd:sendList(self.dest ,{0,2,3,5,7,9,11})
 	pd:sendMessage(self.dest ,'send')
 end
 
-function mixob6(self)
+local function mixob6(self)
 	pd:sendList(self.dest ,{0,2,4,5,7,8,10})
 	pd:sendMessage(self.dest ,'send')
 end
 
-function stop(self)
+local function stop(self)
 	pd:sendBang('stop')
 	toggles[2]:click(true)
 end
@@ -36,7 +37,7 @@ function love.load()
 	patch = luapd.open{play=false}
 
 	local vol ,x  ,bx  ,wo  ,dlr                ,width ,height =
-	      1   ,20 ,175 ,150 ,patch:dollarZero() ,love.graphics.getDimensions()
+	      0.2 ,20 ,175 ,150 ,patch:dollarZero() ,love.graphics.getDimensions()
 
 	local maj   = {dest='maj-min'  ,min=1    ,max=0  ,num=1   ,snap=.25  ,gap=12}
 	local scl   = {dest='mode'     ,min=0    ,max=7  ,num=0   ,snap=.5}
@@ -66,14 +67,16 @@ function love.load()
 	gui.toggle.size = 33
 	toggles =
 	{	 gui.toggle(bx+150 ,50  ,{dest='repeat' ,on=false})
-		,gui.toggle(bx+225 ,50  ,{dest='pause'})
+		,gui.toggle(bx+225 ,50  ,{dest='pause'  ,on=false})
 		,gui.toggle(bx     ,100 ,{dest='pulse1'   ,label={y=60}})
 		,gui.toggle(bx+75  ,100 ,{dest='pulse2'   ,label={y=60}})
 		,gui.toggle(bx+150 ,100 ,{dest='triangle' ,label={y=60}})
 		,gui.toggle(bx+225 ,100 ,{dest='noise'    ,label={y=60}})   }
 
-	for _,v in pairs(sliders) do v:send() end
-	-- pd:sendBang(dlr..'play')
+	for _,v in pairs(sliders) do
+		v:send()
+	end
+	pd:sendBang(dlr..'play')
 end
 
 function love.update(dt)

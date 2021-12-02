@@ -41,6 +41,12 @@ static int l_init(lua_State *L) {
 	return 1;
 }
 
+static int l_baseClear(lua_State *L) {
+	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	b->clear();
+	return 0;
+}
+
 static int l_addToSearchPath(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *path = luaL_checkstring   (L ,2);
@@ -77,6 +83,76 @@ static int l_closePatch(lua_State *L) {
 	else
 	{	Patch *p = *(Patch**)luaL_checkudata(L ,2 ,LUA_PDPATCH);
 		b->closePatch(*p);   }
+	return 0;
+}
+
+static int l_processFloat(lua_State *L) {
+	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	int ticks  = luaL_checkinteger         (L ,2);
+	int i      = lua_gettop(L) == 4;
+	float *in  = i ? (float*)lua_touserdata(L ,3) : 0;
+	float *out =     (float*)lua_touserdata(L ,3+i);
+	bool success = b->processFloat(ticks ,in ,out);
+	lua_pushboolean(L ,success);
+	return 1;
+}
+
+static int l_processShort(lua_State *L) {
+	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	int ticks  = luaL_checkinteger         (L ,2);
+	int i      = lua_gettop(L) == 4;
+	short *in  = i ? (short*)lua_touserdata(L ,3) : 0;
+	short *out =     (short*)lua_touserdata(L ,3+i);
+	bool success = b->processShort(ticks ,in ,out);
+	lua_pushboolean(L ,success);
+	return 1;
+}
+
+static int l_processDouble(lua_State *L) {
+	PdBase *b   = *(PdBase**)luaL_checkudata (L ,1 ,LUA_PDBASE);
+	int ticks   = luaL_checkinteger          (L ,2);
+	int i       = lua_gettop(L) == 4;
+	double *in  = i ? (double*)lua_touserdata(L ,3) : 0;
+	double *out =     (double*)lua_touserdata(L ,3+i);
+	bool success = b->processDouble(ticks ,in ,out);
+	lua_pushboolean(L ,success);
+	return 1;
+}
+
+static int l_processRaw(lua_State *L) {
+	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	int i      = lua_gettop(L) == 3;
+	float *in  = i ? (float*)lua_touserdata(L ,2) : 0;
+	float *out =     (float*)lua_touserdata(L ,2+i);
+	bool success = b->processRaw(in ,out);
+	lua_pushboolean(L ,success);
+	return 1;
+}
+
+static int l_processRawShort(lua_State *L) {
+	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	int i      = lua_gettop(L) == 3;
+	short *in  = i ? (short*)lua_touserdata(L ,2) : 0;
+	short *out =     (short*)lua_touserdata(L ,2+i);
+	bool success = b->processRawShort(in ,out);
+	lua_pushboolean(L ,success);
+	return 1;
+}
+
+static int l_processRawDouble(lua_State *L) {
+	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	int i       = lua_gettop(L) == 3;
+	double *in  = i ? (double*)lua_touserdata(L ,2) : 0;
+	double *out =     (double*)lua_touserdata(L ,2+i);
+	bool success = b->processRawDouble(in ,out);
+	lua_pushboolean(L ,success);
+	return 1;
+}
+
+static int l_computeAudio(lua_State *L) {
+	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	bool state = lua_toboolean             (L ,2);
+	b->computeAudio(state);
 	return 0;
 }
 
@@ -121,47 +197,18 @@ static int l_receiveMidi(lua_State *L) {
 
 static int l_setReceiver(lua_State *L) {
 	PdBase   *b = *(PdBase**)   luaL_checkudata(L ,1 ,LUA_PDBASE);
-	PdObject *o = *(PdObject**) luaL_checkudata(L ,2 ,LUA_PDOBJECT);
+	PdObject *o = *(PdObject**) (lua_isuserdata(L ,2)
+	            ? luaL_checkudata(L ,2 ,LUA_PDOBJECT) : nullptr);
 	b->setReceiver(o);
 	return 0;
 }
 
 static int l_setMidiReceiver(lua_State *L) {
 	PdBase   *b = *(PdBase**)   luaL_checkudata(L ,1 ,LUA_PDBASE);
-	PdObject *o = *(PdObject**) luaL_checkudata(L ,2 ,LUA_PDOBJECT);
+	PdObject *o = *(PdObject**) (lua_isuserdata(L ,2)
+	            ? luaL_checkudata(L ,2 ,LUA_PDOBJECT) : nullptr);
 	b->setMidiReceiver(o);
 	return 0;
-}
-
-static int l_isMessageInProgress(lua_State *L) {
-	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	lua_pushboolean(L ,b->isMessageInProgress());
-	return 1;
-}
-
-static int l_isInited(lua_State *L) {
-	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	lua_pushboolean(L ,b->isInited());
-	return 1;
-}
-
-static int l_isQueued(lua_State *L) {
-	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	lua_pushboolean(L ,b->isQueued());
-	return 1;
-}
-
-static int l_setMaxMessageLen(lua_State *L) {
-	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	unsigned int len = luaL_checkinteger  (L ,2);
-	b->setMaxMessageLen(len);
-	return 0;
-}
-
-static int l_maxMessageLen(lua_State *L) {
-	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	lua_pushinteger(L ,b->maxMessageLen());
-	return 1;
 }
 
 static int l_sendBang(lua_State *L) {
@@ -342,78 +389,9 @@ static int l_sendSysRealTime(lua_State *L) {
 	return 0;
 }
 
-static int l_processFloat(lua_State *L) {
-	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	int ticks  = luaL_checkinteger         (L ,2);
-	int i      = lua_gettop(L) == 4;
-	float *in  = i?(float*)lua_touserdata  (L ,3):0;
-	float *out =   (float*)lua_touserdata  (L ,3+i);
-	bool success = b->processFloat(ticks ,in ,out);
-	lua_pushboolean(L ,success);
-	return 1;
-}
-
-static int l_processShort(lua_State *L) {
-	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	int ticks  = luaL_checkinteger         (L ,2);
-	int i      = lua_gettop(L) == 4;
-	short *in  = i?(short*)lua_touserdata  (L ,3):0;
-	short *out =   (short*)lua_touserdata  (L ,3+i);
-	bool success = b->processShort(ticks ,in ,out);
-	lua_pushboolean(L ,success);
-	return 1;
-}
-
-static int l_processDouble(lua_State *L) {
-	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	int ticks   = luaL_checkinteger         (L ,2);
-	int i       = lua_gettop(L) == 4;
-	double *in  = i?(double*)lua_touserdata (L ,3):0;
-	double *out =   (double*)lua_touserdata (L ,3+i);
-	bool success = b->processDouble(ticks ,in ,out);
-	lua_pushboolean(L ,success);
-	return 1;
-}
-
-static int l_processRaw(lua_State *L) {
-	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	int i      = lua_gettop(L) == 3;
-	float *in  = i?(float*)lua_touserdata  (L ,2):0;
-	float *out =   (float*)lua_touserdata  (L ,2+i);
-	bool success = b->processRaw(in ,out);
-	lua_pushboolean(L ,success);
-	return 1;
-}
-
-static int l_processRawShort(lua_State *L) {
-	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	int i      = lua_gettop(L) == 3;
-	short *in  = i?(short*)lua_touserdata  (L ,2):0;
-	short *out =   (short*)lua_touserdata  (L ,2+i);
-	bool success = b->processRawShort(in ,out);
-	lua_pushboolean(L ,success);
-	return 1;
-}
-
-static int l_processRawDouble(lua_State *L) {
-	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	int i       = lua_gettop(L) == 3;
-	double *in  = i?(double*)lua_touserdata  (L ,2):0;
-	double *out =   (double*)lua_touserdata  (L ,2+i);
-	bool success = b->processRawDouble(in ,out);
-	lua_pushboolean(L ,success);
-	return 1;
-}
-
-static int l_computeAudio(lua_State *L) {
-	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	bool state = lua_toboolean             (L ,2);
-	b->computeAudio(state);
-	return 0;
-}
-
-static int l_blockSize(lua_State *L) {
-	lua_pushinteger(L ,PdBase::blockSize());
+static int l_isMessageInProgress(lua_State *L) {
+	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	lua_pushboolean(L ,b->isMessageInProgress());
 	return 1;
 }
 
@@ -421,6 +399,14 @@ static int l_arraySize(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *name = luaL_checkstring   (L ,2);
 	lua_pushinteger(L ,b->arraySize(name));
+	return 1;
+}
+
+static int l_resizeArray(lua_State *L) {
+	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	const char *name = luaL_checkstring   (L ,2);
+	long size        = luaL_checkinteger  (L ,3);
+	lua_pushboolean(L ,b->resizeArray(name ,size));
 	return 1;
 }
 
@@ -450,6 +436,36 @@ static int l_clearArray(lua_State *L) {
 	int value        = !lua_isnoneornil   (L ,3) ? luaL_checkinteger (L ,3) : 0;
 	b->clearArray(name ,value);
 	return 0;
+}
+
+static int l_isInited(lua_State *L) {
+	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	lua_pushboolean(L ,b->isInited());
+	return 1;
+}
+
+static int l_isQueued(lua_State *L) {
+	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	lua_pushboolean(L ,b->isQueued());
+	return 1;
+}
+
+static int l_blockSize(lua_State *L) {
+	lua_pushinteger(L ,PdBase::blockSize());
+	return 1;
+}
+
+static int l_setMaxMessageLen(lua_State *L) {
+	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	unsigned int len = luaL_checkinteger  (L ,2);
+	b->setMaxMessageLen(len);
+	return 0;
+}
+
+static int l_maxMessageLen(lua_State *L) {
+	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	lua_pushinteger(L ,b->maxMessageLen());
+	return 1;
 }
 
 static int pdbase_shl(lua_State *L) {
@@ -520,6 +536,12 @@ static int l_isValid(lua_State *L) {
 	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
 	lua_pushboolean(L ,p->isValid());
 	return 1;
+}
+
+static int l_patchClear(lua_State *L) {
+	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
+	p->clear();
+	return 0;
 }
 
 // --------------------------------------------------------------------------
@@ -610,29 +632,41 @@ static void pdbase_reg(lua_State *L) {
 	lua_pushvalue    (L,-1                    );lua_setfield(L,-2,"__index"             );
 	lua_pushcfunction(L,pdbase_del            );lua_setfield(L,-2,"__gc"                );
 	lua_pushcfunction(L,pdbase_shl            );lua_setfield(L,-2,"__shl"               );
+
+		// Initializing Pd
 	lua_pushcfunction(L,l_init                );lua_setfield(L,-2,"init"                );
+	lua_pushcfunction(L,l_baseClear           );lua_setfield(L,-2,"clear"               );
+		// Adding Search Paths
 	lua_pushcfunction(L,l_addToSearchPath     );lua_setfield(L,-2,"addToSearchPath"     );
 	lua_pushcfunction(L,l_clearSearchPath     );lua_setfield(L,-2,"clearSearchPath"     );
+		// Opening Patches
 	lua_pushcfunction(L,l_openPatch           );lua_setfield(L,-2,"openPatch"           );
 	lua_pushcfunction(L,l_closePatch          );lua_setfield(L,-2,"closePatch"          );
+		// Audio Processing
+	lua_pushcfunction(L,l_processFloat        );lua_setfield(L,-2,"processFloat"        );
+	lua_pushcfunction(L,l_processShort        );lua_setfield(L,-2,"processShort"        );
+	lua_pushcfunction(L,l_processDouble       );lua_setfield(L,-2,"processDouble"       );
+	lua_pushcfunction(L,l_processRaw          );lua_setfield(L,-2,"processRaw"          );
+	lua_pushcfunction(L,l_processRawShort     );lua_setfield(L,-2,"processRawShort"     );
+	lua_pushcfunction(L,l_processRawDouble    );lua_setfield(L,-2,"processRawDouble"    );
+		// Audio Processing Control
+	lua_pushcfunction(L,l_computeAudio        );lua_setfield(L,-2,"computeAudio"        );
+		// Message Receiving
 	lua_pushcfunction(L,l_subscribe           );lua_setfield(L,-2,"subscribe"           );
 	lua_pushcfunction(L,l_unsubscribe         );lua_setfield(L,-2,"unsubscribe"         );
 	lua_pushcfunction(L,l_exists              );lua_setfield(L,-2,"exists"              );
 	lua_pushcfunction(L,l_unsubscribeAll      );lua_setfield(L,-2,"unsubscribeAll"      );
+		// Receiving from the Message Queues
 	lua_pushcfunction(L,l_receiveMessages     );lua_setfield(L,-2,"receiveMessages"     );
 	lua_pushcfunction(L,l_receiveMidi         );lua_setfield(L,-2,"receiveMidi"         );
+		// Event Receiving via Callbacks
 	lua_pushcfunction(L,l_setReceiver         );lua_setfield(L,-2,"setReceiver"         );
 	lua_pushcfunction(L,l_setMidiReceiver     );lua_setfield(L,-2,"setMidiReceiver"     );
-	lua_pushcfunction(L,l_isMessageInProgress );lua_setfield(L,-2,"isMessageInProgress" );
-	lua_pushcfunction(L,l_isInited            );lua_setfield(L,-2,"isInited"            );
-	lua_pushcfunction(L,l_isQueued            );lua_setfield(L,-2,"isQueued"            );
-	lua_pushcfunction(L,l_setMaxMessageLen    );lua_setfield(L,-2,"setMaxMessageLen"    );
-	lua_pushcfunction(L,l_maxMessageLen       );lua_setfield(L,-2,"maxMessageLen"       );
-
-	// message sending
+		// Send Functions
 	lua_pushcfunction(L,l_sendBang            );lua_setfield(L,-2,"sendBang"            );
 	lua_pushcfunction(L,l_sendFloat           );lua_setfield(L,-2,"sendFloat"           );
 	lua_pushcfunction(L,l_sendSymbol          );lua_setfield(L,-2,"sendSymbol"          );
+		// Sending Compound Messages
 	lua_pushcfunction(L,l_startMessage        );lua_setfield(L,-2,"startMessage"        );
 	lua_pushcfunction(L,l_addFloat            );lua_setfield(L,-2,"addFloat"            );
 	lua_pushcfunction(L,l_addSymbol           );lua_setfield(L,-2,"addSymbol"           );
@@ -641,8 +675,7 @@ static void pdbase_reg(lua_State *L) {
 	lua_pushcfunction(L,l_finishMessage       );lua_setfield(L,-2,"finishMessage"       );
 	lua_pushcfunction(L,l_sendList            );lua_setfield(L,-2,"sendList"            );
 	lua_pushcfunction(L,l_sendMessage         );lua_setfield(L,-2,"sendMessage"         );
-
-	// midi sending
+		// Sending MIDI
 	lua_pushcfunction(L,l_sendNoteOn          );lua_setfield(L,-2,"sendNoteOn"          );
 	lua_pushcfunction(L,l_sendControlChange   );lua_setfield(L,-2,"sendControlChange"   );
 	lua_pushcfunction(L,l_sendProgramChange   );lua_setfield(L,-2,"sendProgramChange"   );
@@ -652,22 +685,19 @@ static void pdbase_reg(lua_State *L) {
 	lua_pushcfunction(L,l_sendMidiByte        );lua_setfield(L,-2,"sendMidiByte"        );
 	lua_pushcfunction(L,l_sendSysex           );lua_setfield(L,-2,"sendSysex"           );
 	lua_pushcfunction(L,l_sendSysRealTime     );lua_setfield(L,-2,"sendSysRealTime"     );
-
-	// audio processing
-	lua_pushcfunction(L,l_processFloat        );lua_setfield(L,-2,"processFloat"        );
-	lua_pushcfunction(L,l_processShort        );lua_setfield(L,-2,"processShort"        );
-	lua_pushcfunction(L,l_processDouble       );lua_setfield(L,-2,"processDouble"       );
-	lua_pushcfunction(L,l_processRaw          );lua_setfield(L,-2,"processRaw"          );
-	lua_pushcfunction(L,l_processRawShort     );lua_setfield(L,-2,"processRawShort"     );
-	lua_pushcfunction(L,l_processRawDouble    );lua_setfield(L,-2,"processRawDouble"    );
-	lua_pushcfunction(L,l_computeAudio        );lua_setfield(L,-2,"computeAudio"        );
-	lua_pushcfunction(L,l_blockSize           );lua_setfield(L,-2,"blockSize"           );
-
-	// arrays
+	lua_pushcfunction(L,l_isMessageInProgress );lua_setfield(L,-2,"isMessageInProgress" );
+		// Array Access
 	lua_pushcfunction(L,l_arraySize           );lua_setfield(L,-2,"arraySize"           );
+	lua_pushcfunction(L,l_resizeArray         );lua_setfield(L,-2,"resizeArray"         );
 	lua_pushcfunction(L,l_readArray           );lua_setfield(L,-2,"readArray"           );
 	lua_pushcfunction(L,l_writeArray          );lua_setfield(L,-2,"writeArray"          );
 	lua_pushcfunction(L,l_clearArray          );lua_setfield(L,-2,"clearArray"          );
+		// Utils
+	lua_pushcfunction(L,l_isInited            );lua_setfield(L,-2,"isInited"            );
+	lua_pushcfunction(L,l_isQueued            );lua_setfield(L,-2,"isQueued"            );
+	lua_pushcfunction(L,l_blockSize           );lua_setfield(L,-2,"blockSize"           );
+	lua_pushcfunction(L,l_setMaxMessageLen    );lua_setfield(L,-2,"setMaxMessageLen"    );
+	lua_pushcfunction(L,l_maxMessageLen       );lua_setfield(L,-2,"maxMessageLen"       );
 
 	lua_pop          (L,1);
 }
@@ -683,6 +713,7 @@ static void pdpatch_reg(lua_State *L) {
 	lua_pushcfunction(L,l_path                );lua_setfield(L,-2,"path"                );
 	lua_pushcfunction(L,l_dollarZeroStr       );lua_setfield(L,-2,"dollarZeroStr"       );
 	lua_pushcfunction(L,l_isValid             );lua_setfield(L,-2,"isValid"             );
+	lua_pushcfunction(L,l_patchClear          );lua_setfield(L,-2,"clear"               );
 
 	lua_pop          (L,1);
 }

@@ -1,5 +1,6 @@
 package.path = '../?.lua;'..package.path
-luapd ,pd = require('pdmain')()
+local luapd ,pd = require('pdmain')()
+local patch
 
 function love.load()
 	luapd.init()

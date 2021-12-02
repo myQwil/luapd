@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index b664fa9..451a4c3 100644
+index ca5d392..11ba480 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -212,6 +212,8 @@ CFLAGS = -DPD -DHAVE_UNISTD_H -DUSEAPI_DUMMY \
+@@ -215,6 +215,8 @@ CFLAGS = -DPD -DHAVE_UNISTD_H -DUSEAPI_DUMMY \
  LDFLAGS += $(ADDITIONAL_LDFLAGS)
  CSHARP_LDFLAGS += $(ADDITIONAL_LDFLAGS)
  JAVA_LDFLAGS += $(ADDITIONAL_LDFLAGS)
@@ -11,7 +11,7 @@ index b664fa9..451a4c3 100644
  
  .PHONY: libpd csharplib javalib javadoc javasrc install uninstall clean clobber
  
-@@ -223,10 +225,10 @@ else
+@@ -226,10 +228,10 @@ else
  endif
  
  $(LIBPD): ${PD_FILES:.c=.o} ${UTIL_FILES:.c=.o} ${EXTRA_FILES:.c=.o}
@@ -24,7 +24,7 @@ index b664fa9..451a4c3 100644
  
  javalib: $(JNIH_FILE) $(PDJAVA_JAR)
  
-@@ -257,7 +259,7 @@ $(PDCSHARP): ${PD_FILES:.c=.o} ${EXTRA_FILES:.c=.o}
+@@ -260,7 +262,7 @@ $(PDCSHARP): ${PD_FILES:.c=.o} ${EXTRA_FILES:.c=.o}
  	$(CC) -o $(PDCSHARP) $^ $(CSHARP_LDFLAGS) -lm -lpthread
  
  clean:
@@ -35,14 +35,13 @@ index b664fa9..451a4c3 100644
  clobber: clean
 diff --git a/extra.make b/extra.make
 new file mode 100644
-index 0000000..2d27e2c
+index 0000000..6036c82
 --- /dev/null
 +++ b/extra.make
-@@ -0,0 +1,14 @@
-+
+@@ -0,0 +1,13 @@
 +PD_EXTRA_FILES += $(patsubst %, ../pdxtra/%.c, \
 +muse chrd rand rind ntof fton flenc fldec slx sly same ceil delp linp linp~ \
-+chrono radix 0x21 0x21~ x is has pak unpak 0x40pak 0x40unpak tabread2~ tabosc2~ \
++radix 0x21 0x21~ x is has pak unpak 0x40pak 0x40unpak chrono tabread2~ tabosc2~ \
 +myqwil blunt/hotop blunt/revop blunt/blunt)
 +
 +PD_EXTRA_FILES += $(patsubst %, ../pd-cyclone/cyclone_objects/binaries/audio/%.c, \
@@ -54,7 +53,7 @@ index 0000000..2d27e2c
 +
 +EXTRA_LIBS :=
 diff --git a/libpd_wrapper/z_libpd.c b/libpd_wrapper/z_libpd.c
-index 8550a32..bed8b5e 100644
+index 6bf7479..8fd9e64 100644
 --- a/libpd_wrapper/z_libpd.c
 +++ b/libpd_wrapper/z_libpd.c
 @@ -52,6 +52,11 @@ int sys_pollgui(void);
@@ -69,7 +68,7 @@ index 8550a32..bed8b5e 100644
  #endif
  
  static PERTHREAD t_atom *s_argv = NULL;
-@@ -104,6 +109,11 @@ int libpd_init(void) {
+@@ -103,6 +108,11 @@ int libpd_init(void) {
    pique_setup();
    sigmund_tilde_setup();
    stdout_setup();

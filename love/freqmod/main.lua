@@ -1,13 +1,14 @@
 package.path = '../?.lua;'..package.path
-lpd ,pd ,obj = require('pdmain')()
+local lpd ,pd ,obj = require('pdmain')()
+local patch
 
-width ,height = love.graphics.getWidth()-1 ,love.graphics.getHeight()-1
-maxfrq ,maxidx ,mx ,my ,portamento =
-300    ,3200   ,0  ,0  ,0
-press = {false ,false}
-hintx = width - 250
-
-fm =
+local width ,height = love.graphics.getWidth()-1 ,love.graphics.getHeight()-1
+local maxfrq ,maxidx ,mx ,my ,portamento =
+      300    ,3200   ,0  ,0  ,0
+local press = {false ,false}
+local hintx = width - 250
+local grid = {}
+local fm =
 {	 modfrq = 1
 	,modidx = 150
 	,carfrq = 400   }
@@ -16,13 +17,12 @@ function obj.float(dest ,num)
 	fm[dest] = num
 end
 
-function slope(x ,min ,max ,len)
+local function slope(x ,min ,max ,len)
 	local m = (max - min) / len
 	return m*x + min;
 end
 
 function love.load()
-	grid = {}
 	local iter = 1/16
 	for i=iter   ,.999 ,iter*2 do
 		local wi ,hi = width*i ,height*i
@@ -85,26 +85,26 @@ function love.draw()
 	)
 end
 
-function pancar(x ,y)
+local function pancar(x ,y)
 	pd:sendFloat('pan' ,slope(x ,-45 ,45 ,width))
 	if y ~= my then
 		pd:sendFloat('carrier-freq' ,(y > my) and -1 or 1)   end
 end
 
-function fmod(x ,y)
+local function fmod(x ,y)
 	pd:sendFloat('mod-freq'  ,slope(x ,0      ,maxfrq ,width  ))
 	pd:sendFloat('mod-index' ,slope(y ,maxidx ,0      ,height ))
 end
 
-function tone(x ,y)
+local function tone(x ,y)
 	pd:sendFloat   ('tone-pos'      , slope(x ,-45 ,45 ,width  )  )
 	pd:sendMessage ('tone' ,'pitch' ,{slope(y ,100 ,0  ,height )} )
 	pd:sendBang    ('tone')
 end
 
-function none(...) end
+local function none(...) end
 
-fn = {[0]=none ,fmod}
+local fn = {[0]=none ,fmod}
 
 function love.mousepressed(x ,y ,btn)
 	if     btn == 1 then fn[1] (x ,y)
@@ -127,7 +127,7 @@ function love.wheelmoved(x ,y)
 	pd:sendFloat('carrier-freq' ,y*25)
 end
 
-kpress =
+local kpress =
 {	 ['=']  = function()
 		portamento = math.max(0 ,portamento + 25)
 		pd:sendFloat('portamento' ,portamento) end
