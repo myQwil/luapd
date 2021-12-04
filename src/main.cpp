@@ -4,30 +4,182 @@
 
 #if LUA_VERSION_NUM == 501
 #define lua_rawlen(L,i) lua_objlen(L,(i))
-#define luaL_setmetatable(L,n) (luaL_getmetatable(L,(n)) ,lua_setmetatable (L,-2))
+#define luaL_setmetatable(L,n) (luaL_getmetatable(L,(n)) ,lua_setmetatable(L,-2))
 #endif
 
 using namespace std;
 using namespace pd;
 
-extern "C" { int LUA_API luaopen_luapd(lua_State *L); }
+extern "C" { int luaopen_luapd(lua_State *L); }
 
-#define LUA_PDBASE   "PdBase"
-#define LUA_PDPATCH  "Patch"
-#define LUA_PDOBJECT "PdObject"
-#define LUA_PDARRAY  "Array"
+#define LUA_PDARRAY  "Pd.Array"
+#define LUA_PDPATCH  "Pd.Patch"
+#define LUA_PDOBJECT "Pd.Object"
+#define LUA_PDBASE   "Pd.Base"
+
+// -----------------------------------------------------------------------
+// -------------------------------- Array --------------------------------
+// -----------------------------------------------------------------------
+
+static int pdarray_new(lua_State *L) {
+	int n  = !lua_isnoneornil(L ,1) ? luaL_checkinteger(L ,1) : 0;
+	*(vector<float>**)lua_newuserdata(L ,sizeof(vector<float>*)) = new vector<float>(n);
+	luaL_setmetatable(L ,LUA_PDARRAY);
+	return 1;
+}
+
+static int pdarray_gc(lua_State *L) {
+	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
+	delete a;
+	return 0;
+}
+
+static int l_len(lua_State *L) {
+	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
+	lua_pushinteger(L ,a->size());
+	return 1;
+}
+
+static int l_ptr(lua_State *L) {
+	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
+	int i = !lua_isnoneornil(L ,2) ? lua_tointeger(L ,2) : 0;
+	lua_pushlightuserdata(L ,&(*a)[i]);
+	return 1;
+}
+
+static int l_set(lua_State *L) {
+	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
+	int i   = !lua_isnoneornil(L ,2) ? lua_tointeger(L ,2) : 0;
+	float f = luaL_checknumber(L ,3);
+	if (i < 1)
+		return luaL_error(L ,"Array: index cannot be less than zero");
+	if (i > a->size())
+		a->resize(i ,0);
+	(*a)[i-1] = f;
+	return 0;
+}
+
+static int l_at(lua_State *L) {
+	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
+	int i = luaL_checkinteger(L ,2);
+	if (i < 1 || i > a->size())
+		return luaL_error(L ,"Array: index out of bounds");
+	lua_pushnumber(L ,(*a)[i-1]);
+	return 1;
+}
+
+// -------------------------------------------------------------------------
+// -------------------------------- PdPatch --------------------------------
+// -------------------------------------------------------------------------
+
+static int pdpatch_new(lua_State *L) {
+	Patch p;
+	if (lua_isnoneornil(L ,1))
+		p = Patch();
+	else if (lua_isuserdata(L ,1))
+		p = Patch(**(Patch**)luaL_checkudata  (L ,1 ,LUA_PDPATCH));
+	else if (lua_islightuserdata(L ,1))
+	{	void *handle      = lua_touserdata    (L ,1);
+		int dollarZero    = luaL_checkinteger (L ,2);
+		const char *patch = luaL_checkstring  (L ,3);
+		const char *path  = !lua_isnoneornil  (L ,4) ? luaL_checkstring(L ,4) : ".";
+		p = Patch(handle ,dollarZero ,patch ,path);  }
+	else
+	{	const char *patch = luaL_checkstring  (L ,1);
+		const char *path  = !lua_isnoneornil  (L ,2) ? luaL_checkstring(L ,2) : ".";
+		p = Patch(patch ,path);  }
+	*(Patch**)lua_newuserdata(L ,sizeof(Patch*)) = new Patch(p);
+	luaL_setmetatable(L ,LUA_PDPATCH);
+	return 1;
+}
+
+static int pdpatch_gc(lua_State *L) {
+	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
+	delete p;
+	return 0;
+}
+
+static int l_handle(lua_State *L) {
+	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
+	lua_pushlightuserdata(L ,p->handle());
+	return 1;
+}
+
+static int l_dollarZero(lua_State *L) {
+	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
+	lua_pushinteger(L ,p->dollarZero());
+	return 1;
+}
+
+static int l_filename(lua_State *L) {
+	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
+	lua_pushstring(L ,p->filename().c_str());
+	return 1;
+}
+
+static int l_path(lua_State *L) {
+	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
+	lua_pushstring(L ,p->path().c_str());
+	return 1;
+}
+
+static int l_dollarZeroStr(lua_State *L) {
+	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
+	lua_pushstring(L ,p->dollarZeroStr().c_str());
+	return 1;
+}
+
+static int l_isValid(lua_State *L) {
+	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
+	lua_pushboolean(L ,p->isValid());
+	return 1;
+}
+
+static int l_patchClear(lua_State *L) {
+	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
+	p->clear();
+	return 0;
+}
+
+// --------------------------------------------------------------------------
+// -------------------------------- PdObject --------------------------------
+// --------------------------------------------------------------------------
+
+static int pdobject_new(lua_State *L) {
+	lua_settop(L ,1);
+	bool set = (lua_type(L ,1) == LUA_TTABLE);
+	*(PdObject**)lua_newuserdata(L ,sizeof(PdObject*)) = new PdObject(set);
+	luaL_setmetatable(L ,LUA_PDOBJECT);
+	return 1;
+}
+
+static int pdobject_gc(lua_State *L) {
+	PdObject *o = *(PdObject**)luaL_checkudata(L ,1 ,LUA_PDOBJECT);
+	delete o;
+	return 0;
+}
+
+static int l_setFunc(lua_State *L) {
+	PdObject *o = *(PdObject**)luaL_checkudata(L ,1 ,LUA_PDOBJECT);
+	const char *name = luaL_checkstring       (L ,2);
+	luaL_checktype                            (L ,3 ,LUA_TFUNCTION);
+	o->setFunc(name);
+	return 0;
+}
 
 // ------------------------------------------------------------------------
 // -------------------------------- PdBase --------------------------------
 // ------------------------------------------------------------------------
+
 static int pdbase_new(lua_State *L) {
 	*(PdBase**)lua_newuserdata(L ,sizeof(PdBase*)) = new PdBase();
 	luaL_setmetatable(L ,LUA_PDBASE);
 	return 1;
 }
 
-static int pdbase_del(lua_State *L) {
-	delete *(PdBase**)lua_touserdata(L ,1);
+static int pdbase_gc(lua_State *L) {
+	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
+	delete b;
 	return 0;
 }
 
@@ -67,7 +219,7 @@ static int l_openPatch(lua_State *L) {
 	if (isString)
 	{	const char *patch = lua_tostring     (L ,2);
 		const char *path  = !lua_isnoneornil (L ,3) ? luaL_checkstring(L ,3) : ".";
-		p = new Patch(b->openPatch(patch ,path));   }
+		p = new Patch(b->openPatch(patch ,path));  }
 	else p = new Patch(b->openPatch(**(Patch**)luaL_checkudata(L ,2 ,LUA_PDPATCH)));
 	*(Patch**)lua_newuserdata(L ,sizeof(Patch*)) = p;
 	luaL_setmetatable(L ,LUA_PDPATCH);
@@ -79,10 +231,10 @@ static int l_closePatch(lua_State *L) {
 	int isString = (lua_type(L ,2) == LUA_TSTRING);
 	if (isString)
 	{	const char *patch = luaL_checkstring(L ,2);
-		b->closePatch(patch);   }
+		b->closePatch(patch);  }
 	else
 	{	Patch *p = *(Patch**)luaL_checkudata(L ,2 ,LUA_PDPATCH);
-		b->closePatch(*p);   }
+		b->closePatch(*p);  }
 	return 0;
 }
 
@@ -92,8 +244,7 @@ static int l_processFloat(lua_State *L) {
 	int i      = lua_gettop(L) == 4;
 	float *in  = i ? (float*)lua_touserdata(L ,3) : 0;
 	float *out =     (float*)lua_touserdata(L ,3+i);
-	bool success = b->processFloat(ticks ,in ,out);
-	lua_pushboolean(L ,success);
+	lua_pushboolean(L ,b->processFloat(ticks ,in ,out));
 	return 1;
 }
 
@@ -103,8 +254,7 @@ static int l_processShort(lua_State *L) {
 	int i      = lua_gettop(L) == 4;
 	short *in  = i ? (short*)lua_touserdata(L ,3) : 0;
 	short *out =     (short*)lua_touserdata(L ,3+i);
-	bool success = b->processShort(ticks ,in ,out);
-	lua_pushboolean(L ,success);
+	lua_pushboolean(L ,b->processShort(ticks ,in ,out));
 	return 1;
 }
 
@@ -114,8 +264,7 @@ static int l_processDouble(lua_State *L) {
 	int i       = lua_gettop(L) == 4;
 	double *in  = i ? (double*)lua_touserdata(L ,3) : 0;
 	double *out =     (double*)lua_touserdata(L ,3+i);
-	bool success = b->processDouble(ticks ,in ,out);
-	lua_pushboolean(L ,success);
+	lua_pushboolean(L ,b->processDouble(ticks ,in ,out));
 	return 1;
 }
 
@@ -124,8 +273,7 @@ static int l_processRaw(lua_State *L) {
 	int i      = lua_gettop(L) == 3;
 	float *in  = i ? (float*)lua_touserdata(L ,2) : 0;
 	float *out =     (float*)lua_touserdata(L ,2+i);
-	bool success = b->processRaw(in ,out);
-	lua_pushboolean(L ,success);
+	lua_pushboolean(L ,b->processRaw(in ,out));
 	return 1;
 }
 
@@ -134,8 +282,7 @@ static int l_processRawShort(lua_State *L) {
 	int i      = lua_gettop(L) == 3;
 	short *in  = i ? (short*)lua_touserdata(L ,2) : 0;
 	short *out =     (short*)lua_touserdata(L ,2+i);
-	bool success = b->processRawShort(in ,out);
-	lua_pushboolean(L ,success);
+	lua_pushboolean(L ,b->processRawShort(in ,out));
 	return 1;
 }
 
@@ -144,8 +291,7 @@ static int l_processRawDouble(lua_State *L) {
 	int i       = lua_gettop(L) == 3;
 	double *in  = i ? (double*)lua_touserdata(L ,2) : 0;
 	double *out =     (double*)lua_touserdata(L ,2+i);
-	bool success = b->processRawDouble(in ,out);
-	lua_pushboolean(L ,success);
+	lua_pushboolean(L ,b->processRawDouble(in ,out));
 	return 1;
 }
 
@@ -259,10 +405,10 @@ static int l_addAtom(lua_State *L) {
 	int typ = lua_type(L ,2);
 	if      (typ == LUA_TNUMBER)
 	{	float num = lua_tonumber(L ,2);
-		b->addFloat(num);   }
+		b->addFloat(num);  }
 	else if (typ == LUA_TSTRING)
 	{	const char *symbol = lua_tostring(L ,2);
-		b->addSymbol(symbol);   }
+		b->addSymbol(symbol);  }
 	return 0;
 }
 
@@ -292,7 +438,7 @@ static List tableToList(lua_State *L ,int idx) {
 			list.addFloat  (lua_tonumber(L ,-1));
 		else if (lua_type (L ,-1) == LUA_TSTRING)
 			list.addSymbol (lua_tostring(L ,-1));
-		lua_pop(L ,1);   }
+		lua_pop(L ,1);  }
 	return list;
 }
 
@@ -413,9 +559,10 @@ static int l_resizeArray(lua_State *L) {
 static int l_readArray(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *name = luaL_checkstring   (L ,2);
-	vector<float> *a = *(vector<float>**)luaL_checkudata (L ,3 ,LUA_PDARRAY);
-	int readLen      = !lua_isnoneornil   (L ,4) ? luaL_checkinteger (L ,4) :-1;
-	int offset       = !lua_isnoneornil   (L ,5) ? luaL_checkinteger (L ,5) : 0;
+	luaL_checktype(L ,3 ,LUA_TUSERDATA);
+	vector<float> *a = *(vector<float>**)lua_touserdata(L ,3);
+	int readLen      = !lua_isnoneornil   (L ,4) ? luaL_checkinteger(L ,4) : -1;
+	int offset       = !lua_isnoneornil   (L ,5) ? luaL_checkinteger(L ,5) :  0;
 	lua_pushboolean(L ,b->readArray(name ,*a ,readLen ,offset));
 	return 1;
 }
@@ -423,9 +570,10 @@ static int l_readArray(lua_State *L) {
 static int l_writeArray(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *name = luaL_checkstring   (L ,2);
-	vector<float> *a = *(vector<float>**)luaL_checkudata (L ,3 ,LUA_PDARRAY);
-	int writeLen     = !lua_isnoneornil   (L ,4) ? luaL_checkinteger (L ,4) :-1;
-	int offset       = !lua_isnoneornil   (L ,5) ? luaL_checkinteger (L ,5) : 0;
+	luaL_checktype(L ,3 ,LUA_TUSERDATA);
+	vector<float> *a = *(vector<float>**)lua_touserdata(L ,3);
+	int writeLen     = !lua_isnoneornil   (L ,4) ? luaL_checkinteger(L ,4) : -1;
+	int offset       = !lua_isnoneornil   (L ,5) ? luaL_checkinteger(L ,5) :  0;
 	lua_pushboolean(L ,b->writeArray(name ,*a ,writeLen ,offset));
 	return 1;
 }
@@ -473,279 +621,166 @@ static int pdbase_shl(lua_State *L) {
 	return 0;
 }
 
-// -------------------------------------------------------------------------
-// -------------------------------- PdPatch --------------------------------
-// -------------------------------------------------------------------------
-static int pdpatch_new(lua_State *L) {
-	Patch p;
-	if      (lua_isnoneornil     (L ,1))
-		p = Patch();
-	else if (lua_isuserdata      (L ,1))
-		p = Patch(**(Patch**)luaL_checkudata  (L ,1 ,LUA_PDPATCH));
-	else if (lua_islightuserdata (L ,1))
-	{	void *handle      = lua_touserdata    (L ,1);
-		int dollarZero    = luaL_checkinteger (L ,2);
-		const char *patch = luaL_checkstring  (L ,3);
-		const char *path  = !lua_isnoneornil  (L ,4) ? luaL_checkstring(L ,4) : ".";
-		p = Patch(handle ,dollarZero ,patch ,path);   }
-	else
-	{	const char *patch = luaL_checkstring  (L ,1);
-		const char *path  = !lua_isnoneornil  (L ,2) ? luaL_checkstring(L ,2) : ".";
-		p = Patch(patch ,path);   }
-	*(Patch**)lua_newuserdata(L ,sizeof(Patch*)) = new Patch(p);
-	luaL_setmetatable(L ,LUA_PDPATCH);
-	return 1;
-}
-
-static int pdpatch_del(lua_State *L) {
-	delete *(Patch**)lua_touserdata(L ,1);
-	return 0;
-}
-
-static int l_handle(lua_State *L) {
-	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
-	lua_pushlightuserdata(L ,p->handle());
-	return 1;
-}
-
-static int l_dollarZero(lua_State *L) {
-	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
-	lua_pushinteger(L ,p->dollarZero());
-	return 1;
-}
-
-static int l_filename(lua_State *L) {
-	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
-	lua_pushstring(L ,p->filename().c_str());
-	return 1;
-}
-
-static int l_path(lua_State *L) {
-	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
-	lua_pushstring(L ,p->path().c_str());
-	return 1;
-}
-
-static int l_dollarZeroStr(lua_State *L) {
-	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
-	lua_pushstring(L ,p->dollarZeroStr().c_str());
-	return 1;
-}
-
-static int l_isValid(lua_State *L) {
-	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
-	lua_pushboolean(L ,p->isValid());
-	return 1;
-}
-
-static int l_patchClear(lua_State *L) {
-	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
-	p->clear();
-	return 0;
-}
-
-// --------------------------------------------------------------------------
-// -------------------------------- PdObject --------------------------------
-// --------------------------------------------------------------------------
-static int pdobject_new(lua_State *L) {
-	lua_settop(L ,1);
-	bool set = (lua_type(L ,1) == LUA_TTABLE);
-	*(PdObject**)lua_newuserdata(L ,sizeof(PdObject*)) = new PdObject(set);
-	luaL_setmetatable(L ,LUA_PDOBJECT);
-	return 1;
-}
-
-static int pdobject_del(lua_State *L) {
-	delete *(PdObject**)lua_touserdata(L ,1);
-	return 0;
-}
-
-static int l_setFunc(lua_State *L) {
-	PdObject *o = *(PdObject**)luaL_checkudata(L ,1 ,LUA_PDOBJECT);
-	const char *name = luaL_checkstring       (L ,2);
-	luaL_checktype                            (L ,3 ,LUA_TFUNCTION);
-	o->setFunc(name);
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-// -------------------------------- Array --------------------------------
-// -----------------------------------------------------------------------
-static int pdarray_new(lua_State *L) {
-	int n  = !lua_isnoneornil(L ,1) ? luaL_checkinteger (L ,1) :0;
-	*(vector<float>**)lua_newuserdata(L ,sizeof(vector<float>*)) = new vector<float>(n);
-	luaL_setmetatable(L ,LUA_PDARRAY);
-	return 1;
-}
-
-static int pdarray_del(lua_State *L) {
-	delete *(vector<float>**)lua_touserdata(L ,1);
-	return 0;
-}
-
-static int l_len(lua_State *L) {
-	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
-	lua_pushinteger(L ,a->size());
-	return 1;
-}
-
-static int l_ptr(lua_State *L) {
-	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
-	int i    = !lua_isnoneornil(L ,2) ? lua_tointeger(L ,2) : 0;
-	lua_pushlightuserdata(L ,&(*a)[i]);
-	return 1;
-}
-
-static int l_set(lua_State *L) {
-	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
-	int i    = !lua_isnoneornil         (L ,2) ? lua_tointeger(L ,2) : 0;
-	float f  = luaL_checknumber         (L ,3);
-	if (i < 1)
-		return luaL_error(L ,"Array: index cannot be less than zero");
-	if (a->size() < i)
-		a->resize(i ,0);
-	(*a)[i-1] = f;
-	return 0;
-}
-
-static int l_at(lua_State *L) {
-	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
-	int i = luaL_checkinteger(L ,2);
-	if (a->size() < i)
-		return luaL_error(L ,"Array: index out of bounds");
-	lua_pushnumber(L ,(*a)[i-1]);
-	return 1;
-}
-
 // ---------------------------------------------------------------------------
 // -------------------------------- registers --------------------------------
 // ---------------------------------------------------------------------------
-static void pdbase_reg(lua_State *L) {
-	lua_newtable     (L);
-	lua_pushcfunction(L,l_blockSize           );lua_setfield(L,-2,"blockSize"           );
-	lua_newtable     (L);
-	lua_pushcfunction(L,pdbase_new            );lua_setfield(L,-2,"__call"              );
-	lua_setmetatable (L,-2);
-	lua_setglobal    (L,LUA_PDBASE);
 
-	luaL_newmetatable(L,LUA_PDBASE);
-	lua_pushvalue    (L,-1                    );lua_setfield(L,-2,"__index"             );
-	lua_pushcfunction(L,pdbase_del            );lua_setfield(L,-2,"__gc"                );
-	lua_pushcfunction(L,pdbase_shl            );lua_setfield(L,-2,"__shl"               );
+static void pdarray_reg(lua_State *L) {
+	static const luaL_Reg meta[] =
+	{	 { "__gc"       ,pdarray_gc }
+		,{ "__len"      ,l_len       }
+		,{ "__index"    ,l_at        }
+		,{ "__newindex" ,l_set       }
+		,{ "__call"     ,l_ptr       }
+		,{ NULL         ,NULL        }  };
+	luaL_newmetatable(L ,LUA_PDARRAY);
+	luaL_setfuncs    (L ,meta ,0);
+	lua_pop          (L ,1);
 
-		// Initializing Pd
-	lua_pushcfunction(L,l_init                );lua_setfield(L,-2,"init"                );
-	lua_pushcfunction(L,l_baseClear           );lua_setfield(L,-2,"clear"               );
-		// Adding Search Paths
-	lua_pushcfunction(L,l_addToSearchPath     );lua_setfield(L,-2,"addToSearchPath"     );
-	lua_pushcfunction(L,l_clearSearchPath     );lua_setfield(L,-2,"clearSearchPath"     );
-		// Opening Patches
-	lua_pushcfunction(L,l_openPatch           );lua_setfield(L,-2,"openPatch"           );
-	lua_pushcfunction(L,l_closePatch          );lua_setfield(L,-2,"closePatch"          );
-		// Audio Processing
-	lua_pushcfunction(L,l_processFloat        );lua_setfield(L,-2,"processFloat"        );
-	lua_pushcfunction(L,l_processShort        );lua_setfield(L,-2,"processShort"        );
-	lua_pushcfunction(L,l_processDouble       );lua_setfield(L,-2,"processDouble"       );
-	lua_pushcfunction(L,l_processRaw          );lua_setfield(L,-2,"processRaw"          );
-	lua_pushcfunction(L,l_processRawShort     );lua_setfield(L,-2,"processRawShort"     );
-	lua_pushcfunction(L,l_processRawDouble    );lua_setfield(L,-2,"processRawDouble"    );
-		// Audio Processing Control
-	lua_pushcfunction(L,l_computeAudio        );lua_setfield(L,-2,"computeAudio"        );
-		// Message Receiving
-	lua_pushcfunction(L,l_subscribe           );lua_setfield(L,-2,"subscribe"           );
-	lua_pushcfunction(L,l_unsubscribe         );lua_setfield(L,-2,"unsubscribe"         );
-	lua_pushcfunction(L,l_exists              );lua_setfield(L,-2,"exists"              );
-	lua_pushcfunction(L,l_unsubscribeAll      );lua_setfield(L,-2,"unsubscribeAll"      );
-		// Receiving from the Message Queues
-	lua_pushcfunction(L,l_receiveMessages     );lua_setfield(L,-2,"receiveMessages"     );
-	lua_pushcfunction(L,l_receiveMidi         );lua_setfield(L,-2,"receiveMidi"         );
-		// Event Receiving via Callbacks
-	lua_pushcfunction(L,l_setReceiver         );lua_setfield(L,-2,"setReceiver"         );
-	lua_pushcfunction(L,l_setMidiReceiver     );lua_setfield(L,-2,"setMidiReceiver"     );
-		// Send Functions
-	lua_pushcfunction(L,l_sendBang            );lua_setfield(L,-2,"sendBang"            );
-	lua_pushcfunction(L,l_sendFloat           );lua_setfield(L,-2,"sendFloat"           );
-	lua_pushcfunction(L,l_sendSymbol          );lua_setfield(L,-2,"sendSymbol"          );
-		// Sending Compound Messages
-	lua_pushcfunction(L,l_startMessage        );lua_setfield(L,-2,"startMessage"        );
-	lua_pushcfunction(L,l_addFloat            );lua_setfield(L,-2,"addFloat"            );
-	lua_pushcfunction(L,l_addSymbol           );lua_setfield(L,-2,"addSymbol"           );
-	lua_pushcfunction(L,l_addAtom             );lua_setfield(L,-2,"addAtom"             );
-	lua_pushcfunction(L,l_finishList          );lua_setfield(L,-2,"finishList"          );
-	lua_pushcfunction(L,l_finishMessage       );lua_setfield(L,-2,"finishMessage"       );
-	lua_pushcfunction(L,l_sendList            );lua_setfield(L,-2,"sendList"            );
-	lua_pushcfunction(L,l_sendMessage         );lua_setfield(L,-2,"sendMessage"         );
-		// Sending MIDI
-	lua_pushcfunction(L,l_sendNoteOn          );lua_setfield(L,-2,"sendNoteOn"          );
-	lua_pushcfunction(L,l_sendControlChange   );lua_setfield(L,-2,"sendControlChange"   );
-	lua_pushcfunction(L,l_sendProgramChange   );lua_setfield(L,-2,"sendProgramChange"   );
-	lua_pushcfunction(L,l_sendPitchBend       );lua_setfield(L,-2,"sendPitchBend"       );
-	lua_pushcfunction(L,l_sendAftertouch      );lua_setfield(L,-2,"sendAftertouch"      );
-	lua_pushcfunction(L,l_sendPolyAftertouch  );lua_setfield(L,-2,"sendPolyAftertouch"  );
-	lua_pushcfunction(L,l_sendMidiByte        );lua_setfield(L,-2,"sendMidiByte"        );
-	lua_pushcfunction(L,l_sendSysex           );lua_setfield(L,-2,"sendSysex"           );
-	lua_pushcfunction(L,l_sendSysRealTime     );lua_setfield(L,-2,"sendSysRealTime"     );
-	lua_pushcfunction(L,l_isMessageInProgress );lua_setfield(L,-2,"isMessageInProgress" );
-		// Array Access
-	lua_pushcfunction(L,l_arraySize           );lua_setfield(L,-2,"arraySize"           );
-	lua_pushcfunction(L,l_resizeArray         );lua_setfield(L,-2,"resizeArray"         );
-	lua_pushcfunction(L,l_readArray           );lua_setfield(L,-2,"readArray"           );
-	lua_pushcfunction(L,l_writeArray          );lua_setfield(L,-2,"writeArray"          );
-	lua_pushcfunction(L,l_clearArray          );lua_setfield(L,-2,"clearArray"          );
-		// Utils
-	lua_pushcfunction(L,l_isInited            );lua_setfield(L,-2,"isInited"            );
-	lua_pushcfunction(L,l_isQueued            );lua_setfield(L,-2,"isQueued"            );
-	lua_pushcfunction(L,l_blockSize           );lua_setfield(L,-2,"blockSize"           );
-	lua_pushcfunction(L,l_setMaxMessageLen    );lua_setfield(L,-2,"setMaxMessageLen"    );
-	lua_pushcfunction(L,l_maxMessageLen       );lua_setfield(L,-2,"maxMessageLen"       );
-
-	lua_pop          (L,1);
+	lua_pushcfunction(L ,pdarray_new);
 }
 
 static void pdpatch_reg(lua_State *L) {
-	lua_register     (L,LUA_PDPATCH,pdpatch_new);
-	luaL_newmetatable(L,LUA_PDPATCH);
-	lua_pushvalue    (L,-1                    );lua_setfield(L,-2,"__index"             );
-	lua_pushcfunction(L,pdpatch_del           );lua_setfield(L,-2,"__gc"                );
-	lua_pushcfunction(L,l_handle              );lua_setfield(L,-2,"handle"              );
-	lua_pushcfunction(L,l_dollarZero          );lua_setfield(L,-2,"dollarZero"          );
-	lua_pushcfunction(L,l_filename            );lua_setfield(L,-2,"filename"            );
-	lua_pushcfunction(L,l_path                );lua_setfield(L,-2,"path"                );
-	lua_pushcfunction(L,l_dollarZeroStr       );lua_setfield(L,-2,"dollarZeroStr"       );
-	lua_pushcfunction(L,l_isValid             );lua_setfield(L,-2,"isValid"             );
-	lua_pushcfunction(L,l_patchClear          );lua_setfield(L,-2,"clear"               );
+	static const luaL_Reg meta[] =
+	{	 { "__gc"          ,pdpatch_gc      }
+		,{ NULL            ,NULL            }  };
+	static const luaL_Reg meth[] =
+	{	 { "handle"        ,l_handle        }
+		,{ "dollarZero"    ,l_dollarZero    }
+		,{ "filename"      ,l_filename      }
+		,{ "path"          ,l_path          }
+		,{ "dollarZeroStr" ,l_dollarZeroStr }
+		,{ "isValid"       ,l_isValid       }
+		,{ "clear"         ,l_patchClear    }
+		,{ NULL            ,NULL            }  };
+	luaL_newmetatable(L ,LUA_PDPATCH);
+	luaL_setfuncs    (L ,meta ,0);
+	luaL_newlib      (L ,meth);
+	lua_setfield     (L ,-2 ,"__index");
+	lua_pop          (L ,1);
 
-	lua_pop          (L,1);
+	lua_pushcfunction(L ,pdpatch_new);
 }
 
 static void pdobject_reg(lua_State *L) {
+	static const luaL_Reg meta[] =
+	{	 { "__gc"       ,pdobject_gc }
+		,{ "__newindex" ,l_setFunc   }
+		,{ NULL         ,NULL        }  };
+	luaL_newmetatable(L ,LUA_PDOBJECT);
+	luaL_setfuncs    (L ,meta ,0);
+	lua_pop          (L ,1);
+
 	PdObject::L = L;
-	lua_register     (L,LUA_PDOBJECT,pdobject_new);
-	luaL_newmetatable(L,LUA_PDOBJECT);
-	lua_pushvalue    (L,-1                    );lua_setfield(L,-2,"__index"             );
-	lua_pushcfunction(L,pdobject_del          );lua_setfield(L,-2,"__gc"                );
-	lua_pushcfunction(L,l_setFunc             );lua_setfield(L,-2,"__newindex"          );
-	lua_pushcfunction(L,l_setFunc             );lua_setfield(L,-2,"setFunc"             );
-
-	lua_pop          (L,1);
+	lua_pushcfunction(L ,pdobject_new);
 }
 
-static void pdarray_reg(lua_State *L) {
-	lua_register     (L,LUA_PDARRAY,pdarray_new);
-	luaL_newmetatable(L,LUA_PDARRAY);
-	lua_pushcfunction(L,pdarray_del           );lua_setfield(L,-2,"__gc"                );
-	lua_pushcfunction(L,l_len                 );lua_setfield(L,-2,"__len"               );
-	lua_pushcfunction(L,l_at                  );lua_setfield(L,-2,"__index"             );
-	lua_pushcfunction(L,l_set                 );lua_setfield(L,-2,"__newindex"          );
-	lua_pushcfunction(L,l_ptr                 );lua_setfield(L,-2,"__call"              );
+static void pdbase_reg(lua_State *L) {
+	static const luaL_Reg meta[] =
+	{	 { "__gc"                ,pdbase_gc             }
+		,{ "__shl"               ,pdbase_shl            }
+		,{ NULL                  ,NULL                  }  };
+	static const luaL_Reg meth[] =
+	{		// Initializing Pd
+		 { "init"                ,l_init                }
+		,{ "clear"               ,l_baseClear           }
+			// Adding Search Paths
+		,{ "addToSearchPath"     ,l_addToSearchPath     }
+		,{ "clearSearchPath"     ,l_clearSearchPath     }
+			// Opening Patches
+		,{ "openPatch"           ,l_openPatch           }
+		,{ "closePatch"          ,l_closePatch          }
+			// Audio Processing
+		,{ "processFloat"        ,l_processFloat        }
+		,{ "processShort"        ,l_processShort        }
+		,{ "processDouble"       ,l_processDouble       }
+		,{ "processRaw"          ,l_processRaw          }
+		,{ "processRawShort"     ,l_processRawShort     }
+		,{ "processRawDouble"    ,l_processRawDouble    }
+			// Audio Processing Control
+		,{ "computeAudio"        ,l_computeAudio        }
+			// Message Receiving
+		,{ "subscribe"           ,l_subscribe           }
+		,{ "unsubscribe"         ,l_unsubscribe         }
+		,{ "exists"              ,l_exists              }
+		,{ "unsubscribeAll"      ,l_unsubscribeAll      }
+			// Receiving from the Message Queues
+		,{ "receiveMessages"     ,l_receiveMessages     }
+		,{ "receiveMidi"         ,l_receiveMidi         }
+			// Event Receiving via Callbacks
+		,{ "setReceiver"         ,l_setReceiver         }
+		,{ "setMidiReceiver"     ,l_setMidiReceiver     }
+			// Send Functions
+		,{ "sendBang"            ,l_sendBang            }
+		,{ "sendFloat"           ,l_sendFloat           }
+		,{ "sendSymbol"          ,l_sendSymbol          }
+			// Sending Compound Messages
+		,{ "startMessage"        ,l_startMessage        }
+		,{ "addFloat"            ,l_addFloat            }
+		,{ "addSymbol"           ,l_addSymbol           }
+		,{ "addAtom"             ,l_addAtom             }
+		,{ "finishList"          ,l_finishList          }
+		,{ "finishMessage"       ,l_finishMessage       }
+		,{ "sendList"            ,l_sendList            }
+		,{ "sendMessage"         ,l_sendMessage         }
+			// Sending MIDI
+		,{ "sendNoteOn"          ,l_sendNoteOn          }
+		,{ "sendControlChange"   ,l_sendControlChange   }
+		,{ "sendProgramChange"   ,l_sendProgramChange   }
+		,{ "sendPitchBend"       ,l_sendPitchBend       }
+		,{ "sendAftertouch"      ,l_sendAftertouch      }
+		,{ "sendPolyAftertouch"  ,l_sendPolyAftertouch  }
+		,{ "sendMidiByte"        ,l_sendMidiByte        }
+		,{ "sendSysex"           ,l_sendSysex           }
+		,{ "sendSysRealTime"     ,l_sendSysRealTime     }
+		,{ "isMessageInProgress" ,l_isMessageInProgress }
+			// Array Access
+		,{ "arraySize"           ,l_arraySize           }
+		,{ "resizeArray"         ,l_resizeArray         }
+		,{ "readArray"           ,l_readArray           }
+		,{ "writeArray"          ,l_writeArray          }
+		,{ "clearArray"          ,l_clearArray          }
+			// Utils
+		,{ "isInited"            ,l_isInited            }
+		,{ "isQueued"            ,l_isQueued            }
+		,{ "blockSize"           ,l_blockSize           }
+		,{ "setMaxMessageLen"    ,l_setMaxMessageLen    }
+		,{ "maxMessageLen"       ,l_maxMessageLen       }
+		,{ NULL                  ,NULL                  }  };
+	luaL_newmetatable(L ,LUA_PDBASE);
+	luaL_setfuncs    (L ,meta ,0);
+	luaL_newlib      (L ,meth);
+	lua_setfield     (L ,-2 ,"__index");
+	lua_pop          (L ,1);
 
-	lua_pop          (L,1);
+	static const luaL_Reg static_meth[] =
+	{	 { "blockSize" ,l_blockSize }
+		,{ NULL        ,NULL        }  };
+	lua_pushcfunction(L ,pdbase_new);
+	lua_newtable     (L);
+	luaL_newlib      (L ,static_meth);
+	lua_setfield     (L ,-2 ,"__index");
+	lua_setmetatable (L ,-2);
 }
 
-int LUA_API luaopen_luapd(lua_State *L) {
-	pdbase_reg   (L);
-	pdpatch_reg  (L);
-	pdobject_reg (L);
-	pdarray_reg  (L);
-	return 0;
+int luaopen_luapd(lua_State *L) {
+	lua_newtable   (L);
+
+	lua_pushliteral(L ,"Array");
+	pdarray_reg    (L);
+	lua_settable   (L ,-3);
+
+	lua_pushliteral(L ,"Patch");
+	pdpatch_reg    (L);
+	lua_settable   (L ,-3);
+
+	lua_pushliteral(L ,"Object");
+	pdobject_reg   (L);
+	lua_settable   (L ,-3);
+
+	lua_pushliteral(L ,"Base");
+	pdbase_reg     (L);
+	lua_settable   (L ,-3);
+
+	return 1;
 }

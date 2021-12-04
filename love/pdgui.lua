@@ -1,4 +1,5 @@
-local pd -- the pd base object
+math.epsilon = 2.2204460492503131e-16
+local pd ---@type Pd.Base
 
 -- Default Callbacks
 local function slider_change(self ,num)
@@ -46,6 +47,7 @@ local focus -- the slider receiving focus or nil
 -------------------------------------------------------------------------
 -------------------------------- Sliders --------------------------------
 -------------------------------------------------------------------------
+
 local function slider_send(sl ,x)
 	if x then
 		pd:sendFloat(sl.t[x].dest ,sl.t[x].num)
@@ -66,7 +68,8 @@ local function slider_check(sl ,x ,axis)
 				x = grav end end
 
 		local num = v.log and (math.exp(v.k * x) * v.min) or v.k * x + v.min
-		if num < .00000001 then num = 0 end
+		if num < math.epsilon then
+			num = 0 end
 		if v.num ~= num then
 			v:change(num) end
 		sl['c'..axis] = x + v.xmin end
@@ -191,6 +194,7 @@ end
 -----------------------------------------------------------------------
 -------------------------------- Boxes --------------------------------
 -----------------------------------------------------------------------
+
 local function gui_box(self ,x ,y ,opt)
 	local box =
 	{	 x = x
@@ -294,6 +298,7 @@ setmetatable(gui.slider ,{__call = slider_new})
 setmetatable(gui.button ,{__call = button_new})
 setmetatable(gui.toggle ,{__call = toggle_new})
 
+---@param base Pd.Base
 return function(base)
 	pd = base
 	return gui

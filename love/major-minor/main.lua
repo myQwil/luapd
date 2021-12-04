@@ -1,40 +1,63 @@
-package.path = '../?.lua;'..package.path
-local luapd ,pd = require('pdmain')()
-local gui    = require('pdgui')(pd)
-local scale  = Array()
-local doremi = 're:\nmi:\nfa:\nso:\nla:\nti:'
-local patch ,sliders ,buttons ,toggles
+if os.getenv('LOCAL_LUA_DEBUGGER_VSCODE') == '1' then
+	require('lldebugger').start()
+end
 
--- Button Callbacks
+package.path = '../?.lua;'..package.path
+local lpd = require('pdmain')
+local pd  = lpd.pd
+local patch ---@type Pd.Patch
+
+local gui    = require('pdgui')(pd)
+local scale  = Pd.Array(6)
+local doremi = 're:\nmi:\nfa:\nso:\nla:\nti:'
+local sliders ,buttons ,toggles
+
+-- Button/Slider Callbacks
 local function invup(self)
 	pd:sendMessage(self.dest ,'>1')
 	pd:sendMessage(self.dest ,'send')
+	pd:readArray('default' ,scale)
 end
 
 local function invdn(self)
 	pd:sendMessage(self.dest ,'<1')
 	pd:sendMessage(self.dest ,'send')
+	pd:readArray('default' ,scale)
 end
 
 local function melmin(self)
 	pd:sendList(self.dest ,{0,2,3,5,7,9,11})
 	pd:sendMessage(self.dest ,'send')
+	pd:readArray('default' ,scale)
 end
 
 local function mixob6(self)
 	pd:sendList(self.dest ,{0,2,4,5,7,8,10})
 	pd:sendMessage(self.dest ,'send')
+	pd:readArray('default' ,scale)
 end
 
 local function stop(self)
 	pd:sendBang('stop')
-	toggles[2]:click(true)
+	toggles.pause:click(true)
 end
 
+local function volChange(self ,num)
+	if num < 0.0011 then
+		num = 0 end
+	self.num = num
+	pd:sendFloat(self.dest ,self.num)
+end
+
+local function sclChange(self ,num)
+	self.num = num
+	pd:sendFloat(self.dest ,self.num)
+	pd:readArray('default' ,scale)
+end
 
 function love.load()
-	luapd.init()
-	patch = luapd.open{play=false}
+	lpd.init()
+	patch = lpd.open{play=false}
 
 	local vol ,x  ,bx  ,wo  ,dlr                ,width ,height =
 	      0.2 ,20 ,175 ,150 ,patch:dollarZero() ,love.graphics.getDimensions()
@@ -44,10 +67,11 @@ function love.load()
 	local phase = {dest='phase'    ,min=.5   ,max=0  ,num=.5  ,snap=1/48 ,gap=0}
 	local tempo = {dest='tempo'    ,min=.25  ,max=4  ,num=1   ,snap=2    ,gap=10 ,log=true}
 	local tvol  = {dest=dlr..'vol' ,min=.001 ,max=1  ,num=vol ,snap=.1           ,log=true
-		,len=height-100 ,prec=4 ,label={text='volume' ,x=-100}}
+		,len=height-100 ,prec=4 ,label={text='volume' ,x=-100} ,change=volChange}
 
 	gui.slider.rad = 25
 	gui.slider.len = width-wo
+	gui.slider.change = sclChange
 	sliders =
 	{	 gui.slider(x        ,height*2/6 ,{x=maj}   ,{rgb={.25 ,.66 ,.66}})
 		,gui.slider(x        ,height*3/6 ,{x=scl}   ,{rgb={.33 ,.5  ,.66}})
@@ -72,11 +96,13 @@ function love.load()
 		,gui.toggle(bx+75  ,100 ,{dest='pulse2'   ,label={y=60}})
 		,gui.toggle(bx+150 ,100 ,{dest='triangle' ,label={y=60}})
 		,gui.toggle(bx+225 ,100 ,{dest='noise'    ,label={y=60}})   }
+	toggles.pause = toggles[2]
 
 	for _,v in pairs(sliders) do
 		v:send()
 	end
 	pd:sendBang(dlr..'play')
+	pd:readArray('default' ,scale)
 end
 
 function love.update(dt)
@@ -85,7 +111,7 @@ function love.update(dt)
 		sliders[i]:update(x ,y) end
 	for i = #buttons,1,-1 do
 		buttons[i]:update(dt) end
-	luapd.update()
+	lpd.update()
 end
 
 function love.mousepressed(x ,y)
@@ -105,7 +131,6 @@ function love.draw()
 	for i = 1,#buttons do buttons[i]:draw() end
 	for i = 1,#toggles do toggles[i]:draw() end
 
-	pd:readArray('default' ,scale)
 	local str = ''
 	for i = 1,#scale do
 		str = str..string.format('%.2f' ,scale[i])..'\n' end

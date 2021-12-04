@@ -2,16 +2,16 @@ local ffi = require('ffi')
 if ffi.os == 'OSX' then
 	package.cpath = './?.dylib;'..package.cpath
 end
-require('luapd')
+local Pd = require('luapd') ---@type Pd
 
 local inChannels ,outChannels ,sampleRate ,queued =
       1          ,2           ,48000      ,false
 
 -- our pd engine
-local pd = PdBase()
+local pd = Pd.Base()
 
 -- custom receiver object for messages and midi
-local obj = PdObject{
+local obj = Pd.Object{
 	-- message callbacks
 	 print   = function(msg)       print('Lua: print ' ..msg) end
 	,bang    = function(dest)      print('Lua: bang '  ..dest) end
@@ -48,9 +48,9 @@ local obj = PdObject{
 	end
 }
 
-local blk    = PdBase.blockSize()
-local inbuf  = Array(blk * inChannels)
-local outbuf = Array(blk * outChannels)
+local blk    = Pd.Base.blockSize()
+local inbuf  = Pd.Array(blk * inChannels)
+local outbuf = Pd.Array(blk * outChannels)
 
 
 -- init pd
@@ -151,7 +151,7 @@ print('BEGIN Array Test')
 	-- array check length
 	print('array1 len: '..pd:arraySize('array1'))
 
-	local array1 = Array()
+	local array1 = Pd.Array()
 
 	local function readArray1()
 		pd:readArray('array1' ,array1)

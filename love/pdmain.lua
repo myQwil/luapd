@@ -2,44 +2,46 @@ function math.clip(x ,min ,max)
 	return (x < min and min) or (x > max and max) or x
 end
 
-local ext
+local ticks ,bufs  ---@type number
+local message ---@type string
+local ext =
+{	 ['Windows'] = 'dll'
+	,['OS X']    = 'dylib'
+	,['Linux']   = 'so'  }
 local stros = love.system.getOS()
-if     stros == 'Windows' then ext = 'dll'
-elseif stros == 'OS X'    then ext = 'dylib'
-else  ext = 'so'   end
-package.cpath = '../../?.'..ext..';'..package.cpath
-require('luapd')
+package.cpath = '../../?.'..ext[stros]..';'..package.cpath
+Pd = require('luapd') ---@type Pd
 
 local lpd =
-{	 msg  = ''
-	,file = 'main.pd'
-	,vol  = 1
-	,play = true   }
+{	 ticks = 1
+	,bufs = 33
+	,play = true
+	,patch = 'main.pd'
+	,volume = 1  }
 
-local pd  = PdBase()
-local obj = PdObject{
+lpd.pd  = Pd.Base()
+lpd.obj = Pd.Object{
 	print = function(msg)
-		print(msg)
-		lpd.msg = msg
+		message = msg
+		print(message)
 	end
 }
-
-local sdata ,source ,ticks
+local pd = lpd.pd
+local sdata  ---@type love.SoundData
+local source ---@type love.Source
 local srate = require('samplerate')
 local chIn ,chOut ,queued ,bitdepth =
       0    ,2     ,false  ,16
 
----@param tics number
----@param bufs number
-function lpd.init(tics ,bufs)
-	ticks = tics or 1
-	bufs  = bufs or 33
-	-- print('delay = '..ticks..' * '..bufs..' * '..
-	-- 	pd.blockSize()..' / '..(srate/1000)..
-	-- 	' = '..ticks * bufs * pd.blockSize() / (srate/1000)..' ms')
-	pd:setReceiver(obj)
+---@param opt table # A list of options
+function lpd.init(opt)
+	if type(opt) ~= 'table' then opt = lpd end
+	ticks = opt.ticks or lpd.ticks
+	bufs  = opt.bufs  or lpd.bufs
+
+	pd:setReceiver(opt.obj or lpd.obj)
 	if not pd:init(chIn ,chOut ,srate ,queued) then
-		print('Could not init pd')
+		print('Could not initialize pd')
 		love.event.push('quit')   end
 	pd:addToSearchPath('../../pd/lib')
 	pd:computeAudio(true)
@@ -50,24 +52,24 @@ function lpd.init(tics ,bufs)
 	love.graphics.setFont(love.graphics.newFont(16))
 end
 
----@param opt table # a list of options
----@return Patch
+---@param opt table # A list of options
+---@return Pd.Patch
 function lpd.open(opt)
 	if type(opt) ~= 'table' then opt = lpd end
-	local file ,vol ,play
-	file = opt.file or lpd.file
-	vol  = opt.vol and math.clip(opt.vol ,-1 ,1) or lpd.vol
+	local play ,patch ,volume
+	patch = opt.patch or lpd.patch
+	volume = opt.volume and math.clip(opt.volume ,-1 ,1) or lpd.volume
 	if opt.play ~= nil then
 	     play = opt.play
 	else play = lpd.play   end
 
-	local pat = pd:openPatch(file)
-	local dlr = pat:dollarZero()
+	patch = pd:openPatch(patch)
+	local dlr = patch:dollarZero()
 	if dlr ~= 0 then
-		pd:sendFloat(dlr..'vol' ,vol)
+		pd:sendFloat(dlr..'vol' ,volume)
 		if play then
 			pd:sendBang(dlr..'play')   end   end
-	return pat
+	return patch
 end
 
 function lpd.update()
@@ -78,9 +80,14 @@ function lpd.update()
 end
 
 function lpd.draw()
-	love.graphics.print(lpd.msg ,0 ,0)
+	love.graphics.print(message ,0 ,0)
 end
 
-return function()
-	return lpd ,pd ,obj
+function lpd.print_delay()
+	local blk = pd.blockSize()
+	local sr = srate / 1000
+	print('delay = '..ticks..' * '..bufs..' * '..blk..' / '..sr..' = '
+		..ticks * bufs * blk / sr..' ms')
 end
+
+return lpd

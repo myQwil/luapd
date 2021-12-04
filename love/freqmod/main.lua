@@ -1,17 +1,27 @@
+if os.getenv('LOCAL_LUA_DEBUGGER_VSCODE') == '1' then
+	require('lldebugger').start()
+end
+
 package.path = '../?.lua;'..package.path
-local lpd ,pd ,obj = require('pdmain')()
-local patch
+local lpd = require('pdmain')
+local pd ,obj  = lpd.pd ,lpd.obj
+local patch ---@type Pd.Patch
 
 local width ,height = love.graphics.getWidth()-1 ,love.graphics.getHeight()-1
 local maxfrq ,maxidx ,mx ,my ,portamento =
       300    ,3200   ,0  ,0  ,0
-local press = {false ,false}
+local isPressed = {false ,false}
+local isAuto = false
 local hintx = width - 250
 local grid = {}
 local fm =
 {	 modfrq = 1
 	,modidx = 150
 	,carfrq = 400   }
+
+local clr =
+{	 over  = {0.4  ,0.1  ,0.1  }
+	,under = {0.05 ,0.15 ,0.15 }  }
 
 function obj.float(dest ,num)
 	fm[dest] = num
@@ -26,18 +36,17 @@ function love.load()
 	local iter = 1/16
 	for i=iter   ,.999 ,iter*2 do
 		local wi ,hi = width*i ,height*i
-		grid[#grid+1] = {line={wi ,0  ,wi    ,height } ,color={.15 ,.05 ,.15 }}
-		grid[#grid+1] = {line={0  ,hi ,width ,hi     } ,color={.15 ,.05 ,.15 }}
+		grid[#grid+1] = {line = {wi ,0  ,wi    ,height } ,color = clr.under}
+		grid[#grid+1] = {line = {0  ,hi ,width ,hi     } ,color = clr.under}
 	end
 	for i=iter*2 ,.999 ,iter*2 do
 		local wi ,hi = width*i ,height*i
-		grid[#grid+1] = {line={wi ,0  ,wi    ,height } ,color={.33 ,0   ,0   }}
-		grid[#grid+1] = {line={0  ,hi ,width ,hi     } ,color={.33 ,0   ,0   }}
+		grid[#grid+1] = {line = {wi ,0  ,wi    ,height } ,color = clr.over}
+		grid[#grid+1] = {line = {0  ,hi ,width ,hi     } ,color = clr.over}
 	end
 
 	lpd.init()
-	local volume = 0.25
-	patch = lpd.open{file='../../pd/test.pd' ,vol=volume}
+	patch = lpd.open{patch='../../pd/test.pd' ,volume=0.2}
 	love.keyboard.setKeyRepeat(true)
 	pd:subscribe('modfrq')
 	pd:subscribe('modidx')
@@ -69,10 +78,10 @@ function love.draw()
 		,hintx+130 ,0  );
 
 	-- mouse press
-	if press[1] then
+	if isPressed[1] then
 		love.graphics.setColor(1  ,.8 ,.8)
 		love.graphics.print('Mouse1' ,150 ,0)   end
-	if press[2] then
+	if isPressed[2] then
 		love.graphics.setColor(.8 ,1  ,.8)
 		love.graphics.print('Mouse2' ,300 ,0)   end
 
@@ -102,24 +111,26 @@ local function tone(x ,y)
 	pd:sendBang    ('tone')
 end
 
-local function none(...) end
+local function none() end
 
-local fn = {[0]=none ,fmod}
+local funcs =
+{	 [false] = {[false] = none ,[true] = fmod}
+	,[true]  = {[false] = fmod ,[true] = pancar}  }
+
+local onPress = funcs[isAuto]
+local onClick = {onPress[true] ,tone}
 
 function love.mousepressed(x ,y ,btn)
-	if     btn == 1 then fn[1] (x ,y)
-	elseif btn == 2 then tone  (x ,y)   end
-	press[btn] = true
+	onClick[btn](x ,y)
+	isPressed[btn] = true
 end
 
 function love.mousereleased(x ,y ,btn)
-	press[btn] = false
+	isPressed[btn] = false
 end
 
 function love.mousemoved(x ,y)
-	if love.mouse.isDown(1) then
-	     fn[1](x ,y)
-	else fn[0](x ,y)   end
+	onPress[love.mouse.isDown(1)](x ,y)
 	mx ,my = x ,y
 end
 
@@ -128,7 +139,7 @@ function love.wheelmoved(x ,y)
 end
 
 local kpress =
-{	 ['=']  = function()
+{	 ['+']  = function()
 		portamento = math.max(0 ,portamento + 25)
 		pd:sendFloat('portamento' ,portamento) end
 	,['-']  = function()
@@ -138,10 +149,12 @@ local kpress =
 		local state = love.mouse.isGrabbed()
 		love.mouse.setGrabbed(not state) end
 	,space  = function()
-		fn[0] = (fn[0] == none) and fmod   or none
-		fn[1] = (fn[1] == fmod) and pancar or fmod end
+		isAuto = not isAuto
+		onPress = funcs[isAuto]
+		onClick[1] = onPress[true] end
 	,lctrl  = function() tone(love.mouse.getPosition()) end
 	,escape = function() love.event.push('quit') end   }
+kpress['='] = kpress['+']
 
 function love.keypressed(k)
 	if kpress[k] then

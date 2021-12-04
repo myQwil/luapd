@@ -30,9 +30,9 @@ public:
 	   ,fnnote  ,fnctrl ,fnprog  ,fnpitch  ,fnafter ,fnpoly  ,fnbyte;
 
 	int *msgs[NMSG]   =
-	{	&fnprint ,&fnbang ,&fnfloat ,&fnsymbol ,&fnlist  ,&fnmessage   };
+	{	&fnprint ,&fnbang ,&fnfloat ,&fnsymbol ,&fnlist  ,&fnmessage  };
 	int *midis[NMIDI] =
-	{	&fnnote  ,&fnctrl ,&fnprog  ,&fnpitch  ,&fnafter ,&fnpoly  ,&fnbyte   };
+	{	&fnnote  ,&fnctrl ,&fnprog  ,&fnpitch  ,&fnafter ,&fnpoly  ,&fnbyte  };
 
 	void setFuncs();
 	void setFunc(const char *name);

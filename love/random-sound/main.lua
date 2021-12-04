@@ -1,14 +1,19 @@
+if os.getenv('LOCAL_LUA_DEBUGGER_VSCODE') == '1' then
+	require('lldebugger').start()
+end
+
 package.path = '../?.lua;'..package.path
-local luapd ,pd = require('pdmain')()
-local patch
+local lpd = require('pdmain')
+local pd = lpd.pd
+local patch ---@type Pd.Patch
 
 function love.load()
-	luapd.init()
-	patch = luapd.open{vol=0.2}
+	lpd.init()
+	patch = lpd.open{volume = 0.2}
 end
 
 function love.update()
-	luapd.update()
+	lpd.update()
 end
 
 function love.quit()

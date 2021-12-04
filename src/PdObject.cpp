@@ -8,30 +8,30 @@ using namespace pd;
 lua_State *PdObject::L = 0;
 
 static const char* const msgname[]  =
-{	"print" ,"bang" ,"float" ,"symbol" ,"list" ,"message"   };
+{	"print" ,"bang" ,"float" ,"symbol" ,"list" ,"message"  };
 
 static const char* const midiname[] =
 {	 "noteOn"     ,"controlChange"  ,"programChange" ,"pitchBend"
-	,"aftertouch" ,"polyAftertouch" ,"midiByte"   };
+	,"aftertouch" ,"polyAftertouch" ,"midiByte"  };
 
 void PdObject::setFuncs() {
 	for (int i=0; i<NMSG; i++)
 	{	lua_getfield(L ,1 ,msgname[i]);
-		*msgs[i]  = luaL_ref(L ,LUA_REGISTRYINDEX);   }
+		*msgs[i]  = luaL_ref(L ,LUA_REGISTRYINDEX);  }
 	for (int i=0; i<NMIDI; i++)
 	{	lua_getfield(L ,1 ,midiname[i]);
-		*midis[i] = luaL_ref(L ,LUA_REGISTRYINDEX);   }
+		*midis[i] = luaL_ref(L ,LUA_REGISTRYINDEX);  }
 }
 
 void PdObject::setFunc(const char *name) {
 	for (int i=0; i<NMSG; i++)
 	{	if (!strcmp(msgname[i] ,name))
 		{	*msgs[i]  = luaL_ref(L ,LUA_REGISTRYINDEX);
-			return;   }   }
+			return;  }  }
 	for (int i=0; i<NMIDI; i++)
 	{	if (!strcmp(midiname[i] ,name))
 		{	*midis[i]  = luaL_ref(L ,LUA_REGISTRYINDEX);
-			return;   }   }
+			return;  }  }
 }
 
 //--------------------------------------------------------------
@@ -73,7 +73,7 @@ static void listToTable(lua_State *L ,const List &list) {
 			lua_pushnumber(L ,list.getFloat(i));
 		else if (list.isSymbol(i))
 			lua_pushstring(L ,list.getSymbol(i).c_str());
-		lua_rawseti(L ,-2 ,i+1);   }
+		lua_rawseti(L ,-2 ,i+1);  }
 }
 
 void PdObject::receiveList(const string &dest ,const List &list) {

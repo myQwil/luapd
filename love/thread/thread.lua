@@ -7,10 +7,12 @@ require('love.system')
 require('love.timer')
 
 package.path = '../?.lua;'..package.path
-local lpd ,pd = require('pdmain')()
+local lpd = require('pdmain')
+local pd = lpd.pd
 
-lpd.init(2 ,16)
-local patch = lpd.open({file = '../../pd/test.pd'})
+lpd.init{ticks=2 ,bufs=16}
+lpd.print_delay()
+local patch = lpd.open({patch = '../../pd/test.pd' ,volume=0.2})
 
 while true do
 	lpd.update()
