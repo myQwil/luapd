@@ -2,6 +2,10 @@ function math.clip(x ,min ,max)
 	return (x < min and min) or (x > max and max) or x
 end
 
+local function fif(cond ,T ,F)
+	if cond then return T else return F end
+end
+
 local ticks ,bufs  ---@type number
 local message ---@type string
 local ext =
@@ -57,11 +61,9 @@ end
 function lpd.open(opt)
 	if type(opt) ~= 'table' then opt = lpd end
 	local play ,patch ,volume
+	play = fif(opt.play ~= nil ,opt.play ,lpd.play)
 	patch = opt.patch or lpd.patch
 	volume = opt.volume and math.clip(opt.volume ,-1 ,1) or lpd.volume
-	if opt.play ~= nil then
-	     play = opt.play
-	else play = lpd.play   end
 
 	patch = pd:openPatch(patch)
 	local dlr = patch:dollarZero()

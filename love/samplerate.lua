@@ -20,7 +20,7 @@ ALCcontext *alcGetCurrentContext(ALCvoid);
 ALCdevice  *alcGetContextsDevice(ALCcontext *context);
 ]]
 
-local srate = ffi.new('ALCint[1]') ---@type number[]
+local srate = ffi.new('ALCint[1]') ---@type integer[]
 local ALC_FREQUENCY = 0x1007
 local context = openal.alcGetCurrentContext()
 local device  = openal.alcGetContextsDevice(context)

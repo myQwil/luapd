@@ -1,48 +1,12 @@
 math.epsilon = 2.2204460492503131e-16
-local pd ---@type Pd.Base
 
--- Default Callbacks
-local function slider_change(self ,num)
-	self.num = num
-	pd:sendFloat(self.dest ,self.num)
+local function fif(cond ,T ,F)
+	if cond then return T else return F end
 end
 
-local function button_click(self)
-	pd:sendBang(self.dest)
-end
-
-local function toggle_click(self ,on)
-	if on ~= nil then
-	     self.on = on
-	else self.on = not self.on end
-	pd:sendFloat(self.dest ,self.on and self.non0 or 0)
-end
-
--- Default Attributes
-local gui =
-{	 slider =
-	{	 change = slider_change
-		,rgb  = {.5 ,.5 ,.5} -- knob color
-		,log  = false -- logarithmic scaling
-		,snap = false -- snap to a grid
-		,gap  = 7     -- snap point radius
-		,prec = 8     -- precision when displaying number
-		,rad  = 25    -- knob radius
-		,len  = 100   -- axis length
-		,dest = 'foo'   }
-	,button =
-	{	 click = button_click
-		,delay = 0.2 -- circle display duration on click
-		,size  = 25
-		,dest  = 'foo'   }
-	,toggle =
-	{	 click = toggle_click
-		,on    = true -- initial state
-		,non0  = 1    -- non-zero value
-		,size  = 25
-		,dest  = 'foo'   }   }
-
-local focus -- the slider receiving focus or nil
+local pd       ---@type Pd.Base
+local gui = {} -- Pd gui library
+local focus    -- the slider receiving focus or nil
 
 -------------------------------------------------------------------------
 -------------------------------- Sliders --------------------------------
@@ -90,14 +54,14 @@ local function slider_update(sl ,x ,y)
 end
 
 local function slider_draw(sl)
-	love.graphics.setColor(.1  ,.1  ,.1  )
+	love.graphics.setColor(0.1  ,0.1  ,0.1  )
 	love.graphics.rectangle('fill' ,sl.x ,sl.y ,sl.xlen ,sl.ylen ,sl.rad)
-	love.graphics.setColor(.25 ,.25 ,.25 )
+	love.graphics.setColor(0.25 ,0.25 ,0.25 )
 	love.graphics.rectangle('line' ,sl.x ,sl.y ,sl.xlen ,sl.ylen ,sl.rad)
 
 	love.graphics.setColor(sl.rgb)
 	love.graphics.circle('fill' ,sl.cx ,sl.cy ,sl.rad)
-	love.graphics.setColor(1   ,1   ,1   )
+	love.graphics.setColor(1    ,1    ,1   )
 	love.graphics.circle('line' ,sl.cx ,sl.cy ,sl.rad)
 
 	for _,v in next,sl.t do
@@ -289,17 +253,57 @@ local function toggle_new(self ,x ,y ,opt)
 	tgl.mousepressed = toggle_mousepressed
 
 	tgl.non0 = opt.non0 or self.non0
-	tgl.on = opt.on
-	if tgl.on == nil then tgl.on = self.on end
+	tgl.on = fif(opt.on ~= nil ,opt.on ,self.on)
 	return tgl
 end
 
-setmetatable(gui.slider ,{__call = slider_new})
-setmetatable(gui.button ,{__call = button_new})
-setmetatable(gui.toggle ,{__call = toggle_new})
+-- Default Callbacks
+
+local function slider_change(self ,num)
+	self.num = num
+	pd:sendFloat(self.dest ,self.num)
+end
+
+local function button_click(self)
+	pd:sendBang(self.dest)
+end
+
+local function toggle_click(self ,on)
+	self.on = fif(on ~= nil ,on ,not self.on)
+	pd:sendFloat(self.dest ,self.on and self.non0 or 0)
+end
+
+-- Reset all widget properties to their default values
+function gui:reset()
+	self.slider =
+	{	 change = slider_change
+		,rgb  = {.5 ,.5 ,.5} -- knob color
+		,log  = false -- logarithmic scaling
+		,snap = false -- snap to a grid
+		,gap  = 7     -- snap point radius
+		,prec = 8     -- precision when displaying number
+		,rad  = 25    -- knob radius
+		,len  = 100   -- axis length
+		,dest = 'foo'  }
+	self.button =
+	{	 click = button_click
+		,delay = 0.2 -- circle display duration on click
+		,size  = 25
+		,dest  = 'foo'  }
+	self.toggle =
+	{	 click = toggle_click
+		,on    = true -- initial state
+		,non0  = 1    -- non-zero value
+		,size  = 25
+		,dest  = 'foo'  }
+	setmetatable(gui.slider ,{__call = slider_new})
+	setmetatable(gui.button ,{__call = button_new})
+	setmetatable(gui.toggle ,{__call = toggle_new})
+end
 
 ---@param base Pd.Base
 return function(base)
 	pd = base
+	gui:reset()
 	return gui
 end

@@ -12,7 +12,9 @@ local scale  = Pd.Array(6)
 local doremi = 're:\nmi:\nfa:\nso:\nla:\nti:'
 local sliders ,buttons ,toggles
 
--- Button/Slider Callbacks
+
+-- Widget Callbacks
+
 local function invup(self)
 	pd:sendMessage(self.dest ,'>1')
 	pd:sendMessage(self.dest ,'send')
@@ -62,8 +64,10 @@ function love.load()
 	local vol ,x  ,bx  ,wo  ,dlr                ,width ,height =
 	      0.2 ,20 ,175 ,150 ,patch:dollarZero() ,love.graphics.getDimensions()
 
-	local maj   = {dest='maj-min'  ,min=1    ,max=0  ,num=1   ,snap=.25  ,gap=12}
-	local scl   = {dest='mode'     ,min=0    ,max=7  ,num=0   ,snap=.5}
+	local maj   = {dest='maj-min'  ,min=1    ,max=0  ,num=1   ,snap=.25  ,gap=12
+		,change=sclChange}
+	local scl   = {dest='mode'     ,min=0    ,max=7  ,num=0   ,snap=.5
+		,change=sclChange}
 	local phase = {dest='phase'    ,min=.5   ,max=0  ,num=.5  ,snap=1/48 ,gap=0}
 	local tempo = {dest='tempo'    ,min=.25  ,max=4  ,num=1   ,snap=2    ,gap=10 ,log=true}
 	local tvol  = {dest=dlr..'vol' ,min=.001 ,max=1  ,num=vol ,snap=.1           ,log=true
@@ -71,7 +75,6 @@ function love.load()
 
 	gui.slider.rad = 25
 	gui.slider.len = width-wo
-	gui.slider.change = sclChange
 	sliders =
 	{	 gui.slider(x        ,height*2/6 ,{x=maj}   ,{rgb={.25 ,.66 ,.66}})
 		,gui.slider(x        ,height*3/6 ,{x=scl}   ,{rgb={.33 ,.5  ,.66}})
