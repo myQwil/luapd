@@ -1,17 +1,16 @@
 diff --git a/Makefile b/Makefile
-index ca5d392..11ba480 100644
+index ca5d392..9fe3f67 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -215,6 +215,8 @@ CFLAGS = -DPD -DHAVE_UNISTD_H -DUSEAPI_DUMMY \
+@@ -215,6 +215,7 @@ CFLAGS = -DPD -DHAVE_UNISTD_H -DUSEAPI_DUMMY \
  LDFLAGS += $(ADDITIONAL_LDFLAGS)
  CSHARP_LDFLAGS += $(ADDITIONAL_LDFLAGS)
  JAVA_LDFLAGS += $(ADDITIONAL_LDFLAGS)
-+EXTRA_OBJS = $(PD_EXTRA_OBJS)
 +include extra.make
  
  .PHONY: libpd csharplib javalib javadoc javasrc install uninstall clean clobber
  
-@@ -226,10 +228,10 @@ else
+@@ -226,10 +227,10 @@ else
  endif
  
  $(LIBPD): ${PD_FILES:.c=.o} ${UTIL_FILES:.c=.o} ${EXTRA_FILES:.c=.o}
@@ -24,15 +23,6 @@ index ca5d392..11ba480 100644
  
  javalib: $(JNIH_FILE) $(PDJAVA_JAR)
  
-@@ -260,7 +262,7 @@ $(PDCSHARP): ${PD_FILES:.c=.o} ${EXTRA_FILES:.c=.o}
- 	$(CC) -o $(PDCSHARP) $^ $(CSHARP_LDFLAGS) -lm -lpthread
- 
- clean:
--	rm -f ${PD_FILES:.c=.o} ${PD_EXTRA_OBJS} ${JNI_FILE:.c=.o}
-+	rm -f ${PD_FILES:.c=.o} ${JNI_FILE:.c=.o}
- 	rm -f ${UTIL_FILES:.c=.o} ${PD_EXTRA_FILES:.c=.o}
- 
- clobber: clean
 diff --git a/extra.make b/extra.make
 new file mode 100644
 index 0000000..6036c82

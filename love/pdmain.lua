@@ -6,8 +6,8 @@ local function fif(cond ,T ,F)
 	if cond then return T else return F end
 end
 
-local ticks ,bufs  ---@type number
-local message ---@type string
+local ticks ,bufs ---@type number
+local message     ---@type string
 local ext =
 {	 ['Windows'] = 'dll'
 	,['OS X']    = 'dylib'

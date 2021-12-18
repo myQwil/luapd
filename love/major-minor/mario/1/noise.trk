@@ -1,4 +1,4 @@
-scl # 1, scl n 1, scl default
+scl # 1, scl size 1, scl default
 
 note	dur	inst
 11	6	hho

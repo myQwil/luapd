@@ -117,8 +117,8 @@ local funcs =
 {	 [false] = {[false] = none ,[true] = fmod}
 	,[true]  = {[false] = fmod ,[true] = pancar}  }
 
-local onPress = funcs[isAuto]
-local onClick = {onPress[true] ,tone}
+local clkLeft = funcs[isAuto]
+local onClick = {clkLeft[true] ,tone}
 
 function love.mousepressed(x ,y ,btn)
 	onClick[btn](x ,y)
@@ -130,7 +130,7 @@ function love.mousereleased(x ,y ,btn)
 end
 
 function love.mousemoved(x ,y)
-	onPress[love.mouse.isDown(1)](x ,y)
+	clkLeft[love.mouse.isDown(1)](x ,y)
 	mx ,my = x ,y
 end
 
@@ -150,8 +150,8 @@ local kpress =
 		love.mouse.setGrabbed(not state) end
 	,space  = function()
 		isAuto = not isAuto
-		onPress = funcs[isAuto]
-		onClick[1] = onPress[true] end
+		clkLeft = funcs[isAuto]
+		onClick[1] = clkLeft[true] end
 	,lctrl  = function() tone(love.mouse.getPosition()) end
 	,escape = function() love.event.push('quit') end   }
 kpress['='] = kpress['+']
