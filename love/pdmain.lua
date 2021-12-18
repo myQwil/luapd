@@ -6,15 +6,16 @@ local function fif(cond ,T ,F)
 	if cond then return T else return F end
 end
 
-local ticks ,bufs ---@type number
-local message     ---@type string
 local ext =
-{	 ['Windows'] = 'dll'
-	,['OS X']    = 'dylib'
-	,['Linux']   = 'so'  }
+{	 ['Linux']   = 'so'
+	,['Windows'] = 'dll'
+	,['OS X']    = 'dylib'  }
 local stros = love.system.getOS()
-package.cpath = '../../?.'..ext[stros]..';'..package.cpath
+package.cpath = '../../lib/?.'..ext[stros]..';'..package.cpath
+
 Pd = require('luapd') ---@type Pd
+local ticks ,bufs     ---@type number
+local message         ---@type string
 
 local lpd =
 {	 ticks = 1

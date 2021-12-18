@@ -1,7 +1,10 @@
+local ext =
+{	 Linux   = 'so'
+	,Windows = 'dll'
+	,OSX     = 'dylib'  }
 local ffi = require('ffi')
-if ffi.os == 'OSX' then
-	package.cpath = './?.dylib;'..package.cpath
-end
+package.cpath = './lib/?.'..ext[ffi.os]..';'..package.cpath
+
 local Pd = require('luapd') ---@type Pd
 
 local inChannels ,outChannels ,sampleRate ,queued =
