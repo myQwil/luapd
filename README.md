@@ -41,7 +41,7 @@ You can test luapd with:
 
     luajit test.lua
 
-## Running Examples
+## Running LÖVE Examples
 
 ### Clone the PdXtra and Cyclone libraries adjacent to libpd:
 
