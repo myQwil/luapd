@@ -16,32 +16,23 @@
 #include "PdBase.hpp"
 #include "lua.hpp"
 
-#define NMSG  6
-#define NMIDI 7
-
 // custom receiver class
 class PdObject : public pd::PdReceiver ,public pd::PdMidiReceiver {
 public:
+	void setFuncs(int idx);
+	void setFunc(const char *name);
+	PdObject(lua_State* ,bool has_table);
 
-	static lua_State *L;
+private:
+	lua_State *L;
 
 	// callback refs
 	int fnprint ,fnbang ,fnfloat ,fnsymbol ,fnlist  ,fnmessage
 	   ,fnnote  ,fnctrl ,fnprog  ,fnpitch  ,fnafter ,fnpoly  ,fnbyte;
 
-	int *msgs[NMSG]   =
-	{	&fnprint ,&fnbang ,&fnfloat ,&fnsymbol ,&fnlist  ,&fnmessage  };
-	int *midis[NMIDI] =
-	{	&fnnote  ,&fnctrl ,&fnprog  ,&fnpitch  ,&fnafter ,&fnpoly  ,&fnbyte  };
-
-	void setFuncs();
-	void setFunc(const char *name);
-
-	PdObject(bool doSet=false) {
-		for (int i=0; i<NMSG;  i++) *msgs[i]  = -1;
-		for (int i=0; i<NMIDI; i++) *midis[i] = -1;
-		if  (L && doSet) setFuncs();
-	}
+	int *msgs[13]  =
+	{	 &fnprint ,&fnbang ,&fnfloat ,&fnsymbol ,&fnlist  ,&fnmessage
+		,&fnnote  ,&fnctrl ,&fnprog  ,&fnpitch  ,&fnafter ,&fnpoly  ,&fnbyte  };
 
 	// pd message receiver callbacks
 	void print          (const std::string &message);

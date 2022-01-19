@@ -87,6 +87,10 @@ function Pd.Patch:clear() end
 ---@return Pd.Object
 function Pd.Object(callbacks) end
 
+---set multiple callback functions
+---@param funcs table
+function Pd.Object:setFuncs(funcs) end
+
 
 ----------------------------------------------------------
 ------------------------- Pd.Base -------------------------

@@ -105,10 +105,20 @@ print('BEGIN Patch Test')
 print('FINISH Patch Test\n')
 
 
--- reassign a callback function
+-- (re)assign a callback function
 function obj.print(msg)
 	print('foobar: '..msg)
 end
+
+-- (re)assign multiple callback functions
+obj:setFuncs{
+	 noteOn   = function(channel ,pitch ,velocity)
+		print('noteOn: '..channel..' '..pitch..' '..velocity)
+	end
+	,midiByte = function(port ,byte)
+		print('\nfoo-midi-byte: '..port..' '..byte..'\n')
+	end
+}
 
 
 print('BEGIN Message Test')

@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <iostream>
 #include "PdObject.hpp"
+#include <iostream>
+#include <stdlib.h>
 
 #if LUA_VERSION_NUM == 501
 
@@ -52,20 +52,22 @@ static int pdarray_gc(lua_State *L) {
 	return 0;
 }
 
-static int l_len(lua_State *L) {
+static int pdarray_len(lua_State *L) {
 	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
 	lua_pushinteger(L ,a->size());
 	return 1;
 }
 
-static int l_ptr(lua_State *L) {
+static int pdarray_index(lua_State *L) {
 	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
-	int i = !lua_isnoneornil(L ,2) ? lua_tointeger(L ,2) : 0;
-	lua_pushlightuserdata(L ,&(*a)[i]);
+	int i = luaL_checkinteger(L ,2);
+	if (i < 1 || i > a->size())
+		return luaL_error(L ,"Array: index out of bounds");
+	lua_pushnumber(L ,(*a)[i-1]);
 	return 1;
 }
 
-static int l_set(lua_State *L) {
+static int pdarray_newindex(lua_State *L) {
 	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
 	int i   = !lua_isnoneornil(L ,2) ? lua_tointeger(L ,2) : 0;
 	float f = luaL_checknumber(L ,3);
@@ -77,12 +79,10 @@ static int l_set(lua_State *L) {
 	return 0;
 }
 
-static int l_at(lua_State *L) {
+static int pdarray_call(lua_State *L) {
 	vector<float> *a = *(vector<float>**)luaL_checkudata(L ,1 ,LUA_PDARRAY);
-	int i = luaL_checkinteger(L ,2);
-	if (i < 1 || i > a->size())
-		return luaL_error(L ,"Array: index out of bounds");
-	lua_pushnumber(L ,(*a)[i-1]);
+	int i = !lua_isnoneornil(L ,2) ? lua_tointeger(L ,2) : 0;
+	lua_pushlightuserdata(L ,&(*a)[i]);
 	return 1;
 }
 
@@ -117,43 +117,43 @@ static int pdpatch_gc(lua_State *L) {
 	return 0;
 }
 
-static int l_handle(lua_State *L) {
+static int pdpatch_handle(lua_State *L) {
 	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
 	lua_pushlightuserdata(L ,p->handle());
 	return 1;
 }
 
-static int l_dollarZero(lua_State *L) {
+static int pdpatch_dollarZero(lua_State *L) {
 	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
 	lua_pushinteger(L ,p->dollarZero());
 	return 1;
 }
 
-static int l_filename(lua_State *L) {
+static int pdpatch_filename(lua_State *L) {
 	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
 	lua_pushstring(L ,p->filename().c_str());
 	return 1;
 }
 
-static int l_path(lua_State *L) {
+static int pdpatch_path(lua_State *L) {
 	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
 	lua_pushstring(L ,p->path().c_str());
 	return 1;
 }
 
-static int l_dollarZeroStr(lua_State *L) {
+static int pdpatch_dollarZeroStr(lua_State *L) {
 	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
 	lua_pushstring(L ,p->dollarZeroStr().c_str());
 	return 1;
 }
 
-static int l_isValid(lua_State *L) {
+static int pdpatch_isValid(lua_State *L) {
 	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
 	lua_pushboolean(L ,p->isValid());
 	return 1;
 }
 
-static int l_patchClear(lua_State *L) {
+static int pdpatch_clear(lua_State *L) {
 	Patch *p = *(Patch**)luaL_checkudata(L ,1 ,LUA_PDPATCH);
 	p->clear();
 	return 0;
@@ -165,8 +165,8 @@ static int l_patchClear(lua_State *L) {
 
 static int pdobject_new(lua_State *L) {
 	lua_settop(L ,1);
-	bool set = (lua_type(L ,1) == LUA_TTABLE);
-	*(PdObject**)lua_newuserdata(L ,sizeof(PdObject*)) = new PdObject(set);
+	*(PdObject**)lua_newuserdata(L ,sizeof(PdObject*)) =
+		new PdObject(L ,lua_istable(L ,1));
 	luaL_setmetatable(L ,LUA_PDOBJECT);
 	return 1;
 }
@@ -177,7 +177,7 @@ static int pdobject_gc(lua_State *L) {
 	return 0;
 }
 
-static int l_setFunc(lua_State *L) {
+static int pdobject_newindex(lua_State *L) {
 	PdObject *o = *(PdObject**)luaL_checkudata(L ,1 ,LUA_PDOBJECT);
 	const char *name = luaL_checkstring       (L ,2);
 	luaL_checktype                            (L ,3 ,LUA_TFUNCTION);
@@ -185,6 +185,12 @@ static int l_setFunc(lua_State *L) {
 	return 0;
 }
 
+static int pdobject_setFuncs(lua_State *L) {
+	PdObject *o = *(PdObject**)luaL_checkudata(L ,1 ,LUA_PDOBJECT);
+	if (lua_istable(L ,2))
+		o->setFuncs(2);
+	return 0;
+}
 // ------------------------------------------------------------------------
 // -------------------------------- PdBase --------------------------------
 // ------------------------------------------------------------------------
@@ -201,7 +207,7 @@ static int pdbase_gc(lua_State *L) {
 	return 0;
 }
 
-static int l_init(lua_State *L) {
+static int pdbase_init(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int chIn    = luaL_checkinteger       (L ,2);
 	int chOut   = luaL_checkinteger       (L ,3);
@@ -211,26 +217,26 @@ static int l_init(lua_State *L) {
 	return 1;
 }
 
-static int l_baseClear(lua_State *L) {
+static int pdbase_clear(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	b->clear();
 	return 0;
 }
 
-static int l_addToSearchPath(lua_State *L) {
+static int pdbase_addToSearchPath(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *path = luaL_checkstring   (L ,2);
 	b->addToSearchPath(path);
 	return 0;
 }
 
-static int l_clearSearchPath(lua_State *L) {
+static int pdbase_clearSearchPath(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	b->clearSearchPath();
 	return 0;
 }
 
-static int l_openPatch(lua_State *L) {
+static int pdbase_openPatch(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	Patch  *p;
 	int isString = (lua_type(L ,2) == LUA_TSTRING);
@@ -244,7 +250,7 @@ static int l_openPatch(lua_State *L) {
 	return 1;
 }
 
-static int l_closePatch(lua_State *L) {
+static int pdbase_closePatch(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int isString = (lua_type(L ,2) == LUA_TSTRING);
 	if (isString)
@@ -256,7 +262,7 @@ static int l_closePatch(lua_State *L) {
 	return 0;
 }
 
-static int l_processFloat(lua_State *L) {
+static int pdbase_processFloat(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int ticks  = luaL_checkinteger         (L ,2);
 	int i      = lua_gettop(L) == 4;
@@ -266,7 +272,7 @@ static int l_processFloat(lua_State *L) {
 	return 1;
 }
 
-static int l_processShort(lua_State *L) {
+static int pdbase_processShort(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int ticks  = luaL_checkinteger         (L ,2);
 	int i      = lua_gettop(L) == 4;
@@ -276,7 +282,7 @@ static int l_processShort(lua_State *L) {
 	return 1;
 }
 
-static int l_processDouble(lua_State *L) {
+static int pdbase_processDouble(lua_State *L) {
 	PdBase *b   = *(PdBase**)luaL_checkudata (L ,1 ,LUA_PDBASE);
 	int ticks   = luaL_checkinteger          (L ,2);
 	int i       = lua_gettop(L) == 4;
@@ -286,7 +292,7 @@ static int l_processDouble(lua_State *L) {
 	return 1;
 }
 
-static int l_processRaw(lua_State *L) {
+static int pdbase_processRaw(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int i      = lua_gettop(L) == 3;
 	float *in  = i ? (float*)lua_touserdata(L ,2) : 0;
@@ -295,7 +301,7 @@ static int l_processRaw(lua_State *L) {
 	return 1;
 }
 
-static int l_processRawShort(lua_State *L) {
+static int pdbase_processRawShort(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int i      = lua_gettop(L) == 3;
 	short *in  = i ? (short*)lua_touserdata(L ,2) : 0;
@@ -304,7 +310,7 @@ static int l_processRawShort(lua_State *L) {
 	return 1;
 }
 
-static int l_processRawDouble(lua_State *L) {
+static int pdbase_processRawDouble(lua_State *L) {
 	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int i       = lua_gettop(L) == 3;
 	double *in  = i ? (double*)lua_touserdata(L ,2) : 0;
@@ -313,53 +319,53 @@ static int l_processRawDouble(lua_State *L) {
 	return 1;
 }
 
-static int l_computeAudio(lua_State *L) {
+static int pdbase_computeAudio(lua_State *L) {
 	PdBase *b  = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	bool state = lua_toboolean             (L ,2);
 	b->computeAudio(state);
 	return 0;
 }
 
-static int l_subscribe(lua_State *L) {
+static int pdbase_subscribe(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *source = luaL_checkstring (L ,2);
 	b->subscribe(source);
 	return 0;
 }
 
-static int l_unsubscribe(lua_State *L) {
+static int pdbase_unsubscribe(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *source = luaL_checkstring (L ,2);
 	b->unsubscribe(source);
 	return 0;
 }
 
-static int l_exists(lua_State *L) {
+static int pdbase_exists(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *source = luaL_checkstring (L ,2);
 	lua_pushboolean(L ,b->exists(source));
 	return 1;
 }
 
-static int l_unsubscribeAll(lua_State *L) {
+static int pdbase_unsubscribeAll(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	b->unsubscribeAll();
 	return 0;
 }
 
-static int l_receiveMessages(lua_State *L) {
+static int pdbase_receiveMessages(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	b->receiveMessages();
 	return 0;
 }
 
-static int l_receiveMidi(lua_State *L) {
+static int pdbase_receiveMidi(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	b->receiveMidi();
 	return 0;
 }
 
-static int l_setReceiver(lua_State *L) {
+static int pdbase_setReceiver(lua_State *L) {
 	PdBase   *b = *(PdBase**)   luaL_checkudata(L ,1 ,LUA_PDBASE);
 	PdObject *o = *(PdObject**) (lua_isuserdata(L ,2)
 	            ? luaL_checkudata(L ,2 ,LUA_PDOBJECT) : nullptr);
@@ -367,7 +373,7 @@ static int l_setReceiver(lua_State *L) {
 	return 0;
 }
 
-static int l_setMidiReceiver(lua_State *L) {
+static int pdbase_setMidiReceiver(lua_State *L) {
 	PdBase   *b = *(PdBase**)   luaL_checkudata(L ,1 ,LUA_PDBASE);
 	PdObject *o = *(PdObject**) (lua_isuserdata(L ,2)
 	            ? luaL_checkudata(L ,2 ,LUA_PDOBJECT) : nullptr);
@@ -375,14 +381,14 @@ static int l_setMidiReceiver(lua_State *L) {
 	return 0;
 }
 
-static int l_sendBang(lua_State *L) {
+static int pdbase_sendBang(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *dest = luaL_checkstring   (L ,2);
 	b->sendBang(dest);
 	return 0;
 }
 
-static int l_sendFloat(lua_State *L) {
+static int pdbase_sendFloat(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *dest = luaL_checkstring   (L ,2);
 	float value      = luaL_checknumber   (L ,3);
@@ -390,7 +396,7 @@ static int l_sendFloat(lua_State *L) {
 	return 0;
 }
 
-static int l_sendSymbol(lua_State *L) {
+static int pdbase_sendSymbol(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *dest   = luaL_checkstring (L ,2);
 	const char *symbol = luaL_checkstring (L ,3);
@@ -398,27 +404,27 @@ static int l_sendSymbol(lua_State *L) {
 	return 0;
 }
 
-static int l_startMessage(lua_State *L) {
+static int pdbase_startMessage(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	b->startMessage();
 	return 0;
 }
 
-static int l_addFloat(lua_State *L) {
+static int pdbase_addFloat(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	float num = luaL_checknumber          (L ,2);
 	b->addFloat(num);
 	return 0;
 }
 
-static int l_addSymbol(lua_State *L) {
+static int pdbase_addSymbol(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *symbol = luaL_checkstring (L ,2);
 	b->addSymbol(symbol);
 	return 0;
 }
 
-static int l_addAtom(lua_State *L) {
+static int pdbase_addAtom(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int typ = lua_type(L ,2);
 	if      (typ == LUA_TNUMBER)
@@ -430,14 +436,14 @@ static int l_addAtom(lua_State *L) {
 	return 0;
 }
 
-static int l_finishList(lua_State *L) {
+static int pdbase_finishList(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *dest = luaL_checkstring   (L ,2);
 	b->finishList(dest);
 	return 0;
 }
 
-static int l_finishMessage(lua_State *L) {
+static int pdbase_finishMessage(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *dest = luaL_checkstring   (L ,2);
 	const char *msg  = luaL_checkstring   (L ,3);
@@ -460,7 +466,7 @@ static List tableToList(lua_State *L ,int idx) {
 	return list;
 }
 
-static int l_sendList(lua_State *L) {
+static int pdbase_sendList(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *dest = luaL_checkstring   (L ,2);
 	luaL_checktype                        (L ,3 ,LUA_TTABLE);
@@ -469,7 +475,7 @@ static int l_sendList(lua_State *L) {
 	return 0;
 }
 
-static int l_sendMessage(lua_State *L) {
+static int pdbase_sendMessage(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *dest = luaL_checkstring   (L ,2);
 	const char *msg  = luaL_checkstring   (L ,3);
@@ -478,7 +484,7 @@ static int l_sendMessage(lua_State *L) {
 	return 0;
 }
 
-static int l_sendNoteOn(lua_State *L) {
+static int pdbase_sendNoteOn(lua_State *L) {
 	PdBase *b    = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int channel  = luaL_checkinteger         (L ,2);
 	int pitch    = luaL_checkinteger         (L ,3);
@@ -487,7 +493,7 @@ static int l_sendNoteOn(lua_State *L) {
 	return 0;
 }
 
-static int l_sendControlChange(lua_State *L) {
+static int pdbase_sendControlChange(lua_State *L) {
 	PdBase *b      = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int channel    = luaL_checkinteger         (L ,2);
 	int controller = luaL_checkinteger         (L ,3);
@@ -496,7 +502,7 @@ static int l_sendControlChange(lua_State *L) {
 	return 0;
 }
 
-static int l_sendProgramChange(lua_State *L) {
+static int pdbase_sendProgramChange(lua_State *L) {
 	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int channel = luaL_checkinteger         (L ,2);
 	int value   = luaL_checkinteger         (L ,3);
@@ -504,7 +510,7 @@ static int l_sendProgramChange(lua_State *L) {
 	return 0;
 }
 
-static int l_sendPitchBend(lua_State *L) {
+static int pdbase_sendPitchBend(lua_State *L) {
 	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int channel = luaL_checkinteger         (L ,2);
 	int value   = luaL_checkinteger         (L ,3);
@@ -512,7 +518,7 @@ static int l_sendPitchBend(lua_State *L) {
 	return 0;
 }
 
-static int l_sendAftertouch(lua_State *L) {
+static int pdbase_sendAftertouch(lua_State *L) {
 	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int channel = luaL_checkinteger         (L ,2);
 	int value   = luaL_checkinteger         (L ,3);
@@ -520,7 +526,7 @@ static int l_sendAftertouch(lua_State *L) {
 	return 0;
 }
 
-static int l_sendPolyAftertouch(lua_State *L) {
+static int pdbase_sendPolyAftertouch(lua_State *L) {
 	PdBase *b   = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int channel = luaL_checkinteger         (L ,2);
 	int pitch   = luaL_checkinteger         (L ,3);
@@ -529,7 +535,7 @@ static int l_sendPolyAftertouch(lua_State *L) {
 	return 0;
 }
 
-static int l_sendMidiByte(lua_State *L) {
+static int pdbase_sendMidiByte(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int port  = luaL_checkinteger         (L ,2);
 	int value = luaL_checkinteger         (L ,3);
@@ -537,7 +543,7 @@ static int l_sendMidiByte(lua_State *L) {
 	return 0;
 }
 
-static int l_sendSysex(lua_State *L) {
+static int pdbase_sendSysex(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int port  = luaL_checkinteger         (L ,2);
 	int value = luaL_checkinteger         (L ,3);
@@ -545,7 +551,7 @@ static int l_sendSysex(lua_State *L) {
 	return 0;
 }
 
-static int l_sendSysRealTime(lua_State *L) {
+static int pdbase_sendSysRealTime(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	int port  = luaL_checkinteger         (L ,2);
 	int value = luaL_checkinteger         (L ,3);
@@ -553,20 +559,20 @@ static int l_sendSysRealTime(lua_State *L) {
 	return 0;
 }
 
-static int l_isMessageInProgress(lua_State *L) {
+static int pdbase_isMessageInProgress(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	lua_pushboolean(L ,b->isMessageInProgress());
 	return 1;
 }
 
-static int l_arraySize(lua_State *L) {
+static int pdbase_arraySize(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *name = luaL_checkstring   (L ,2);
 	lua_pushinteger(L ,b->arraySize(name));
 	return 1;
 }
 
-static int l_resizeArray(lua_State *L) {
+static int pdbase_resizeArray(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *name = luaL_checkstring   (L ,2);
 	long size        = luaL_checkinteger  (L ,3);
@@ -574,7 +580,7 @@ static int l_resizeArray(lua_State *L) {
 	return 1;
 }
 
-static int l_readArray(lua_State *L) {
+static int pdbase_readArray(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *name = luaL_checkstring   (L ,2);
 	luaL_checktype(L ,3 ,LUA_TUSERDATA);
@@ -585,7 +591,7 @@ static int l_readArray(lua_State *L) {
 	return 1;
 }
 
-static int l_writeArray(lua_State *L) {
+static int pdbase_writeArray(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *name = luaL_checkstring   (L ,2);
 	luaL_checktype(L ,3 ,LUA_TUSERDATA);
@@ -596,7 +602,7 @@ static int l_writeArray(lua_State *L) {
 	return 1;
 }
 
-static int l_clearArray(lua_State *L) {
+static int pdbase_clearArray(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	const char *name = luaL_checkstring   (L ,2);
 	int value        = !lua_isnoneornil   (L ,3) ? luaL_checkinteger (L ,3) : 0;
@@ -604,31 +610,31 @@ static int l_clearArray(lua_State *L) {
 	return 0;
 }
 
-static int l_isInited(lua_State *L) {
+static int pdbase_isInited(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	lua_pushboolean(L ,b->isInited());
 	return 1;
 }
 
-static int l_isQueued(lua_State *L) {
+static int pdbase_isQueued(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	lua_pushboolean(L ,b->isQueued());
 	return 1;
 }
 
-static int l_blockSize(lua_State *L) {
+static int pdbase_blockSize(lua_State *L) {
 	lua_pushinteger(L ,PdBase::blockSize());
 	return 1;
 }
 
-static int l_setMaxMessageLen(lua_State *L) {
+static int pdbase_setMaxMessageLen(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	unsigned int len = luaL_checkinteger  (L ,2);
 	b->setMaxMessageLen(len);
 	return 0;
 }
 
-static int l_maxMessageLen(lua_State *L) {
+static int pdbase_maxMessageLen(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	lua_pushinteger(L ,b->maxMessageLen());
 	return 1;
@@ -645,12 +651,12 @@ static int pdbase_shl(lua_State *L) {
 
 static void pdarray_reg(lua_State *L) {
 	static const luaL_Reg meta[] =
-	{	 { "__gc"       ,pdarray_gc }
-		,{ "__len"      ,l_len       }
-		,{ "__index"    ,l_at        }
-		,{ "__newindex" ,l_set       }
-		,{ "__call"     ,l_ptr       }
-		,{ NULL         ,NULL        }  };
+	{	 { "__gc"       ,pdarray_gc       }
+		,{ "__len"      ,pdarray_len      }
+		,{ "__index"    ,pdarray_index    }
+		,{ "__newindex" ,pdarray_newindex }
+		,{ "__call"     ,pdarray_call     }
+		,{ NULL         ,NULL             }  };
 	luaL_newmetatable(L ,LUA_PDARRAY);
 	luaL_setfuncs    (L ,meta ,0);
 	lua_pop          (L ,1);
@@ -660,17 +666,17 @@ static void pdarray_reg(lua_State *L) {
 
 static void pdpatch_reg(lua_State *L) {
 	static const luaL_Reg meta[] =
-	{	 { "__gc"          ,pdpatch_gc      }
-		,{ NULL            ,NULL            }  };
+	{	 { "__gc"          ,pdpatch_gc            }
+		,{ NULL            ,NULL                  }  };
 	static const luaL_Reg meth[] =
-	{	 { "handle"        ,l_handle        }
-		,{ "dollarZero"    ,l_dollarZero    }
-		,{ "filename"      ,l_filename      }
-		,{ "path"          ,l_path          }
-		,{ "dollarZeroStr" ,l_dollarZeroStr }
-		,{ "isValid"       ,l_isValid       }
-		,{ "clear"         ,l_patchClear    }
-		,{ NULL            ,NULL            }  };
+	{	 { "handle"        ,pdpatch_handle        }
+		,{ "dollarZero"    ,pdpatch_dollarZero    }
+		,{ "filename"      ,pdpatch_filename      }
+		,{ "path"          ,pdpatch_path          }
+		,{ "dollarZeroStr" ,pdpatch_dollarZeroStr }
+		,{ "isValid"       ,pdpatch_isValid       }
+		,{ "clear"         ,pdpatch_clear         }
+		,{ NULL            ,NULL                  }  };
 	luaL_newmetatable(L ,LUA_PDPATCH);
 	luaL_setfuncs    (L ,meta ,0);
 	luaL_newlib      (L ,meth);
@@ -682,89 +688,93 @@ static void pdpatch_reg(lua_State *L) {
 
 static void pdobject_reg(lua_State *L) {
 	static const luaL_Reg meta[] =
-	{	 { "__gc"       ,pdobject_gc }
-		,{ "__newindex" ,l_setFunc   }
-		,{ NULL         ,NULL        }  };
+	{	 { "__gc"       ,pdobject_gc       }
+		,{ "__newindex" ,pdobject_newindex }
+		,{ NULL         ,NULL              }  };
+	static const luaL_Reg meth[] =
+	{	 { "setFuncs"   ,pdobject_setFuncs }
+		,{ NULL         ,NULL              }  };
 	luaL_newmetatable(L ,LUA_PDOBJECT);
 	luaL_setfuncs    (L ,meta ,0);
+	luaL_newlib      (L ,meth);
+	lua_setfield     (L ,-2 ,"__index");
 	lua_pop          (L ,1);
 
-	PdObject::L = L;
 	lua_pushcfunction(L ,pdobject_new);
 }
 
 static void pdbase_reg(lua_State *L) {
 	static const luaL_Reg meta[] =
-	{	 { "__gc"                ,pdbase_gc             }
-		,{ "__shl"               ,pdbase_shl            }
-		,{ NULL                  ,NULL                  }  };
+	{	 { "__gc"                ,pdbase_gc                  }
+		,{ "__shl"               ,pdbase_shl                 }
+		,{ NULL                  ,NULL                       }  };
 	static const luaL_Reg meth[] =
 	{		// Initializing Pd
-		 { "init"                ,l_init                }
-		,{ "clear"               ,l_baseClear           }
+		 { "init"                ,pdbase_init                }
+		,{ "clear"               ,pdbase_clear               }
 			// Adding Search Paths
-		,{ "addToSearchPath"     ,l_addToSearchPath     }
-		,{ "clearSearchPath"     ,l_clearSearchPath     }
+		,{ "addToSearchPath"     ,pdbase_addToSearchPath     }
+		,{ "clearSearchPath"     ,pdbase_clearSearchPath     }
 			// Opening Patches
-		,{ "openPatch"           ,l_openPatch           }
-		,{ "closePatch"          ,l_closePatch          }
+		,{ "openPatch"           ,pdbase_openPatch           }
+		,{ "closePatch"          ,pdbase_closePatch          }
 			// Audio Processing
-		,{ "processFloat"        ,l_processFloat        }
-		,{ "processShort"        ,l_processShort        }
-		,{ "processDouble"       ,l_processDouble       }
-		,{ "processRaw"          ,l_processRaw          }
-		,{ "processRawShort"     ,l_processRawShort     }
-		,{ "processRawDouble"    ,l_processRawDouble    }
+		,{ "processFloat"        ,pdbase_processFloat        }
+		,{ "processShort"        ,pdbase_processShort        }
+		,{ "processDouble"       ,pdbase_processDouble       }
+		,{ "processRaw"          ,pdbase_processRaw          }
+		,{ "processRawShort"     ,pdbase_processRawShort     }
+		,{ "processRawDouble"    ,pdbase_processRawDouble    }
 			// Audio Processing Control
-		,{ "computeAudio"        ,l_computeAudio        }
+		,{ "computeAudio"        ,pdbase_computeAudio        }
 			// Message Receiving
-		,{ "subscribe"           ,l_subscribe           }
-		,{ "unsubscribe"         ,l_unsubscribe         }
-		,{ "exists"              ,l_exists              }
-		,{ "unsubscribeAll"      ,l_unsubscribeAll      }
+		,{ "subscribe"           ,pdbase_subscribe           }
+		,{ "unsubscribe"         ,pdbase_unsubscribe         }
+		,{ "exists"              ,pdbase_exists              }
+		,{ "unsubscribeAll"      ,pdbase_unsubscribeAll      }
 			// Receiving from the Message Queues
-		,{ "receiveMessages"     ,l_receiveMessages     }
-		,{ "receiveMidi"         ,l_receiveMidi         }
+		,{ "receiveMessages"     ,pdbase_receiveMessages     }
+		,{ "receiveMidi"         ,pdbase_receiveMidi         }
 			// Event Receiving via Callbacks
-		,{ "setReceiver"         ,l_setReceiver         }
-		,{ "setMidiReceiver"     ,l_setMidiReceiver     }
+		,{ "setReceiver"         ,pdbase_setReceiver         }
+		,{ "setMidiReceiver"     ,pdbase_setMidiReceiver     }
 			// Send Functions
-		,{ "sendBang"            ,l_sendBang            }
-		,{ "sendFloat"           ,l_sendFloat           }
-		,{ "sendSymbol"          ,l_sendSymbol          }
+		,{ "sendBang"            ,pdbase_sendBang            }
+		,{ "sendFloat"           ,pdbase_sendFloat           }
+		,{ "sendSymbol"          ,pdbase_sendSymbol          }
 			// Sending Compound Messages
-		,{ "startMessage"        ,l_startMessage        }
-		,{ "addFloat"            ,l_addFloat            }
-		,{ "addSymbol"           ,l_addSymbol           }
-		,{ "addAtom"             ,l_addAtom             }
-		,{ "finishList"          ,l_finishList          }
-		,{ "finishMessage"       ,l_finishMessage       }
-		,{ "sendList"            ,l_sendList            }
-		,{ "sendMessage"         ,l_sendMessage         }
+		,{ "startMessage"        ,pdbase_startMessage        }
+		,{ "addFloat"            ,pdbase_addFloat            }
+		,{ "addSymbol"           ,pdbase_addSymbol           }
+		,{ "addAtom"             ,pdbase_addAtom             }
+		,{ "finishList"          ,pdbase_finishList          }
+		,{ "finishMessage"       ,pdbase_finishMessage       }
+		,{ "sendList"            ,pdbase_sendList            }
+		,{ "sendMessage"         ,pdbase_sendMessage         }
 			// Sending MIDI
-		,{ "sendNoteOn"          ,l_sendNoteOn          }
-		,{ "sendControlChange"   ,l_sendControlChange   }
-		,{ "sendProgramChange"   ,l_sendProgramChange   }
-		,{ "sendPitchBend"       ,l_sendPitchBend       }
-		,{ "sendAftertouch"      ,l_sendAftertouch      }
-		,{ "sendPolyAftertouch"  ,l_sendPolyAftertouch  }
-		,{ "sendMidiByte"        ,l_sendMidiByte        }
-		,{ "sendSysex"           ,l_sendSysex           }
-		,{ "sendSysRealTime"     ,l_sendSysRealTime     }
-		,{ "isMessageInProgress" ,l_isMessageInProgress }
+		,{ "sendNoteOn"          ,pdbase_sendNoteOn          }
+		,{ "sendControlChange"   ,pdbase_sendControlChange   }
+		,{ "sendProgramChange"   ,pdbase_sendProgramChange   }
+		,{ "sendPitchBend"       ,pdbase_sendPitchBend       }
+		,{ "sendAftertouch"      ,pdbase_sendAftertouch      }
+		,{ "sendPolyAftertouch"  ,pdbase_sendPolyAftertouch  }
+		,{ "sendMidiByte"        ,pdbase_sendMidiByte        }
+		,{ "sendSysex"           ,pdbase_sendSysex           }
+		,{ "sendSysRealTime"     ,pdbase_sendSysRealTime     }
+		,{ "isMessageInProgress" ,pdbase_isMessageInProgress }
 			// Array Access
-		,{ "arraySize"           ,l_arraySize           }
-		,{ "resizeArray"         ,l_resizeArray         }
-		,{ "readArray"           ,l_readArray           }
-		,{ "writeArray"          ,l_writeArray          }
-		,{ "clearArray"          ,l_clearArray          }
+		,{ "arraySize"           ,pdbase_arraySize           }
+		,{ "resizeArray"         ,pdbase_resizeArray         }
+		,{ "readArray"           ,pdbase_readArray           }
+		,{ "writeArray"          ,pdbase_writeArray          }
+		,{ "clearArray"          ,pdbase_clearArray          }
 			// Utils
-		,{ "isInited"            ,l_isInited            }
-		,{ "isQueued"            ,l_isQueued            }
-		,{ "blockSize"           ,l_blockSize           }
-		,{ "setMaxMessageLen"    ,l_setMaxMessageLen    }
-		,{ "maxMessageLen"       ,l_maxMessageLen       }
-		,{ NULL                  ,NULL                  }  };
+		,{ "isInited"            ,pdbase_isInited            }
+		,{ "isQueued"            ,pdbase_isQueued            }
+		,{ "blockSize"           ,pdbase_blockSize           }
+		,{ "setMaxMessageLen"    ,pdbase_setMaxMessageLen    }
+		,{ "maxMessageLen"       ,pdbase_maxMessageLen       }
+		,{ NULL                  ,NULL                       }  };
 	luaL_newmetatable(L ,LUA_PDBASE);
 	luaL_setfuncs    (L ,meta ,0);
 	luaL_newlib      (L ,meth);
@@ -772,8 +782,8 @@ static void pdbase_reg(lua_State *L) {
 	lua_pop          (L ,1);
 
 	static const luaL_Reg static_meth[] =
-	{	 { "blockSize" ,l_blockSize }
-		,{ NULL        ,NULL        }  };
+	{	 { "blockSize" ,pdbase_blockSize }
+		,{ NULL        ,NULL             }  };
 	lua_pushcfunction(L ,pdbase_new);
 	lua_newtable     (L);
 	luaL_newlib      (L ,static_meth);

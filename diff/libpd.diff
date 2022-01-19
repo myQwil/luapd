@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index ca5d392..9fe3f67 100644
+index ca5d392..90a2188 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -215,6 +215,7 @@ CFLAGS = -DPD -DHAVE_UNISTD_H -DUSEAPI_DUMMY \
@@ -10,25 +10,12 @@ index ca5d392..9fe3f67 100644
  
  .PHONY: libpd csharplib javalib javadoc javasrc install uninstall clean clobber
  
-@@ -226,10 +227,10 @@ else
- endif
- 
- $(LIBPD): ${PD_FILES:.c=.o} ${UTIL_FILES:.c=.o} ${EXTRA_FILES:.c=.o}
--	$(CC) -o $(LIBPD) $^ $(LDFLAGS) -lm -lpthread
-+	$(CC) -o $(LIBPD) $^ $(EXTRA_OBJS) $(LDFLAGS) -lm -lpthread $(EXTRA_LIBS)
- 
- $(LIBPD_STATIC): ${PD_FILES:.c=.o} ${UTIL_FILES:.c=.o} ${EXTRA_FILES:.c=.o}
--	ar rcs $(LIBPD_STATIC) $^
-+	ar rcs $(LIBPD_STATIC) $^ $(EXTRA_OBJS)
- 
- javalib: $(JNIH_FILE) $(PDJAVA_JAR)
- 
 diff --git a/extra.make b/extra.make
 new file mode 100644
-index 0000000..6036c82
+index 0000000..4913c4d
 --- /dev/null
 +++ b/extra.make
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,9 @@
 +PD_EXTRA_FILES += $(patsubst %, ../pdxtra/%.c, \
 +muse chrd rand rind ntof fton flenc fldec slx sly same ceil delp linp linp~ \
 +radix 0x21 0x21~ x is has pak unpak 0x40pak 0x40unpak chrono tabread2~ tabosc2~ \
@@ -38,10 +25,6 @@ index 0000000..6036c82
 +curve lessthan greaterthan triangle)
 +
 +CFLAGS += -I../pd-cyclone/shared
-+
-+EXTRA_OBJS :=
-+
-+EXTRA_LIBS :=
 diff --git a/libpd_wrapper/z_libpd.c b/libpd_wrapper/z_libpd.c
 index 6bf7479..8fd9e64 100644
 --- a/libpd_wrapper/z_libpd.c

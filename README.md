@@ -52,7 +52,9 @@ You can test luapd with:
 
     cd libpd
     git apply ../luapd/diff/libpd.diff
-    cd ../pd-cyclone
+    cd pure-data
+    git apply ../../luapd/diff/pure-data.diff
+    cd ../../pd-cyclone
     git apply ../luapd/diff/pd-cyclone.diff
 
 Then re-build libpd and luapd.

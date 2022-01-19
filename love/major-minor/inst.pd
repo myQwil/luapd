@@ -1,4 +1,4 @@
-#N canvas 210 460 511 381 14;
+#N canvas 210 460 510 380 14;
 #X obj 120 170 textfile;
 #X obj 190 310 muse;
 #X obj 30 280 t;
@@ -8,7 +8,7 @@
 #X obj 40 140 r \$0txt;
 #X obj 300 340 outlet~;
 #X obj 360 50 inlet;
-#N canvas 670 570 351 301 scl 0;
+#N canvas 670 570 350 300 scl 0;
 #X obj 70 30 inlet;
 #X obj 140 240 outlet;
 #X obj 70 60 t b a;
@@ -42,7 +42,7 @@
 #X obj 100 250 inlet;
 #X msg 120 140 read \$3/\$2/\$1.trk cr \, rewind;
 #X obj 120 110 pak s 1 .;
-#N canvas 810 440 451 371 vline 0;
+#N canvas 810 440 450 370 vline 0;
 #X obj 90 40 inlet;
 #X obj 170 300 outlet~;
 #X obj 200 40 inlet;
