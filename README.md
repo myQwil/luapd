@@ -50,11 +50,11 @@ You can test luapd with:
 
 ### Apply luapd's git patches to their respective folders:
 
-    cd libpd
-    git apply ../luapd/diff/libpd.diff
-    cd pure-data
-    git apply ../../luapd/diff/pure-data.diff
-    cd ../../pd-cyclone
+    cd libpd; \
+    git apply ../luapd/diff/libpd.diff; \
+    cd pure-data; \
+    git apply ../../luapd/diff/pure-data.diff; \
+    cd ../../pd-cyclone; \
     git apply ../luapd/diff/pd-cyclone.diff
 
 Then re-build libpd and luapd.
