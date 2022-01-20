@@ -59,7 +59,7 @@ end
 
 function love.load()
 	lpd.init()
-	patch = lpd.open{play=false}
+	patch = lpd.open{play = false}
 
 	local vol ,x  ,bx  ,wo  ,dlr                ,width ,height =
 	      0.2 ,20 ,175 ,150 ,patch:dollarZero() ,love.graphics.getDimensions()
@@ -80,7 +80,7 @@ function love.load()
 		,gui.slider(x        ,height*3/6 ,{x=scl}   ,{rgb={.33 ,.5  ,.66}})
 		,gui.slider(x        ,height*4/6 ,{x=phase} ,{rgb={.5  ,.66 ,.25}})
 		,gui.slider(x        ,height*5/6 ,{x=tempo} ,{rgb={.75 ,.25 ,.25}})
-		,gui.slider(width-90 ,60         ,{y=tvol}  ,{rgb={.75 ,.5  ,.75}})   }
+		,gui.slider(width-90 ,60         ,{y=tvol}  ,{rgb={.75 ,.5  ,.75}})  }
 
 	gui.button.dest = 'scdef'
 	gui.button.size = 33
@@ -89,8 +89,9 @@ function love.load()
 		,gui.button(bx+75  ,50  ,{label={text='inv+'}             ,click=invup})
 		,gui.button(bx+300 ,50  ,{label={text='melodic-minor'}    ,click=melmin})
 		,gui.button(bx+300 ,100 ,{label={text='mixo-b6' ,y=60}    ,click=mixob6})
-		,gui.button(bx+375 ,75  ,{label={text='stop' ,x=40 ,y=30} ,click=stop})   }
+		,gui.button(bx+375 ,75  ,{label={text='stop' ,x=40 ,y=30} ,click=stop})  }
 
+	gui.toggle.on   = true
 	gui.toggle.size = 33
 	toggles =
 	{	 gui.toggle(bx+150 ,50  ,{dest='repeat' ,on=false})
@@ -98,7 +99,7 @@ function love.load()
 		,gui.toggle(bx     ,100 ,{dest='pulse1'   ,label={y=60}})
 		,gui.toggle(bx+75  ,100 ,{dest='pulse2'   ,label={y=60}})
 		,gui.toggle(bx+150 ,100 ,{dest='triangle' ,label={y=60}})
-		,gui.toggle(bx+225 ,100 ,{dest='noise'    ,label={y=60}})   }
+		,gui.toggle(bx+225 ,100 ,{dest='noise'    ,label={y=60}})  }
 	toggles.pause = toggles[2]
 
 	for _,v in pairs(sliders) do
@@ -109,9 +110,8 @@ function love.load()
 end
 
 function love.update(dt)
-	local x ,y = love.mouse.getPosition()
 	for i = #sliders,1,-1 do
-		sliders[i]:update(x ,y) end
+		sliders[i]:update(love.mouse.getPosition()) end
 	for i = #buttons,1,-1 do
 		buttons[i]:update(dt) end
 	lpd.update()

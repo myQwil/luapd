@@ -3,8 +3,8 @@
 #X obj 390 470 *~;
 #X floatatom 460 460 0 0 0 0 - - - 0;
 #N canvas 0 50 450 250 (subpatch) 0;
-#X array \$0view 500 float 0;
-#X coords 0 1 500 -1 250 140 1 0 0;
+#X array \$0view 480 float 2;
+#X coords 0 1.0833 480 -1.0833 240 130 1 0 0;
 #X restore 350 40 graph;
 #X floatatom 550 370 0 0 0 0 - - - 0;
 #X obj 470 380 tgl 15 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
@@ -13,9 +13,9 @@
 #X obj 190 230 tgl 17 0 empty empty start 19 7 0 12 #000000 #fcfcfc
 #fcfcfc 0 1;
 #X obj 170 320 s tog;
-#X obj 40 80 tgl 15 0 empty empty pause 19 7 0 12 #000000 #fcfcfc #fcfcfc
+#X obj 40 70 tgl 15 0 empty empty pause 19 7 0 12 #000000 #fcfcfc #fcfcfc
 0 1;
-#X obj 470 400 metro 18.87;
+#X obj 470 400 metro 20;
 #N canvas 930 450 400 300 pause 0;
 #X msg 80 160 0, f 2;
 #X obj 220 110 spigot;
@@ -62,7 +62,7 @@
 #X obj 540 270 r atk;
 #X obj 110 270 r atk;
 #X obj 220 430 f;
-#X obj 40 110 metro;
+#X obj 40 100 metro;
 #X obj 220 490 s dcy;
 #X obj 590 270 r dcy;
 #X obj 260 460 3000;
@@ -71,7 +71,7 @@
 #X obj 300 460 * 10;
 #X obj 510 300 ad 10 130;
 #X floatatom 270 490 0 0 0 0 - - - 0;
-#X obj 40 60 r tog;
+#X obj 40 40 r tog;
 #N canvas 850 360 550 480 vals 0;
 #X obj 340 420 outlet~;
 #X obj 40 420 outlet~;
@@ -241,7 +241,7 @@
 #X connect 6 0 5 0;
 #X connect 7 0 5 0;
 #X restore 90 530 pd mix;
-#X obj 100 110 r met;
+#X obj 100 100 r met;
 #X obj 70 270 rind;
 #X obj 130 200 t b f;
 #X obj 120 240 * 1.1;
@@ -251,7 +251,7 @@
 #X floatatom 230 140 0 0 0 0 - - - 0;
 #X text 20 500 myQwil;
 #X obj 470 520 r \$0vol;
-#X obj 240 60 r met;
+#X obj 240 50 r met;
 #X obj 30 400 f 1000!;
 #X obj 470 430 tabwrite~ \$0view;
 #X obj 190 200 r \$0play;

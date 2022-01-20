@@ -279,26 +279,33 @@ function gui:reset()
 	{	 change = slider_change
 		,rgb  = {.5 ,.5 ,.5} -- knob color
 		,log  = false -- logarithmic scaling
-		,snap = false -- snap to a grid
-		,gap  = 7     -- snap point radius
+		-- snap to a grid with spacing of this amount relative to the scale.
+		-- nil or false disables snapping.
+		,snap = nil
+		-- a snap point's gravitational radius in pixels.
+		-- if gap is 0, knob will settle exclusively on snap points.
+		,gap  = 7
 		,prec = 8     -- precision when displaying number
 		,rad  = 25    -- knob radius
 		,len  = 100   -- axis length
-		,dest = 'foo'  }
+		,dest = 'foo' -- send-to destination
+	}
 	self.button =
 	{	 click = button_click
-		,delay = 0.2 -- circle display duration on click
+		,delay = 0.2   -- circle display duration on click
 		,size  = 25
-		,dest  = 'foo'  }
+		,dest  = 'foo' -- send-to destination
+	}
 	self.toggle =
 	{	 click = toggle_click
-		,on    = true -- initial state
-		,non0  = 1    -- non-zero value
+		,on    = false -- initial state
+		,non0  = 1     -- non-zero value
 		,size  = 25
-		,dest  = 'foo'  }
-	setmetatable(gui.slider ,{__call = slider_new})
-	setmetatable(gui.button ,{__call = button_new})
-	setmetatable(gui.toggle ,{__call = toggle_new})
+		,dest  = 'foo' -- send-to destination
+	}
+	setmetatable(self.slider ,{__call = slider_new})
+	setmetatable(self.button ,{__call = button_new})
+	setmetatable(self.toggle ,{__call = toggle_new})
 end
 
 ---@param base Pd.Base
