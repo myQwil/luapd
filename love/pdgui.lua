@@ -31,7 +31,9 @@ local function slider_check(sl ,x ,axis)
 			if v.gap == 0 or (x >= grav-v.gap and x <= grav+v.gap) then
 				x = grav end end
 
-		local num = v.log and (math.exp(v.k * x) * v.min) or v.k * x + v.min
+		local num = v.log
+			and (math.exp(v.k * x) * v.min)
+			or            v.k * x  + v.min
 		if num < math.epsilon then
 			num = 0 end
 		if v.num ~= num then
@@ -97,10 +99,12 @@ local function slider_axis(self ,sl ,v ,axis)
 		v.xmin = sl[x]  + sl.rad
 		v.xmax = sl[xx] - sl.rad
 
+		-- swap min/max if slider is vertical
 		if axis == 'y' then
 			local temp = v.min
 			v.min = v.max
 			v.max = temp end
+
 		if v.num then v.num = v.min > v.max and
 			math.clip(v.num ,v.max ,v.min) or math.clip(v.num ,v.min ,v.max)
 		else v.num = v.min end

@@ -21,8 +21,8 @@ function love.load()
 	lpd.init()
 	patch = lpd.open{play = false}
 
-	local vol ,x  ,bx  ,wo  ,dlr                ,width ,height =
-	      0.2 ,20 ,175 ,150 ,patch:dollarZero() ,love.graphics.getDimensions()
+	local vol  ,dlr                ,width ,height =
+	      0.05 ,patch:dollarZero() ,love.graphics.getDimensions()
 
 	local met  =
 	{	 dest='met'      ,min=11   ,max=6000 ,num=1000 ,log=true
@@ -32,10 +32,10 @@ function love.load()
 		,len=height-100 ,prec=4 ,label={text='volume' ,x=-100} ,change=volChange  }
 
 	gui.slider.rad = 25
-	gui.slider.len = width-wo
+	gui.slider.len = width-150
 	local h = gui.slider.rad / 2
 	sliders =
-	{	 gui.slider(x        ,height/2-h ,{x=met}  ,{rgb={.25 ,.66 ,.66}})
+	{	 gui.slider(20       ,height/2-h ,{x=met}  ,{rgb={.25 ,.66 ,.66}})
 		,gui.slider(width-90 ,60         ,{y=tvol} ,{rgb={.75 ,.5  ,.75}})  }
 
 	for _,v in pairs(sliders) do

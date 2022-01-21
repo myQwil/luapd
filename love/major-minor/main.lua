@@ -61,8 +61,8 @@ function love.load()
 	lpd.init()
 	patch = lpd.open{play = false}
 
-	local vol ,x  ,bx  ,wo  ,dlr                ,width ,height =
-	      0.2 ,20 ,175 ,150 ,patch:dollarZero() ,love.graphics.getDimensions()
+	local vol ,x  ,bx  ,dlr                ,width ,height =
+	      0.2 ,20 ,175 ,patch:dollarZero() ,love.graphics.getDimensions()
 
 	local maj   = {dest='maj-min'  ,min=1    ,max=0  ,num=1   ,snap=.25  ,gap=12
 		,change=sclChange}
@@ -74,7 +74,7 @@ function love.load()
 		,len=height-100 ,prec=4 ,label={text='volume' ,x=-100} ,change=volChange}
 
 	gui.slider.rad = 25
-	gui.slider.len = width-wo
+	gui.slider.len = width-150
 	sliders =
 	{	 gui.slider(x        ,height*2/6 ,{x=maj}   ,{rgb={.25 ,.66 ,.66}})
 		,gui.slider(x        ,height*3/6 ,{x=scl}   ,{rgb={.33 ,.5  ,.66}})
