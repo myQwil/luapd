@@ -19,10 +19,10 @@ index 0000000..4913c4d
 +PD_EXTRA_FILES += $(patsubst %, ../pdxtra/%.c, \
 +muse chrd rand rind ntof fton flenc fldec slx sly same ceil delp linp linp~ \
 +radix 0x21 0x21~ x is has pak unpak 0x40pak 0x40unpak chrono tabread2~ tabosc2~ \
-+myqwil blunt/hotop blunt/revop blunt/blunt)
++xtra blunt/hotop blunt/revop blunt/blunt)
 +
 +PD_EXTRA_FILES += $(patsubst %, ../pd-cyclone/cyclone_objects/binaries/audio/%.c, \
-+curve lessthan greaterthan triangle)
++curve lessthan greaterthan)
 +
 +CFLAGS += -I../pd-cyclone/shared
 diff --git a/libpd_wrapper/z_libpd.c b/libpd_wrapper/z_libpd.c
@@ -33,11 +33,10 @@ index 6bf7479..8fd9e64 100644
    void pique_setup(void);
    void sigmund_tilde_setup(void);
    void stdout_setup(void);
-+  void myQwil_setup(void);
++  void xtra_setup(void);
 +  void curve_tilde_setup(void);
 +  void lessthan_tilde_setup(void);
 +  void greaterthan_tilde_setup(void);
-+  void triangle_tilde_setup(void);
  #endif
  
  static PERTHREAD t_atom *s_argv = NULL;
@@ -45,11 +44,10 @@ index 6bf7479..8fd9e64 100644
    pique_setup();
    sigmund_tilde_setup();
    stdout_setup();
-+  myQwil_setup();
++  xtra_setup();
 +  curve_tilde_setup();
 +  lessthan_tilde_setup();
 +  greaterthan_tilde_setup();
-+  triangle_tilde_setup();
  #endif
  #ifndef LIBPD_NO_NUMERIC
    setlocale(LC_NUMERIC, "C");
