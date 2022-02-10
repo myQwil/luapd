@@ -19,7 +19,7 @@
 #X msg 140 60 default;
 #X msg 260 180 peek;
 #X obj 70 200 route list;
-#X obj 260 210 b !;
+#X obj 260 210 loadbang;
 #X obj 70 170 list prepend # d;
 #X msg 260 240 strict 1;
 #X connect 0 0 2 0;
@@ -37,7 +37,7 @@
 #X connect 12 0 1 0;
 #X restore 150 250 pd scl;
 #X obj 100 340 s \$0txt;
-#X obj 120 80 sym \$1;
+#X obj 120 80 symbol \$1;
 #X obj 150 50 t b f;
 #X obj 100 250 inlet;
 #X msg 120 140 read \$3/\$2/\$1.trk cr \, rewind;
@@ -94,7 +94,7 @@
 #X obj 40 210 spigot 1;
 #X msg 30 310 0;
 #X obj 20 110 t;
-#X msg 20 240 f1 0;
+#X msg 20 240 set 0;
 #X obj 20 80 r rewind;
 #X connect 0 0 24 0;
 #X connect 0 1 27 0;

@@ -3,7 +3,6 @@ LIBPD_DIR ?= ../libpd
 
 # detect platform
 UNAME  := $(shell uname)
-LIBLUA := -lluajit-5.1
 ifeq ($(UNAME), Darwin) # Mac
   EXT      := dylib
   LDFLAGS  := -std=c++11 -arch x86_64 -dynamiclib
@@ -20,25 +19,31 @@ else
   endif
 endif
 
+CXX      := clang
 SRC      := src/PdObject.cpp src/main.cpp
 LIBPD    := $(LIBPD_DIR)/libs/libpd
 TARGET   := lib/luapd.$(EXT)
+LIBLUA   := -lluajit-5.1
 LDLIBS   += -lm -lpthread $(LIBLUA)
 CXXFLAGS += \
 -I$(LIBPD_DIR)/pure-data/src -I$(LIBPD_DIR)/libpd_wrapper \
--I$(LIBPD_DIR)/libpd_wrapper/util -I$(LIBPD_DIR)/cpp -I./src -fPIC -g -O3
+-I$(LIBPD_DIR)/libpd_wrapper/util -I$(LIBPD_DIR)/cpp -I./src -fPIC -O3
+
+ifeq ($(DEBUG), true)
+  CXXFLAGS += -g -O0
+endif
 
 .PHONY: dynamic clean
 
-$(TARGET): CXXFLAGS += -DEXTERN=extern
-$(TARGET): ${SRC:.cpp=.o} $(LIBPD).a
-	g++ $(LDFLAGS) -o $(TARGET) $^ $(LDLIBS)
+all: CXXFLAGS += -DEXTERN=extern
+all: $(SRC:.cpp=.o) $(LIBPD).a
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $(TARGET)
 
 $(LIBPD).a:
 	cd $(LIBPD_DIR) && make STATIC=true
 
 dynamic: ${SRC:.cpp=.o}
-	g++ $(LDFLAGS) -o $(TARGET) $^ $(LIBPD).$(EXT) $(LIBLUA)
+	$(CXX) $(LDFLAGS) $^ $(LIBPD).$(EXT) $(LIBLUA) -o $(TARGET)
 
 clean:
 	rm -f src/*.o

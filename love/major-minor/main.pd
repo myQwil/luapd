@@ -1,28 +1,28 @@
-#N canvas 190 290 620 560 14;
+#N canvas 190 290 650 570 14;
 #X declare -lib blunt;
-#X obj 340 110 tgl 15 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
+#X obj 350 120 tgl 15 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
 #fcfcfc 0 1;
-#X msg 290 110 0;
-#X obj 30 270 pulse~;
-#X obj 90 320 *~;
-#X obj 300 460 *~;
-#X obj 340 460 hsl 128 20 0.001 1 1 0 empty empty empty -2 -8 0 10
+#X msg 300 120 0;
+#X obj 40 280 pulse~;
+#X obj 100 330 *~;
+#X obj 310 470 *~;
+#X obj 350 470 hsl 128 20 0.001 1 1 0 empty empty empty -2 -8 0 10
 #000000 #fcfcfc #fcfcfc 0 1;
-#X obj 290 490 dac~;
-#X obj 290 140 s met;
-#X floatatom 340 490 0 0 0 0 - - - 0;
-#X obj 480 140 s ms;
-#X obj 80 140 s tempo;
-#X obj 410 50 r tempo;
-#X obj 480 110 / 1;
-#X obj 30 240 inst pulse1;
-#X obj 480 30 bng 15 250 50 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
+#X obj 300 500 dac~;
+#X obj 300 150 s met;
+#X floatatom 350 500 0 0 0 0 - - - 0;
+#X obj 490 150 s ms;
+#X obj 90 150 s tempo;
+#X obj 420 60 r tempo;
+#X obj 490 120 / 1;
+#X obj 40 250 inst pulse1;
+#X obj 490 40 bng 15 250 50 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
 #fcfcfc;
-#X obj 220 140 s loop;
-#X floatatom 480 80 0 0 0 0 - - - 0;
-#X floatatom 520 140 0 0 0 0 - - - 0;
-#X obj 480 50 `f 50!;
-#X obj 150 140 s goto;
+#X obj 230 150 s loop;
+#X floatatom 490 90 0 0 0 0 - - - 0;
+#X floatatom 530 150 0 0 0 0 - - - 0;
+#X obj 490 60 `f 50!;
+#X obj 160 150 s goto;
 #N canvas 810 290 550 400 default-scale 0;
 #X obj 190 60 array define default 6;
 #X obj 90 340 array set default;
@@ -63,29 +63,29 @@
 #X connect 18 0 8 0;
 #X connect 18 1 8 1;
 #X connect 18 2 8 2;
-#X restore 150 20 pd default-scale;
-#X obj 170 270 pulse~;
-#X obj 170 240 inst pulse2;
-#X obj 230 320 *~;
-#X obj 90 350 *~;
-#X obj 130 240 vsl 15 128 0 1 0 0 empty empty empty 0 -9 0 10 #000000
+#X restore 160 30 pd default-scale;
+#X obj 180 280 pulse~;
+#X obj 180 250 inst pulse2;
+#X obj 240 330 *~;
+#X obj 100 360 *~;
+#X obj 140 250 vsl 15 128 0 1 0 0 empty empty empty 0 -9 0 10 #000000
 #fcfcfc #fcfcfc 0 1;
-#X obj 230 350 *~;
-#X obj 270 240 vsl 15 128 0 1 0 0 empty empty empty 0 -9 0 10 #000000
+#X obj 240 360 *~;
+#X obj 280 250 vsl 15 128 0 1 0 0 empty empty empty 0 -9 0 10 #000000
 #fcfcfc #fcfcfc 0 1;
-#X obj 130 170 tgl 15 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
+#X obj 140 180 tgl 15 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
 #fcfcfc 0 1;
-#X obj 90 170 b !;
-#X obj 390 320 *~;
-#X obj 390 350 *~;
-#X obj 430 240 vsl 15 128 0 1 0 0 empty empty empty 0 -9 0 10 #000000
+#X obj 60 180 loadbang;
+#X obj 400 330 *~;
+#X obj 400 360 *~;
+#X obj 440 250 vsl 15 128 0 1 0 0 empty empty empty 0 -9 0 10 #000000
 #fcfcfc #fcfcfc 0 1;
-#X obj 300 430 *~ 0.25;
-#X obj 310 300 triangle~;
-#X obj 310 240 inst triangle;
-#X obj 310 270 phasor~;
-#X msg 60 50 1;
-#X msg 80 80 0.5;
+#X obj 310 440 *~ 0.25;
+#X obj 320 310 triangle~;
+#X obj 320 250 inst triangle;
+#X obj 320 280 phasor~;
+#X msg 70 60 1;
+#X msg 90 90 0.5;
 #N canvas 810 510 460 340 metro 0;
 #X obj 30 100 metro;
 #X obj 30 60 inlet;
@@ -93,12 +93,10 @@
 #X obj 30 160 outlet;
 #X obj 30 130 t;
 #X obj 90 230 textfile;
-#X obj 190 100 b !;
+#X obj 270 100 loadbang;
 #X obj 90 160 ct;
 #X obj 90 290 s goto;
 #X msg 180 130 read mario/main.trk cr \, rewind;
-#X floatatom 40 260 0 0 0 0 - - - 0;
-#X floatatom 130 140 0 0 0 0 - - - 0;
 #X obj 40 230 b;
 #X msg 200 160 read mario/\$1.trk cr \, rewind;
 #X obj 280 230 t b a;
@@ -106,49 +104,50 @@
 #X obj 90 260 route goto stop float;
 #X obj 150 290 s stop;
 #X obj 90 190 spigot 1;
-#X obj 190 70 r repeat;
-#X obj 170 100 !, f 1;
-#X obj 170 70 tgl 15 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
+#X obj 160 30 r repeat;
+#X obj 140 60 !, f 1;
+#X obj 140 30 tgl 15 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
 #fcfcfc 0 1;
-#X msg 90 130 f1 0;
+#X msg 90 130 set 0;
 #X obj 90 100 t;
-#X obj 130 40 r rewind;
+#X obj 40 30 r rewind;
+#X obj 180 100 spigot 1;
 #X connect 0 0 4 0;
 #X connect 1 0 0 0;
 #X connect 2 0 0 1;
 #X connect 4 0 3 0;
 #X connect 4 1 7 0;
-#X connect 5 0 16 0;
+#X connect 5 0 14 0;
 #X connect 6 0 9 0;
-#X connect 7 0 18 0;
-#X connect 7 1 11 0;
+#X connect 7 0 16 0;
 #X connect 9 0 5 0;
+#X connect 10 0 5 0;
+#X connect 11 0 5 0;
 #X connect 12 0 5 0;
-#X connect 13 0 5 0;
-#X connect 14 0 5 0;
+#X connect 12 1 13 0;
+#X connect 13 0 11 0;
+#X connect 14 0 8 0;
+#X connect 14 0 10 0;
 #X connect 14 1 15 0;
-#X connect 15 0 13 0;
-#X connect 16 0 8 0;
-#X connect 16 0 10 0;
-#X connect 16 0 12 0;
-#X connect 16 1 17 0;
-#X connect 16 2 7 1;
-#X connect 16 3 14 0;
-#X connect 18 0 5 0;
-#X connect 19 0 20 0;
-#X connect 20 0 18 1;
+#X connect 14 2 7 1;
+#X connect 14 3 12 0;
+#X connect 16 0 5 0;
+#X connect 17 0 18 0;
+#X connect 18 0 16 1;
+#X connect 18 0 23 1;
+#X connect 19 0 18 0;
+#X connect 20 0 7 0;
 #X connect 21 0 20 0;
-#X connect 22 0 7 0;
-#X connect 23 0 22 0;
-#X connect 23 1 9 0;
-#X connect 24 0 23 0;
-#X restore 340 140 pd metro;
-#X obj 150 80 cupqb 1;
-#X obj 520 320 *~;
-#X obj 520 350 *~;
-#X obj 570 240 vsl 15 128 0 1 0 0 empty empty empty 0 -9 0 10 #000000
+#X connect 21 1 23 0;
+#X connect 22 0 21 0;
+#X connect 23 0 9 0;
+#X restore 350 150 pd metro;
+#X obj 160 90 cupqb 1;
+#X obj 530 330 *~;
+#X obj 530 360 *~;
+#X obj 580 250 vsl 15 128 0 1 0 0 empty empty empty 0 -9 0 10 #000000
 #fcfcfc #fcfcfc 0 1;
-#X obj 470 240 inst noise;
+#X obj 480 250 inst noise;
 #N canvas 290 500 450 300 crush 0;
 #X obj 220 100 phasor~;
 #X obj 150 140 samphold~;
@@ -159,17 +158,17 @@
 #X connect 1 0 3 0;
 #X connect 2 0 1 0;
 #X connect 4 0 0 0;
-#X restore 470 270 pd crush;
-#X obj 300 20 r \$0play;
-#X obj 370 430 r \$0vol;
-#X obj 160 320 r phase;
-#X msg 410 80 . \$1;
-#X obj 380 20 r pause;
-#X obj 380 50 !, f 1;
-#X obj 90 380 r pulse1;
-#X obj 230 380 r pulse2;
-#X obj 390 380 r triangle;
-#X obj 520 380 r noise;
+#X restore 480 280 pd crush;
+#X obj 310 30 r \$0play;
+#X obj 380 440 r \$0vol;
+#X obj 170 330 r phase;
+#X msg 420 90 . \$1;
+#X obj 390 30 r pause;
+#X obj 390 60 !, f 1;
+#X obj 100 390 r pulse1;
+#X obj 240 390 r pulse2;
+#X obj 400 390 r triangle;
+#X obj 530 390 r noise;
 #N canvas 790 250 450 300 preload 0;
 #X obj 40 90 until;
 #X obj 40 120 f;
@@ -181,7 +180,7 @@
 #X obj 110 150 mod 5;
 #X msg 160 120 pulse1 \, pulse2 \, triangle \, noise;
 #X msg 160 180 read mario/\$2/\$1.trk;
-#X obj 40 30 b !;
+#X obj 40 30 loadbang;
 #X connect 0 0 1 0;
 #X connect 1 0 2 0;
 #X connect 2 0 5 0;
@@ -195,16 +194,16 @@
 #X connect 8 0 4 0;
 #X connect 9 0 6 0;
 #X connect 10 0 0 0;
-#X restore 50 460 pd preload;
-#X obj 50 490 declare -lib blunt;
-#X obj 220 120 tgl 15 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
+#X restore 60 470 pd preload;
+#X obj 60 500 declare -lib blunt;
+#X obj 230 130 tgl 15 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
 #fcfcfc 0 1;
-#X msg 100 110 0.25;
-#X obj 460 170 sym! mario;
-#X obj 220 90 s rewind;
-#X msg 340 50 0;
-#X obj 220 50 r stop;
-#X obj 280 50 t;
+#X msg 110 120 0.25;
+#X obj 470 180 sym! mario;
+#X obj 230 100 s rewind;
+#X msg 350 60 0;
+#X obj 230 60 r stop;
+#X obj 290 60 t;
 #X connect 0 0 39 0;
 #X connect 1 0 7 0;
 #X connect 2 0 3 0;
