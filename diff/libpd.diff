@@ -12,39 +12,38 @@ index ca5d392..90a2188 100644
  
 diff --git a/extra.make b/extra.make
 new file mode 100644
-index 0000000..4913c4d
+index 0000000..53855dd
 --- /dev/null
 +++ b/extra.make
-@@ -0,0 +1,9 @@
-+PD_EXTRA_FILES += $(patsubst %, ../pdxtra/%.c, \
-+muse chrd rand rind ntof fton flenc fldec slx sly same ceil delp linp linp~ \
-+radix 0x21 0x21~ x is has pak unpak 0x40pak 0x40unpak chrono tabread2~ tabosc2~ \
-+xtra blunt/hotop blunt/revop blunt/blunt)
+@@ -0,0 +1,8 @@
++PD_EXTRA_FILES += $(patsubst %, ../pd-quilt/src/%.c, \
++0x40pak 0x40unpak blunt chrd chrono delp fldec flenc fton has is \
++linp linp~ muse ntof pak quilt radix rand rind same slx sly tabosc2~ tabread2~ unpak)
 +
 +PD_EXTRA_FILES += $(patsubst %, ../pd-cyclone/cyclone_objects/binaries/audio/%.c, \
 +curve lessthan greaterthan)
 +
 +CFLAGS += -I../pd-cyclone/shared
 diff --git a/libpd_wrapper/z_libpd.c b/libpd_wrapper/z_libpd.c
-index 6bf7479..8fd9e64 100644
+index 6bf7479..1fa73c5 100644
 --- a/libpd_wrapper/z_libpd.c
 +++ b/libpd_wrapper/z_libpd.c
-@@ -52,6 +52,11 @@ int sys_pollgui(void);
+@@ -52,6 +52,10 @@ int sys_pollgui(void);
    void pique_setup(void);
    void sigmund_tilde_setup(void);
    void stdout_setup(void);
-+  void xtra_setup(void);
++  void quilt_setup(void);
 +  void curve_tilde_setup(void);
 +  void lessthan_tilde_setup(void);
 +  void greaterthan_tilde_setup(void);
  #endif
  
  static PERTHREAD t_atom *s_argv = NULL;
-@@ -103,6 +108,11 @@ int libpd_init(void) {
+@@ -103,6 +107,10 @@ int libpd_init(void) {
    pique_setup();
    sigmund_tilde_setup();
    stdout_setup();
-+  xtra_setup();
++  quilt_setup();
 +  curve_tilde_setup();
 +  lessthan_tilde_setup();
 +  greaterthan_tilde_setup();

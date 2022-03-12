@@ -21,7 +21,7 @@
 #X obj 230 150 s loop;
 #X floatatom 490 90 0 0 0 0 - - - 0;
 #X floatatom 530 150 0 0 0 0 - - - 0;
-#X obj 490 60 `f 50!;
+#X obj 490 60 `f 50 !;
 #X obj 160 150 s goto;
 #N canvas 810 290 550 400 default-scale 0;
 #X obj 190 60 array define default 6;
@@ -197,7 +197,7 @@
 #X obj 230 130 tgl 15 0 empty empty empty 17 7 0 10 #000000 #fcfcfc
 #fcfcfc 0 1;
 #X msg 110 120 0.25;
-#X obj 470 180 sym! mario;
+#X obj 470 180 sym mario !;
 #X obj 230 100 s rewind;
 #X msg 350 60 0;
 #X obj 230 60 r stop;

@@ -8,7 +8,7 @@ ifeq ($(UNAME), Darwin) # Mac
   LDFLAGS  := -std=c++11 -arch x86_64 -dynamiclib
   CXXFLAGS := -std=c++11 -arch x86_64 -I/usr/local/include/luajit-2.0
 else
-  LDFLAGS  := -shared
+  LDFLAGS  := -shared -lstdc++
   ifeq ($(OS), Windows_NT) # Windows, use Mingw
     EXT      := dll
     LDLIBS   := -Wl,--export-all-symbols -static-libgcc -lws2_32 -lkernel32
