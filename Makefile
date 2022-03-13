@@ -2,28 +2,29 @@
 LIBPD_DIR ?= ../libpd
 
 # detect platform
-UNAME  := $(shell uname)
+UNAME   = $(shell uname)
+LDFLAGS = -lstdc++
 ifeq ($(UNAME), Darwin) # Mac
-  EXT      := dylib
-  LDFLAGS  := -std=c++11 -arch x86_64 -dynamiclib
-  CXXFLAGS := -std=c++11 -arch x86_64 -I/usr/local/include/luajit-2.0
+  EXT      = dylib
+  LDFLAGS += -std=c++11 -arch x86_64 -dynamiclib
+  CXXFLAGS = -std=c++11 -arch x86_64 -I/usr/local/include/luajit-2.0
 else
-  LDFLAGS  := -shared -lstdc++
+  LDFLAGS += -shared
   ifeq ($(OS), Windows_NT) # Windows, use Mingw
-    EXT      := dll
-    LDLIBS   := -Wl,--export-all-symbols -static-libgcc -lws2_32 -lkernel32
-    CXXFLAGS := -I/mingw64/include/luajit-2.1
+    EXT      = dll
+    LDLIBS   = -Wl,--export-all-symbols -static-libgcc -lws2_32 -lkernel32
+    CXXFLAGS = -I/mingw64/include/luajit-2.1
   else # assume Linux
-    EXT      := so
-    CXXFLAGS := -I/usr/include/luajit-2.1
+    EXT      = so
+    CXXFLAGS = -I/usr/include/luajit-2.1
   endif
 endif
 
-CXX      := clang
-SRC      := src/PdObject.cpp src/main.cpp
-LIBPD    := $(LIBPD_DIR)/libs/libpd
-TARGET   := lib/luapd.$(EXT)
-LIBLUA   := -lluajit-5.1
+CXX       = clang
+SRC       = src/PdObject.cpp src/main.cpp
+LIBPD     = $(LIBPD_DIR)/libs/libpd
+TARGET    = lib/luapd.$(EXT)
+LIBLUA    = -lluajit-5.1
 LDLIBS   += -lm -lpthread $(LIBLUA)
 CXXFLAGS += \
 -I$(LIBPD_DIR)/pure-data/src -I$(LIBPD_DIR)/libpd_wrapper \

@@ -1,5 +1,8 @@
 # build files
-src/*.o
+*.o
+*.so
+*.dylib
+*.zip
 
 # VSCode folder
 .vscode
