@@ -5,6 +5,9 @@
 #if LUA_VERSION_NUM == 501
 
 #define lua_rawlen(L,i) lua_objlen(L,(i))
+
+#if LUAJIT_VERSION_NUM < 20100
+
 #define luaL_setmetatable(L,n) (luaL_getmetatable(L,(n)) ,lua_setmetatable(L,-2))
 #define LUAL_NUMSIZES	(sizeof(lua_Integer)*16 + sizeof(lua_Number))
 #define UNUSED(x)	((void)(x))
@@ -47,7 +50,8 @@ LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
   lua_pop(L, nup);  /* remove upvalues */
 }
 
-#endif
+#endif // LUAJIT_VERSION_NUM
+#endif // LUA_VERSION_NUM
 
 using namespace std;
 using namespace pd;
