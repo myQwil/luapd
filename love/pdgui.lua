@@ -1,9 +1,5 @@
 math.epsilon = 2.2204460492503131e-16
 
-local function fif(cond ,T ,F)
-	if cond then return T else return F end
-end
-
 local pd       ---@type Pd.Base
 local gui = {} -- Pd gui library
 local focus    -- the slider receiving focus or nil

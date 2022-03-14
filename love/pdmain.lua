@@ -2,7 +2,7 @@ function math.clamp(x ,min ,max)
 	return (x < min and min) or (x > max and max) or x
 end
 
-local function fif(cond ,T ,F)
+function fif(cond ,T ,F)
 	if cond then return T else return F end
 end
 
