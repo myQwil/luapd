@@ -1,6 +1,7 @@
 # build files
 *.o
 *.so
+*.dll
 *.dylib
 *.zip
 

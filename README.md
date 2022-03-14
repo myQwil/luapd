@@ -45,7 +45,7 @@ You can test luapd with:
 
 ### Clone the Quilt and Cyclone libraries adjacent to libpd:
 
-    git clone https://github.com/myQwil/pd-quilt.git
+    git clone --recurse-submodules https://github.com/myQwil/pd-quilt.git
     git clone https://github.com/porres/pd-cyclone.git
 
 ### Apply luapd's git patches to their respective folders:

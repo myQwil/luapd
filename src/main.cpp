@@ -6,9 +6,29 @@
 
 #define lua_rawlen(L,i) lua_objlen(L,(i))
 
-#if LUAJIT_VERSION_NUM < 20100
+#if LUAJIT_VERSION_NUM < 20100 || defined(_WIN32)
 
 #define luaL_setmetatable(L,n) (luaL_getmetatable(L,(n)) ,lua_setmetatable(L,-2))
+LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
+  luaL_checkstack(L, nup, "too many upvalues");
+  for (; l->name != NULL; l++) {  /* fill the table with given functions */
+    if (l->func == NULL)  /* place holder? */
+      lua_pushboolean(L, 0);
+    else {
+      int i;
+      for (i = 0; i < nup; i++)  /* copy upvalues to the top */
+        lua_pushvalue(L, -nup);
+      lua_pushcclosure(L, l->func, nup);  /* closure with those upvalues */
+    }
+    lua_setfield(L, -(nup + 2), l->name);
+  }
+  lua_pop(L, nup);  /* remove upvalues */
+}
+
+#endif // _WIN32
+
+#if LUAJIT_VERSION_NUM < 20100
+
 #define LUAL_NUMSIZES	(sizeof(lua_Integer)*16 + sizeof(lua_Number))
 #define UNUSED(x)	((void)(x))
 LUA_API lua_Number lua_version (lua_State *L) {
@@ -33,22 +53,6 @@ LUALIB_API void luaL_checkversion_ (lua_State *L, lua_Number ver, size_t sz) {
 
 #define luaL_newlib(L,l)  \
   (luaL_checkversion(L), luaL_newlibtable(L,l), luaL_setfuncs(L,l,0))
-
-LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
-  luaL_checkstack(L, nup, "too many upvalues");
-  for (; l->name != NULL; l++) {  /* fill the table with given functions */
-    if (l->func == NULL)  /* place holder? */
-      lua_pushboolean(L, 0);
-    else {
-      int i;
-      for (i = 0; i < nup; i++)  /* copy upvalues to the top */
-        lua_pushvalue(L, -nup);
-      lua_pushcclosure(L, l->func, nup);  /* closure with those upvalues */
-    }
-    lua_setfield(L, -(nup + 2), l->name);
-  }
-  lua_pop(L, nup);  /* remove upvalues */
-}
 
 #endif // LUAJIT_VERSION_NUM
 #endif // LUA_VERSION_NUM
