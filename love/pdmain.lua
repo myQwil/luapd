@@ -11,7 +11,7 @@ local ext =
 	,['Windows'] = 'dll'
 	,['OS X']    = 'dylib'  }
 local stros = love.system.getOS()
-package.cpath = '../../lib/?.'..ext[stros]..';'..package.cpath
+package.cpath = '../../?.'..ext[stros]..';'..package.cpath
 
 Pd = require('luapd') ---@type Pd
 local ticks ,bufs     ---@type number

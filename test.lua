@@ -3,7 +3,7 @@ local ext =
 	,Windows = 'dll'
 	,OSX     = 'dylib'  }
 local ffi = require('ffi')
-package.cpath = './lib/?.'..ext[ffi.os]..';'..package.cpath
+package.cpath = './?.'..ext[ffi.os]..';'..package.cpath
 
 local Pd = require('luapd') ---@type Pd
 

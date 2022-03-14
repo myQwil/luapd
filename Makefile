@@ -23,7 +23,7 @@ endif
 CXX       = clang++
 SRC       = src/PdObject.cpp src/main.cpp
 LIBPD     = $(LIBPD_DIR)/libs/libpd
-TARGET    = lib/luapd.$(EXT)
+TARGET    = luapd.$(EXT)
 LIBLUA    = -lluajit-5.1
 LDLIBS   += -lm -lpthread $(LIBLUA)
 CXXFLAGS += \
