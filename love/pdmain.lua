@@ -1,4 +1,4 @@
-function math.clip(x ,min ,max)
+function math.clamp(x ,min ,max)
 	return (x < min and min) or (x > max and max) or x
 end
 
@@ -64,7 +64,7 @@ function lpd.open(opt)
 	local play ,patch ,volume
 	play = fif(opt.play ~= nil ,opt.play ,lpd.play)
 	patch = opt.patch or lpd.patch
-	volume = opt.volume and math.clip(opt.volume ,-1 ,1) or lpd.volume
+	volume = opt.volume and math.clamp(opt.volume ,-1 ,1) or lpd.volume
 
 	patch = pd:openPatch(patch)
 	local dlr = patch:dollarZero()

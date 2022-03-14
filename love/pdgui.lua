@@ -22,7 +22,7 @@ end
 local function slider_check(sl ,x ,axis)
 	local v  = sl.t[axis]
 	local dx = 'd'..axis
-	x = math.clip(x ,v.xmin ,v.xmax)
+	x = math.clamp(x ,v.xmin ,v.xmax)
 	if sl[dx] ~= x then
 		sl[dx]  = x
 		x = x - v.xmin
@@ -106,7 +106,7 @@ local function slider_axis(self ,sl ,v ,axis)
 			v.max = temp end
 
 		if v.num then v.num = v.min > v.max and
-			math.clip(v.num ,v.max ,v.min) or math.clip(v.num ,v.min ,v.max)
+			math.clamp(v.num ,v.max ,v.min) or math.clamp(v.num ,v.min ,v.max)
 		else v.num = v.min end
 
 		-- linear or logarithmic
