@@ -8,5 +8,6 @@
 # VSCode folder
 .vscode
 
-# OSX attributes
+# layout files
 .DS_Store
+.directory

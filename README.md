@@ -3,7 +3,7 @@ libpd bindings for lua and love2d
 
 ## Building Luapd
 
-### Download libpd & checkout the submodules with git:
+### Clone libpd and its submodules:
 
     git clone --recurse-submodules https://github.com/libpd/libpd.git
 
@@ -59,5 +59,12 @@ You can test luapd with:
 
 Then re-build libpd and luapd.
 
-For Linux and Mac users, the examples should run normally without any necessary changes.
-For Windows users, the 3 lib\*.dll files in the main folder need to be copied into an example folder before they can be detected by luapd.dll.
+### For Windows users
+
+There are 3 additional .dll files that need to be placed adjacent to the main lua file:
+
+- libgcc_s_seh-1.dll
+- libstdc++-6.dll
+- libwinpthread-1.dll
+
+These files are included in the release builds for Windows. They can also be downloaded separately here: <https://github.com/myQwil/luapd/releases/download/v0.3.1/luapd-dependencies.Windows-amd64-32.zip>
