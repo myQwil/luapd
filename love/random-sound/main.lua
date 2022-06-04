@@ -25,7 +25,7 @@ function love.load()
 	      0.05 ,patch:dollarZero() ,love.graphics.getDimensions()
 
 	local met  =
-	{	 dest='met'      ,min=11   ,max=6000 ,num=1000 ,log=true
+	{	 dest=dlr..'met' ,min=11   ,max=6000 ,num=1000 ,log=true
 		,label={text='milliseconds per beat'}  }
 	local tvol =
 	{	 dest=dlr..'vol' ,min=.001 ,max=1    ,num=vol  ,snap=.1 ,log=true
