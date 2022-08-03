@@ -7,8 +7,9 @@ package.cpath = './?.'..ext[ffi.os]..';'..package.cpath
 
 local Pd = require('luapd') ---@type Pd
 
-local inChannels ,outChannels ,sampleRate ,queued =
-      1          ,2           ,48000      ,false
+local
+inChannels ,outChannels ,sampleRate ,queued =
+1          ,2           ,48000      ,false
 
 -- our pd engine
 local pd = Pd.Base()

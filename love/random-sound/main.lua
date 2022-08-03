@@ -21,8 +21,9 @@ function love.load()
 	lpd.init()
 	patch = lpd.open{play = false}
 
-	local vol  ,dlr                ,width ,height =
-	      0.05 ,patch:dollarZero() ,love.graphics.getDimensions()
+	local
+	vol  ,dlr                ,width ,height =
+	0.05 ,patch:dollarZero() ,love.graphics.getDimensions()
 
 	local met  =
 	{	 dest=dlr..'met' ,min=11   ,max=6000 ,num=1000 ,log=true

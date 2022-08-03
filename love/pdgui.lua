@@ -51,6 +51,13 @@ local function slider_update(sl ,x ,y)
 	elseif focus then focus = nil end
 end
 
+local function axis_draw(ax)
+	love.graphics.print(
+		 ax.label.text..': '..string.format('%.'..ax.prec..'g' ,ax.num)
+		,ax.label.x ,ax.label.y
+	)
+end
+
 local function slider_draw(sl)
 	love.graphics.setColor(0.1  ,0.1  ,0.1  )
 	love.graphics.rectangle('fill' ,sl.x ,sl.y ,sl.xlen ,sl.ylen ,sl.rad)
@@ -63,8 +70,7 @@ local function slider_draw(sl)
 	love.graphics.circle('line' ,sl.cx ,sl.cy ,sl.rad)
 
 	for _,v in next,sl.t do
-		love.graphics.print(v.label.text..': '..string.format('%.'..v.prec..'g' ,v.num)
-			,v.label.x ,v.label.y) end
+		v:draw() end
 end
 
 local function slider_minmax(v ,min ,max ,diam)
@@ -82,13 +88,27 @@ local function slider_minmax(v ,min ,max ,diam)
 	return math.log(v.max/v.min) / (v.len-diam)
 end
 
+local function slider_pos(sl ,x)
+	local v = sl.t[x]
+	if not v then return end
+
+	-- determine knob position
+	local cx = 'c'..x
+	if  v.k == 0 then sl[cx] = v.xmin
+	elseif v.log then sl[cx] = v.xmin + math.log(v.num / v.min) / v.k
+	else              sl[cx] = v.xmin +         (v.num - v.min) / v.k end
+	sl['d'..x] = sl[cx] -- internal position for snapping
+end
+
 local function slider_axis(self ,sl ,v ,axis)
 	local x = axis
-	local diam      ,xlen      ,xx    ,cx =
-	      sl.rad*2  ,x..'len'  ,x..x  ,'c'..x
+	local diam = sl.rad*2
 	if v then
+		local xlen = x..'len'
+		local xx   = x..x
 		v.len  = v.len  or self.len
 		v.prec = v.prec or self.prec
+		v.draw = v.draw or axis_draw
 		if v.len < diam then v.len = diam end
 		sl[xlen] = v.len
 		sl[xx] = sl[x]  + v.len
@@ -119,12 +139,7 @@ local function slider_axis(self ,sl ,v ,axis)
 			else v.sk = v.snap / v.k end
 			if v.sk == 0 then
 				v.sk = 1 end end
-
-		-- knob position
-		if  v.k == 0 then sl[cx] = v.xmin
-		elseif v.log then sl[cx] = v.xmin + math.log(v.num / v.min) / v.k
-		else              sl[cx] = v.xmin +         (v.num - v.min) / v.k end
-		sl['d'..x] = sl[cx] -- internal position for snapping
+		sl:pos(x)
 
 		v.label = v.label or {}
 		v.dest  = v.dest  or self.dest
@@ -133,9 +148,9 @@ local function slider_axis(self ,sl ,v ,axis)
 		v.label.x    = math.floor((v.label.x or 0) + sl.x + sl.rad)
 		v.label.y    = math.floor((v.label.y or 0) + sl.y - 24)
 	else
-		sl[cx]   = sl[x] + sl.rad
-		sl[xx]   = sl[x] + diam
-		sl[xlen] = diam end
+		sl['c'..x]   = sl[x] + sl.rad
+		sl[x..x]     = sl[x] + diam
+		sl[x..'len'] = diam end
 end
 
 local function slider_new(self ,x ,y ,t ,opt)
@@ -144,11 +159,14 @@ local function slider_new(self ,x ,y ,t ,opt)
 	{	 x = x
 		,y = y
 		,t = t
-		,rad = math.abs(opt.rad or self.rad)
-		,rgb = opt.rgb or self.rgb
 		,send   = slider_send
 		,update = slider_update
-		,draw   = slider_draw   }
+		,draw   = slider_draw
+		,pos    = slider_pos   }
+
+	for k,v in pairs(opt) do sl[k] = v end
+	sl.rad = math.abs(sl.rad or self.rad)
+	sl.rgb = sl.rgb or self.rgb
 
 	slider_axis(self ,sl ,sl.t.x ,'x')
 	slider_axis(self ,sl ,sl.t.y ,'y')
@@ -162,10 +180,13 @@ end
 local function gui_box(self ,x ,y ,opt)
 	local box =
 	{	 x = x
-		,y = y
-		,click = opt.click or self.click
-		,dest  = opt.dest  or self.dest
-		,size  = opt.size  or self.size   }
+		,y = y   }
+
+	for k,v in pairs(opt) do box[k] = v end
+	box.click = box.click or self.click
+	box.dest  = box.dest  or self.dest
+	box.size  = box.size  or self.size
+
 	box.xx = box.x + box.size
 	box.yy = box.y + box.size
 
@@ -279,12 +300,12 @@ function gui:reset()
 	{	 change = slider_change
 		,rgb  = {.5 ,.5 ,.5} -- knob color
 		,log  = false -- logarithmic scaling
+		,snap = nil
 		-- snap to a grid with spacing of this amount relative to the scale.
 		-- nil or false disables snapping.
-		,snap = nil
+		,gap  = 7
 		-- a snap point's gravitational radius in pixels.
 		-- if gap is 0, knob will settle exclusively on snap points.
-		,gap  = 7
 		,prec = 8     -- precision when displaying number
 		,rad  = 25    -- knob radius
 		,len  = 100   -- axis length

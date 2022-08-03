@@ -57,12 +57,14 @@ local function sclChange(self ,num)
 	pd:readArray('default' ,scale)
 end
 
+
 function love.load()
 	lpd.init()
 	patch = lpd.open{play = false}
 
-	local vol ,x  ,bx  ,dlr                ,width ,height =
-	      0.2 ,20 ,175 ,patch:dollarZero() ,love.graphics.getDimensions()
+	local
+	vol ,dlr                ,width ,height =
+	0.2 ,patch:dollarZero() ,love.graphics.getDimensions()
 
 	local maj   = {dest='maj-min'  ,min=1    ,max=0  ,num=1   ,snap=.25  ,gap=12
 		,change=sclChange}
@@ -73,17 +75,19 @@ function love.load()
 	local tvol  = {dest=dlr..'vol' ,min=.001 ,max=1  ,num=vol ,snap=.1           ,log=true
 		,len=height-100 ,prec=4 ,label={text='volume' ,x=-100} ,change=volChange}
 
+	sx = 20
 	gui.slider.rad = 25
 	gui.slider.len = width-150
 	sliders =
-	{	 gui.slider(x        ,height*2/6 ,{x=maj}   ,{rgb={.25 ,.66 ,.66}})
-		,gui.slider(x        ,height*3/6 ,{x=scl}   ,{rgb={.33 ,.5  ,.66}})
-		,gui.slider(x        ,height*4/6 ,{x=phase} ,{rgb={.5  ,.66 ,.25}})
-		,gui.slider(x        ,height*5/6 ,{x=tempo} ,{rgb={.75 ,.25 ,.25}})
-		,gui.slider(width-90 ,60         ,{y=tvol}  ,{rgb={.75 ,.5  ,.75}})  }
+	{	 gui.slider(sx        ,height*2/6 ,{x=maj}   ,{rgb={.25 ,.66 ,.66}})
+		,gui.slider(sx        ,height*3/6 ,{x=scl}   ,{rgb={.33 ,.5  ,.66}})
+		,gui.slider(sx        ,height*4/6 ,{x=phase} ,{rgb={.5  ,.66 ,.25}})
+		,gui.slider(sx        ,height*5/6 ,{x=tempo} ,{rgb={.75 ,.25 ,.25}})
+		,gui.slider(width-90  ,60         ,{y=tvol}  ,{rgb={.75 ,.5  ,.75}})  }
 
-	gui.button.dest = 'scdef'
+	bx = 175
 	gui.button.size = 33
+	gui.button.dest = 'scdef'
 	buttons =
 	{	 gui.button(bx     ,50  ,{label={text='inv-'}             ,click=invdn})
 		,gui.button(bx+75  ,50  ,{label={text='inv+'}             ,click=invup})
@@ -110,6 +114,7 @@ function love.load()
 end
 
 function love.update(dt)
+	-- reverse list order to prioritize items rendered last
 	for i = #sliders,1,-1 do
 		sliders[i]:update(love.mouse.getPosition()) end
 	for i = #buttons,1,-1 do

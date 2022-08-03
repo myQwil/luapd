@@ -179,6 +179,7 @@ function Pd.Base:closePatch(name) end
 
 
 ----- Audio Processing -----
+
 --- one of these must be called for audio dsp and message io to occur
 ---
 --- inBuffer must be an array of the right size and never null

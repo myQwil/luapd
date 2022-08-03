@@ -28,15 +28,17 @@ lpd.pd  = Pd.Base()
 lpd.obj = Pd.Object{
 	print = function(msg)
 		message = msg
-		print(message)
+		print(msg)
 	end
 }
 local pd = lpd.pd
 local sdata  ---@type love.SoundData
 local source ---@type love.Source
 local srate = require('samplerate')
-local chIn ,chOut ,queued ,bitdepth =
-      0    ,2     ,false  ,16
+
+local
+chIn ,chOut ,queued ,bitdepth =
+0    ,2     ,false  ,16
 
 ---@param opt table # A list of options
 function lpd.init(opt)

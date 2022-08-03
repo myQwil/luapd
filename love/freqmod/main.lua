@@ -7,9 +7,11 @@ local lpd = require('pdmain')
 local pd ,obj  = lpd.pd ,lpd.obj
 local patch ---@type Pd.Patch
 
+local
+maxfrq ,maxidx ,mx ,my ,portamento =
+300    ,3200   ,0  ,0  ,0
+
 local width ,height = love.graphics.getWidth()-1 ,love.graphics.getHeight()-1
-local maxfrq ,maxidx ,mx ,my ,portamento =
-      300    ,3200   ,0  ,0  ,0
 local isPressed = {false ,false}
 local isAuto = false
 local hintx = width - 250
