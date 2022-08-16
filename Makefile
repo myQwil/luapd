@@ -20,7 +20,6 @@ else
   endif
 endif
 
-CXX       = clang++
 SRC       = src/PdObject.cpp src/main.cpp
 LIBPD     = $(LIBPD_DIR)/libs/libpd
 TARGET    = luapd.$(EXT)
