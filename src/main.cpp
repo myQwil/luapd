@@ -2,6 +2,8 @@
 #include <iostream>
 #include <stdlib.h>
 
+// ------------------------ Compatibility Section ------------------------------
+
 #if LUA_VERSION_NUM == 501
 
 #define lua_rawlen(L,i) lua_objlen(L,(i))
@@ -57,19 +59,23 @@ LUALIB_API void luaL_checkversion_ (lua_State *L, lua_Number ver, size_t sz) {
 #endif // LUAJIT_VERSION_NUM
 #endif // LUA_VERSION_NUM
 
+
+// ------------------------ LuaPd ----------------------------------------------
+// -----------------------------------------------------------------------------
+
 using namespace std;
 using namespace pd;
 
 extern "C" { int luaopen_luapd(lua_State *L); }
 
-#define LUA_PDARRAY  "Pd.Array"
-#define LUA_PDPATCH  "Pd.Patch"
-#define LUA_PDOBJECT "Pd.Object"
-#define LUA_PDBASE   "Pd.Base"
+#define LUA_PDARRAY  "PdArray"
+#define LUA_PDPATCH  "PdPatch"
+#define LUA_PDOBJECT "PdObject"
+#define LUA_PDBASE   "PdBase"
 
-// -----------------------------------------------------------------------
-// -------------------------------- Array --------------------------------
-// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// ------------------------ Array ----------------------------------------------
+// -----------------------------------------------------------------------------
 
 static int pdarray_new(lua_State *L) {
 	int n  = !lua_isnoneornil(L ,1) ? luaL_checkinteger(L ,1) : 0;
@@ -118,9 +124,9 @@ static int pdarray_call(lua_State *L) {
 	return 1;
 }
 
-// -------------------------------------------------------------------------
-// -------------------------------- PdPatch --------------------------------
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// ------------------------ PdPatch --------------------------------------------
+// -----------------------------------------------------------------------------
 
 static int pdpatch_new(lua_State *L) {
 	Patch p;
@@ -191,9 +197,9 @@ static int pdpatch_clear(lua_State *L) {
 	return 0;
 }
 
-// --------------------------------------------------------------------------
-// -------------------------------- PdObject --------------------------------
-// --------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// ------------------------ PdObject -------------------------------------------
+// -----------------------------------------------------------------------------
 
 static int pdobject_new(lua_State *L) {
 	lua_settop(L ,1);
@@ -223,9 +229,9 @@ static int pdobject_setFuncs(lua_State *L) {
 		o->setFuncs(2);
 	return 0;
 }
-// ------------------------------------------------------------------------
-// -------------------------------- PdBase --------------------------------
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// ------------------------ PdBase ---------------------------------------------
+// -----------------------------------------------------------------------------
 
 static int pdbase_new(lua_State *L) {
 	*(PdBase**)lua_newuserdata(L ,sizeof(PdBase*)) = new PdBase();
@@ -677,9 +683,9 @@ static int pdbase_shl(lua_State *L) {
 	return 0;
 }
 
-// ---------------------------------------------------------------------------
-// -------------------------------- registers --------------------------------
-// ---------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// ------------------------ Registers ------------------------------------------
+// -----------------------------------------------------------------------------
 
 static void pdarray_reg(lua_State *L) {
 	static const luaL_Reg meta[] =
@@ -693,7 +699,9 @@ static void pdarray_reg(lua_State *L) {
 	luaL_setfuncs    (L ,meta ,0);
 	lua_pop          (L ,1);
 
+	lua_pushliteral  (L ,"Array");
 	lua_pushcfunction(L ,pdarray_new);
+	lua_settable     (L ,-3);
 }
 
 static void pdpatch_reg(lua_State *L) {
@@ -715,7 +723,9 @@ static void pdpatch_reg(lua_State *L) {
 	lua_setfield     (L ,-2 ,"__index");
 	lua_pop          (L ,1);
 
+	lua_pushliteral  (L ,"Patch");
 	lua_pushcfunction(L ,pdpatch_new);
+	lua_settable     (L ,-3);
 }
 
 static void pdobject_reg(lua_State *L) {
@@ -732,7 +742,9 @@ static void pdobject_reg(lua_State *L) {
 	lua_setfield     (L ,-2 ,"__index");
 	lua_pop          (L ,1);
 
+	lua_pushliteral  (L ,"Object");
 	lua_pushcfunction(L ,pdobject_new);
+	lua_settable     (L ,-3);
 }
 
 static void pdbase_reg(lua_State *L) {
@@ -813,34 +825,25 @@ static void pdbase_reg(lua_State *L) {
 	lua_setfield     (L ,-2 ,"__index");
 	lua_pop          (L ,1);
 
+	static const luaL_Reg static_meta[] =
+	{	 { "__call"    ,pdbase_new       }
+		,{ NULL        ,NULL             }  };
 	static const luaL_Reg static_meth[] =
 	{	 { "blockSize" ,pdbase_blockSize }
 		,{ NULL        ,NULL             }  };
-	lua_pushcfunction(L ,pdbase_new);
-	lua_newtable     (L);
+	lua_pushliteral  (L ,"Base");
 	luaL_newlib      (L ,static_meth);
-	lua_setfield     (L ,-2 ,"__index");
+	lua_newtable     (L);
+	luaL_setfuncs    (L ,static_meta ,0);
 	lua_setmetatable (L ,-2);
+	lua_settable     (L ,-3);
 }
 
 int luaopen_luapd(lua_State *L) {
-	lua_newtable   (L);
-
-	lua_pushliteral(L ,"Array");
-	pdarray_reg    (L);
-	lua_settable   (L ,-3);
-
-	lua_pushliteral(L ,"Patch");
-	pdpatch_reg    (L);
-	lua_settable   (L ,-3);
-
-	lua_pushliteral(L ,"Object");
-	pdobject_reg   (L);
-	lua_settable   (L ,-3);
-
-	lua_pushliteral(L ,"Base");
-	pdbase_reg     (L);
-	lua_settable   (L ,-3);
-
+	lua_newtable (L);
+	pdarray_reg  (L);
+	pdpatch_reg  (L);
+	pdobject_reg (L);
+	pdbase_reg   (L);
 	return 1;
 }
