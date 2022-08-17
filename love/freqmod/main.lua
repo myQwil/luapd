@@ -5,7 +5,7 @@ end
 package.path = '../?.lua;'..package.path
 local lpd = require('pdmain')
 local pd ,obj  = lpd.pd ,lpd.obj
-local patch ---@type Pd.Patch
+local patch ---@type PdPatch
 
 local
 maxfrq ,maxidx ,mx ,my ,portamento =

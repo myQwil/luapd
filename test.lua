@@ -1,3 +1,7 @@
+if os.getenv('LOCAL_LUA_DEBUGGER_VSCODE') == '1' then
+	require('lldebugger').start()
+end
+
 local ext =
 {	 Linux   = 'so'
 	,Windows = 'dll'
@@ -52,9 +56,9 @@ local obj = Pd.Object{
 	end
 }
 
-local blk    = Pd.Base.blockSize()
-local inbuf  = Pd.Array(blk * inChannels)
-local outbuf = Pd.Array(blk * outChannels)
+local block  = pd.blockSize() -- or Pd.Base.blockSize()
+local inbuf  = Pd.Array(block * inChannels)
+local outbuf = Pd.Array(block * outChannels)
 
 
 -- init pd
@@ -202,7 +206,7 @@ pd:sendBang('tone');
 -- since processFloat actually runs the pd dsp engine and the recieve
 -- functions pass messages to our PdObject
 print('Processing PD')
-for _=0 ,10 * sampleRate / blk do
+for _ = 0 ,(10 * sampleRate / block) do
 	pd:processFloat(1 ,inbuf() ,outbuf())
 	pd:receiveMessages()
 	pd:receiveMidi()

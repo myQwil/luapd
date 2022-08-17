@@ -5,7 +5,7 @@ end
 package.path = '../?.lua;'..package.path
 local lpd = require('pdmain')
 local pd = lpd.pd
-local patch ---@type Pd.Patch
+local patch ---@type PdPatch
 
 local gui = require('pdgui')(pd)
 local sliders

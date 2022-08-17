@@ -2,7 +2,7 @@ function math.clamp(x ,min ,max)
 	return (x < min and min) or (x > max and max) or x
 end
 
-function fif(cond ,T ,F)
+function Fif(cond ,T ,F)
 	if cond then return T else return F end
 end
 
@@ -14,7 +14,7 @@ local stros = love.system.getOS()
 package.cpath = '../../?.'..ext[stros]..';'..package.cpath
 
 Pd = require('luapd') ---@type Pd
-local ticks ,bufs     ---@type number
+local ticks ,bufs     ---@type number ,number
 local message         ---@type string
 
 local lpd =
@@ -40,7 +40,7 @@ local
 chIn ,chOut ,queued ,bitdepth =
 0    ,2     ,false  ,16
 
----@param opt table # A list of options
+---@param opt table|nil # A list of options
 function lpd.init(opt)
 	if type(opt) ~= 'table' then opt = lpd end
 	ticks = opt.ticks or lpd.ticks
@@ -59,12 +59,12 @@ function lpd.init(opt)
 	love.graphics.setFont(love.graphics.newFont(16))
 end
 
----@param opt table # A list of options
----@return Pd.Patch
+---@param opt table|nil # A list of options
+---@return PdPatch
 function lpd.open(opt)
 	if type(opt) ~= 'table' then opt = lpd end
 	local play ,patch ,volume
-	play = fif(opt.play ~= nil ,opt.play ,lpd.play)
+	play = Fif(opt.play ~= nil ,opt.play ,lpd.play)
 	patch = opt.patch or lpd.patch
 	volume = opt.volume and math.clamp(opt.volume ,-1 ,1) or lpd.volume
 

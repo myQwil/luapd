@@ -1,6 +1,6 @@
 math.epsilon = 2.2204460492503131e-16
 
-local pd       ---@type Pd.Base
+local pd       ---@type PdBase
 local gui = {} -- Pd gui library
 local focus    -- the slider receiving focus or nil
 
@@ -145,8 +145,8 @@ local function slider_axis(self ,sl ,v ,axis)
 		v.dest  = v.dest  or self.dest
 		v.change = v.change or self.change
 		v.label.text = v.label.text or v.dest
-		v.label.x    = math.floor((v.label.x or 0) + sl.x + sl.rad)
-		v.label.y    = math.floor((v.label.y or 0) + sl.y - 24)
+		v.label.x    = math.floor((v.label.x or self.lblx) + sl.x + sl.rad)
+		v.label.y    = math.floor((v.label.y or self.lbly) + sl.y - 24)
 	else
 		sl['c'..x]   = sl[x] + sl.rad
 		sl[x..x]     = sl[x] + diam
@@ -192,8 +192,8 @@ local function gui_box(self ,x ,y ,opt)
 
 	local label = opt.label or {}
 	label.text = label.text or box.dest
-	label.x    = math.floor((label.x or 0) + box.x)
-	label.y    = math.floor((label.y or 0) + box.y - 24)
+	label.x    = math.floor((label.x or self.lblx) + box.x)
+	label.y    = math.floor((label.y or self.lbly) + box.y - 24)
 	box.label  = label
 
 	return box
@@ -274,7 +274,7 @@ local function toggle_new(self ,x ,y ,opt)
 	tgl.mousepressed = toggle_mousepressed
 
 	tgl.non0 = opt.non0 or self.non0
-	tgl.on = fif(opt.on ~= nil ,opt.on ,self.on)
+	tgl.on = Fif(opt.on ~= nil ,opt.on ,self.on)
 	return tgl
 end
 
@@ -290,7 +290,7 @@ local function button_click(self)
 end
 
 local function toggle_click(self ,on)
-	self.on = fif(on ~= nil ,on ,not self.on)
+	self.on = Fif(on ~= nil ,on ,not self.on)
 	pd:sendFloat(self.dest ,self.on and self.non0 or 0)
 end
 
@@ -310,12 +310,16 @@ function gui:reset()
 		,rad  = 25    -- knob radius
 		,len  = 100   -- axis length
 		,dest = 'foo' -- send-to destination
+		,lblx = 0     -- label x offset
+		,lbly = 0     -- label y offset
 	}
 	self.button =
 	{	 click = button_click
 		,delay = 0.2   -- circle display duration on click
 		,size  = 25
 		,dest  = 'foo' -- send-to destination
+		,lblx = 0     -- label x offset
+		,lbly = 0     -- label y offset
 	}
 	self.toggle =
 	{	 click = toggle_click
@@ -323,13 +327,15 @@ function gui:reset()
 		,non0  = 1     -- non-zero value
 		,size  = 25
 		,dest  = 'foo' -- send-to destination
+		,lblx = 0     -- label x offset
+		,lbly = 0     -- label y offset
 	}
 	setmetatable(self.slider ,{__call = slider_new})
 	setmetatable(self.button ,{__call = button_new})
 	setmetatable(self.toggle ,{__call = toggle_new})
 end
 
----@param base Pd.Base
+---@param base PdBase
 return function(base)
 	pd = base
 	gui:reset()

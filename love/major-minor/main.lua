@@ -5,7 +5,7 @@ end
 package.path = '../?.lua;'..package.path
 local lpd = require('pdmain')
 local pd  = lpd.pd
-local patch ---@type Pd.Patch
+local patch ---@type PdPatch
 
 local gui    = require('pdgui')(pd)
 local scale  = Pd.Array(6)
@@ -75,7 +75,7 @@ function love.load()
 	local tvol  = {dest=dlr..'vol' ,min=.001 ,max=1  ,num=vol ,snap=.1           ,log=true
 		,len=height-100 ,prec=4 ,label={text='volume' ,x=-100} ,change=volChange}
 
-	sx = 20
+	local sx = 20
 	gui.slider.rad = 25
 	gui.slider.len = width-150
 	sliders =
@@ -85,7 +85,7 @@ function love.load()
 		,gui.slider(sx        ,height*5/6 ,{x=tempo} ,{rgb={.75 ,.25 ,.25}})
 		,gui.slider(width-90  ,60         ,{y=tvol}  ,{rgb={.75 ,.5  ,.75}})  }
 
-	bx = 175
+	local bx = 175
 	gui.button.size = 33
 	gui.button.dest = 'scdef'
 	buttons =

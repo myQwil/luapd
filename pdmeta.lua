@@ -7,106 +7,112 @@ local Pd = {}
 ---------------------------------------------------------
 ------------------------- Array -------------------------
 
----@class Pd.Array
 ---A wrapper for a std::vector\<float\>
+---@class PdArray
+Pd._Array = {}
+
 ---@param size? integer # size of the array (default 0)
----@return Pd.Array
+---@return PdArray
 function Pd.Array(size) end
 
 
 ---------------------------------------------------------
 ------------------------- Patch -------------------------
 
--- emmylua does not like overloaded __call functions
--- -@overload fun(filename: string, path?: string): Pd.Patch
--- -@overload fun(patch?: Pd.Patch): Pd.Patch # copy constructor
-
----@class Pd.Patch
 ---A pd patch
 ---
 ---If you use the copy constructor/operator, keep in mind the libpd void*
 ---pointer patch handle is copied and problems can arise if one object is used
 ---to close a patch that other copies may be referring to
+---@class PdPatch
+Pd._Patch = {}
+
+---@overload fun(filename:string, path?:string): PdPatch
+---@overload fun(patch?:PdPatch): PdPatch # copy constructor
 ---@param handle lightuserdata # the raw pointer to the patch instance
 ---@param dollarZero integer # the unqiue instance $0 ID
 ---@param filename string # the patch filename
 ---@param path? string # the parent dir path for the file (default ".")
----@return Pd.Patch
+---@return PdPatch
 function Pd.Patch(handle, dollarZero, filename, path) end
 
 ---get the raw pointer to the patch instance
 ---@return lightuserdata
-function Pd.Patch:handle() end
+function Pd._Patch:handle() end
 
 ---get the unqiue instance $0 ID
 ---@return integer
-function Pd.Patch:dollarZero() end
+function Pd._Patch:dollarZero() end
 
 ---get the patch filename
 ---@return string
-function Pd.Patch:filename() end
+function Pd._Patch:filename() end
 
 ---get the parent dir path for the file
 ---@return string
-function Pd.Patch:path() end
+function Pd._Patch:path() end
 
 ---get the unique instance $0 ID as a string
 ---@return string
-function Pd.Patch:dollarZeroStr() end
+function Pd._Patch:dollarZeroStr() end
 
 ---is the patch pointer valid?
 ---@return boolean
-function Pd.Patch:isValid() end
+function Pd._Patch:isValid() end
 
 ---clear patch pointer and dollar zero (does not close patch!)
 ---
 ---note: does not clear filename and path so the object can be reused
 ---for opening multiple instances
-function Pd.Patch:clear() end
+function Pd._Patch:clear() end
 
 
 ------------------------------------------------------------
 ------------------------- PdObject -------------------------
 
----@class Pd.Object
----@field print   fun(message: string)
----@field bang    fun(dest: string)
----@field float   fun(dest: string, num: number)
----@field symbol  fun(dest: string, symbol: string)
----@field list    fun(dest: string, list: table)
----@field message fun(dest: string, msg: string, list: table)
----@field noteOn         fun(channel: integer, pitch: integer, velocity: integer)
----@field controlChange  fun(channel: integer, controller: integer, value: integer)
----@field programChange  fun(channel: integer, value: integer)
----@field pitchBend      fun(channel: integer, value: integer)
----@field afterTouch     fun(channel: integer, value: integer)
----@field polyAfterTouch fun(channel: integer, pitch: integer, value: integer)
----@field midiByte       fun(port: integer, byte: integer)
 ---A pd message receiver
+---@class PdObject
+---@field print   fun(message:string)
+---@field bang    fun(dest:string)
+---@field float   fun(dest:string, num:number)
+---@field symbol  fun(dest:string, symbol:string)
+---@field list    fun(dest:string, list:table)
+---@field message fun(dest:string, msg:string, list:table)
+---@field noteOn         fun(channel:integer, pitch:integer, velocity:integer)
+---@field controlChange  fun(channel:integer, controller:integer, value:integer)
+---@field programChange  fun(channel:integer, value:integer)
+---@field pitchBend      fun(channel:integer, value:integer)
+---@field afterTouch     fun(channel:integer, value:integer)
+---@field polyAfterTouch fun(channel:integer, pitch:integer, value:integer)
+---@field midiByte       fun(port:integer, byte:integer)
+Pd._Object = {}
+
 ---@param callbacks? function[] # a list of callback functions
----@return Pd.Object
+---@return PdObject
 function Pd.Object(callbacks) end
 
 ---set multiple callback functions
 ---@param funcs table
-function Pd.Object:setFuncs(funcs) end
+function Pd._Object:setFuncs(funcs) end
 
 
 ----------------------------------------------------------
-------------------------- Pd.Base -------------------------
+------------------------- PdBase -------------------------
 
----@class Pd.Base
 ---A Pure Data instance
 ---
 ---note: libpd currently does not support multiple states and it is
----suggested that you use only one Pd.Base-derived object at a time
+---suggested that you use only one PdBase-derived object at a time
 ---
----calls from multiple Pd.Base instances currently use a global context
+---calls from multiple PdBase instances currently use a global context
 ---kept in a singleton object, thus only one Receiver & one MidiReceiver
 ---can be used within a single program
 ---
 ---multiple context support will be added if/when it is included within libpd
----@return Pd.Base
+---@class PdBase
+Pd._Base = {}
+
+---@return PdBase
 function Pd.Base() end
 
 
@@ -140,10 +146,10 @@ function Pd.Base() end
 ---@param sampleRate integer # the audio sample rate
 ---@param queued boolean # whether to use ringbuffers for message and midi event passing
 ---@return boolean # true if setup successfully
-function Pd.Base:init(numInChannels, numOutChannels, sampleRate, queued) end
+function Pd._Base:init(numInChannels, numOutChannels, sampleRate, queued) end
 
 ---clear resources
-function Pd.Base:clear() end
+function Pd._Base:clear() end
 
 
 ----- Adding Search Paths -----
@@ -153,10 +159,10 @@ function Pd.Base:clear() end
 ---
 ---note: fails silently if path not found
 ---@param path string # search path
-function Pd.Base:addToSearchPath(path) end
+function Pd._Base:addToSearchPath(path) end
 
 ---clear the current pd search path
-function Pd.Base:clearSearchPath() end
+function Pd._Base:clearSearchPath() end
 
 
 ----- Opening Patches -----
@@ -166,16 +172,16 @@ function Pd.Base:clearSearchPath() end
 ---if no path is specified, the parent dir will be local
 ---
 ---or open a patch file using the filename and path of an existing patch
----@overload fun(patch: Pd.Patch): Pd.Patch # use filename and path of an existing patch
+---@overload fun(_, patch:PdPatch): PdPatch # use filename and path of an existing patch
 ---@param name string # the name of the patch
 ---@param path? string # the parent directory (default ".")
----@return Pd.Patch
-function Pd.Base:openPatch(name, path) end
+---@return PdPatch
+function Pd._Base:openPatch(name, path) end
 
 ---close a patch file
----@overload fun(patch: Pd.Patch)
+---@overload fun(_, patch:PdPatch)
 ---@param name string # the patch's basename (filename without extension)
-function Pd.Base:closePatch(name) end
+function Pd._Base:closePatch(name) end
 
 
 ----- Audio Processing -----
@@ -190,43 +196,49 @@ function Pd.Base:closePatch(name) end
 --- note: raw does not interlace the buffers
 
 ---process float buffers for a given number of ticks
+---@overload fun(_, ticks:integer, outBuffer:number[]): boolean
 ---@param ticks integer # the number of ticks to process
----@param inBuffer? number[] # audio-in buffer
+---@param inBuffer number[] # audio-in buffer
 ---@param outBuffer number[] # audio-out buffer
 ---@return boolean # false on error
-function Pd.Base:processFloat(ticks, inBuffer, outBuffer) end
+function Pd._Base:processFloat(ticks, inBuffer, outBuffer) end
 
 ---process short buffers for a given number of ticks
+---@overload fun(_, ticks:integer, outBuffer:number[]): boolean
 ---@param ticks integer # the number of ticks to process
----@param inBuffer? integer[] # audio-in buffer
+---@param inBuffer integer[] # audio-in buffer
 ---@param outBuffer integer[] # audio-out buffer
 ---@return boolean # false on error
-function Pd.Base:processShort(ticks, inBuffer, outBuffer) end
+function Pd._Base:processShort(ticks, inBuffer, outBuffer) end
 
 ---process double buffers for a given number of ticks
+---@overload fun(_, ticks:integer, outBuffer:number[]): boolean
 ---@param ticks integer # the number of ticks to process
----@param inBuffer? number[] # audio-in buffer
+---@param inBuffer number[] # audio-in buffer
 ---@param outBuffer number[] # audio-out buffer
 ---@return boolean # false on error
-function Pd.Base:processDouble(ticks, inBuffer, outBuffer) end
+function Pd._Base:processDouble(ticks, inBuffer, outBuffer) end
 
 ---process one pd tick, writes raw float data to/from buffers
----@param inBuffer? number[] # audio-in buffer
+---@overload fun(_, outBuffer:number[]): boolean
+---@param inBuffer number[] # audio-in buffer
 ---@param outBuffer number[] # audio-out buffer
 ---@return boolean # false on error
-function Pd.Base:processRaw(inBuffer, outBuffer) end
+function Pd._Base:processRaw(inBuffer, outBuffer) end
 
 ---process one pd tick, writes raw short data to/from buffers
----@param inBuffer? integer[] # audio-in buffer
+---@overload fun(_, outBuffer:number[]): boolean
+---@param inBuffer integer[] # audio-in buffer
 ---@param outBuffer integer[] # audio-out buffer
 ---@return boolean # false on error
-function Pd.Base:processRawShort(inBuffer, outBuffer) end
+function Pd._Base:processRawShort(inBuffer, outBuffer) end
 
 ---process one pd tick, writes raw double data to/from buffers
----@param inBuffer? number[] # audio-in buffer
+---@overload fun(_, outBuffer:number[]): boolean
+---@param inBuffer number[] # audio-in buffer
 ---@param outBuffer number[] # audio-out buffer
 ---@return boolean # false on error
-function Pd.Base:processRawDouble(inBuffer, outBuffer) end
+function Pd._Base:processRawDouble(inBuffer, outBuffer) end
 
 
 ----- Audio Processing Control -----
@@ -235,7 +247,7 @@ function Pd.Base:processRawDouble(inBuffer, outBuffer) end
 ---
 ---in general, once started, you won't need to turn off audio
 ---@param state boolean
-function Pd.Base:computeAudio(state) end
+function Pd._Base:computeAudio(state) end
 
 
 ----- Message Receiving -----
@@ -244,28 +256,28 @@ function Pd.Base:computeAudio(state) end
 ---
 ---it acts like a virtual pd receive object
 ---@param source string
-function Pd.Base:subscribe(source) end
+function Pd._Base:subscribe(source) end
 
 ---unsubscribe from messages sent by a pd send source
 ---@param source string
-function Pd.Base:unsubscribe(source) end
+function Pd._Base:unsubscribe(source) end
 
 ---is a pd send source subscribed?
 ---@param source string
 ---@return boolean
-function Pd.Base:exists(source) end
+function Pd._Base:exists(source) end
 
 ---receivers will be unsubscribed from *all* pd send sources
-function Pd.Base:unsubscribeAll() end
+function Pd._Base:unsubscribeAll() end
 
 
 ----- Receiving from the Message Queues -----
 
 ---process waiting messages
-function Pd.Base:receiveMessages() end
+function Pd._Base:receiveMessages() end
 
 ---process waiting midi messages
-function Pd.Base:receiveMidi() end
+function Pd._Base:receiveMidi() end
 
 
 ----- Event Receiving via Callbacks -----
@@ -276,8 +288,8 @@ function Pd.Base:receiveMidi() end
 ---
 ---set this to NULL to disable callback receiving and re-enable the
 ---event queue
----@param receiver Pd.Object
-function Pd.Base:setReceiver(receiver) end
+---@param receiver PdObject
+function Pd._Base:setReceiver(receiver) end
 
 ---set the incoming midi event receiver, disables the midi queue
 ---
@@ -285,63 +297,63 @@ function Pd.Base:setReceiver(receiver) end
 ---
 ---set this to NULL to disable callback receiving and re-enable the
 ---event queue
----@param receiver Pd.Object
-function Pd.Base:setMidiReceiver(receiver) end
+---@param receiver PdObject
+function Pd._Base:setMidiReceiver(receiver) end
 
 
 ----- Send Functions -----
 
 ---send a bang message
 ---@param dest string # the destination
-function Pd.Base:sendBang(dest) end
+function Pd._Base:sendBang(dest) end
 
 ---send a float
 ---@param dest string # the destination
 ---@param value number # a float
-function Pd.Base:sendFloat(dest, value) end
+function Pd._Base:sendFloat(dest, value) end
 
 ---send a symbol
 ---@param dest string # the destination
 ---@param symbol string # a string
-function Pd.Base:sendSymbol(dest, symbol) end
+function Pd._Base:sendSymbol(dest, symbol) end
 
 
 ----- Sending Compound Messages -----
 
 ---start a compound list or message
-function Pd.Base:startMessage() end
+function Pd._Base:startMessage() end
 
 ---add a float to the current compound list or message
 ---@param num number
-function Pd.Base:addFloat(num) end
+function Pd._Base:addFloat(num) end
 
 ---add a symbol to the current compound list or message
 ---@param symbol string
-function Pd.Base:addSymbol(symbol) end
+function Pd._Base:addSymbol(symbol) end
 
 ---add a float or symbol to the current compound list or message
 ---@param atom string|number
-function Pd.Base:addAtom(atom) end
+function Pd._Base:addAtom(atom) end
 
 ---finish and send as a list
 ---@param dest string # the destination
-function Pd.Base:finishList(dest) end
+function Pd._Base:finishList(dest) end
 
 ---finish and send as a list with a specific message name
 ---@param dest string # the destination
 ---@param msg string # the message
-function Pd.Base:finishMessage(dest, msg) end
+function Pd._Base:finishMessage(dest, msg) end
 
 ---send a list using a table
 ---@param dest string # the destination
 ---@param list table # a table
-function Pd.Base:sendList(dest, list) end
+function Pd._Base:sendList(dest, list) end
 
 ---send a message and accompanying args
 ---@param dest string # the destination
 ---@param msg string # the message
----@param list table # accompanying args
-function Pd.Base:sendMessage(dest, msg, list) end
+---@param list table|nil # accompanying args
+function Pd._Base:sendMessage(dest, msg, list) end
 
 
 ----- Sending MIDI -----
@@ -351,37 +363,37 @@ function Pd.Base:sendMessage(dest, msg, list) end
 ---pd does not use note off MIDI messages, so send a note on with vel = 0
 ---@param channel integer
 ---@param pitch integer
----@param velocity integer
-function Pd.Base:sendNoteOn(channel, pitch, velocity) end
+---@param velocity? integer # default 64
+function Pd._Base:sendNoteOn(channel, pitch, velocity) end
 
 ---send a MIDI control change
 ---@param channel integer
 ---@param controller integer
 ---@param value integer
-function Pd.Base:sendControlChange(channel, controller, value) end
+function Pd._Base:sendControlChange(channel, controller, value) end
 
 ---send a MIDI program change
 ---@param channel integer
 ---@param value integer
-function Pd.Base:sendProgramChange(channel, value) end
+function Pd._Base:sendProgramChange(channel, value) end
 
 ---send a MIDI pitch bend
 ---
 ---in pd: [bendin] takes 0 - 16383 while [bendout] returns -8192 - 8191
 ---@param channel integer
 ---@param value integer
-function Pd.Base:sendPitchBend(channel, value) end
+function Pd._Base:sendPitchBend(channel, value) end
 
 ---send a MIDI aftertouch
 ---@param channel integer
 ---@param value integer
-function Pd.Base:sendAftertouch(channel, value) end
+function Pd._Base:sendAftertouch(channel, value) end
 
 ---send a MIDI poly aftertouch
 ---@param channel integer
 ---@param pitch integer
 ---@param value integer
-function Pd.Base:sendPolyAftertouch(channel, pitch, value) end
+function Pd._Base:sendPolyAftertouch(channel, pitch, value) end
 
 ---send a raw MIDI byte
 ---
@@ -389,27 +401,27 @@ function Pd.Base:sendPolyAftertouch(channel, pitch, value) end
 ---port is the raw portmidi port #, similar to a channel
 ---
 ---for some reason, [midiin], [sysexin] & [realtimein] add 2 to the
----port num, so sending to port 1 in Pd.Base returns port 3 in pd
+---port num, so sending to port 1 in PdBase returns port 3 in pd
 ---
 ---however, [midiout], [sysexout], & [realtimeout] do not add to the
----port num, so sending port 1 to [midiout] returns port 1 in Pd.Base
+---port num, so sending port 1 to [midiout] returns port 1 in PdBase
 ---@param port integer
 ---@param value integer
-function Pd.Base:sendMidiByte(port, value) end
+function Pd._Base:sendMidiByte(port, value) end
 
 ---send a raw MIDI sysex byte
 ---@param port integer
 ---@param value integer
-function Pd.Base:sendSysex(port, value) end
+function Pd._Base:sendSysex(port, value) end
 
 ---send a raw MIDI realtime byte
 ---@param port integer
 ---@param value integer
-function Pd.Base:sendSysRealTime(port, value) end
+function Pd._Base:sendSysRealTime(port, value) end
 
 ---is a message or byte stream currently in progress?
 ---@return boolean
-function Pd.Base:isMessageInProgress() end
+function Pd._Base:isMessageInProgress() end
 
 
 ----- Array Access -----
@@ -417,7 +429,7 @@ function Pd.Base:isMessageInProgress() end
 ---get the size of a pd array
 ---@param name string
 ---@return integer # 0 if array not found
-function Pd.Base:arraySize(name) end
+function Pd._Base:arraySize(name) end
 
 ---(re)size a pd array
 ---
@@ -425,7 +437,7 @@ function Pd.Base:arraySize(name) end
 ---@param name string
 ---@param size integer
 ---@return boolean # true on success, false on failure
-function Pd.Base:resizeArray(name, size) end
+function Pd._Base:resizeArray(name, size) end
 
 ---read from a pd array
 ---
@@ -437,7 +449,7 @@ function Pd.Base:resizeArray(name, size) end
 ---@param readLen? integer # the amount to read (default -1)
 ---@param offset? integer # the offset (default 0)
 ---@return boolean # true on success, false on failure
-function Pd.Base:readArray(name, dest, readLen, offset) end
+function Pd._Base:readArray(name, dest, readLen, offset) end
 
 ---write to a pd array
 ---
@@ -447,33 +459,33 @@ function Pd.Base:readArray(name, dest, readLen, offset) end
 ---@param writeLen? integer # the amount to write (default -1)
 ---@param offset? integer # the offset (default 0)
 ---@return boolean # true on success, false on failure
-function Pd.Base:writeArray(name, source, writeLen, offset) end
+function Pd._Base:writeArray(name, source, writeLen, offset) end
 
 ---clear array and set to a specific value
 ---@param name string
----@param value? integer
-function Pd.Base:clearArray(name, value) end
+---@param value? integer # default 0
+function Pd._Base:clearArray(name, value) end
 
 
 ----- Utils -----
 
 ---has the global pd instance been initialized?
 ---@return boolean
-function Pd.Base:isInited() end
+function Pd._Base:isInited() end
 
 ---is the global pd instance using the ringerbuffer queue
 ---for message padding?
 ---@return boolean
-function Pd.Base:isQueued() end
+function Pd._Base:isQueued() end
 
 ---get the blocksize of pd (sample length per channel)
 ---@return integer
-function Pd.Base.blockSize() end
+function Pd._Base.blockSize() end
 
 ---set the max length of messages and lists, default: 32
 ---@param len integer
-function Pd.Base:setMaxMessageLen(len) end
+function Pd._Base:setMaxMessageLen(len) end
 
 ---get the max length of messages and lists
 ---@return integer
-function Pd.Base:maxMessageLen() end
+function Pd._Base:maxMessageLen() end

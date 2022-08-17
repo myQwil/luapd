@@ -5,10 +5,10 @@ end
 package.path = '../?.lua;'..package.path
 local lpd = require('pdmain')
 local pd = lpd.pd
-local patch ---@type Pd.Patch
+local patch ---@type PdPatch
 
 local gui = require('pdgui')(pd)
-local sliders
+local sliders ,buttons
 
 
 -- Widget Callbacks
@@ -33,10 +33,10 @@ local function metChange(self ,num)
 	pd:sendFloat(self.dest ,self.num)
 end
 
-lbl = 'milliseconds per beat:\nbeats per minute:'
+local lbl = 'milliseconds per beat:\nbeats per minute:'
 local function metDraw(self)
-	str = string.format('%.'..self.prec..'g' ,self.num)..'\n'
-	   .. string.format('%.'..self.prec..'g' ,self.bpm)
+	local str = string.format('%.'..self.prec..'g' ,self.num)..'\n'
+	         .. string.format('%.'..self.prec..'g' ,self.bpm)
 	love.graphics.printf(lbl ,10  ,10 ,200 ,'right')
 	love.graphics.printf(str ,215 ,10 ,50  ,'left')
 end
@@ -52,15 +52,16 @@ function love.load()
 
 	local met  =
 	{	 dest=dlr..'met' ,min=1500 ,max=125 ,num=1000 ,snap=125
-		,prec=4 ,label={x=-100} ,draw=metDraw ,change=metChange  }
+		,prec=4 ,change=metChange ,draw=metDraw  }
 	met.bpm = 60000 / met.num
 	local tvol =
 	{	 dest=dlr..'vol' ,min=.001 ,max=1   ,num=vol  ,snap=.1 ,log=true
-		,prec=4 ,label={text='volume' ,x=-80 ,y=530} ,change=volChange  }
+		,prec=4 ,change=volChange ,label={text='volume' ,y=530}  }
 
-	rad = 25
-	gui.slider.rad = rad
-	gui.slider.len = height-100
+	local rad = 25
+	gui.slider.rad  = rad
+	gui.slider.lblx = -100
+	gui.slider.len  = height-100
 	sliders =
 	{	 gui.slider(rad*2       ,60 ,{y=met}  ,{rgb={.25 ,.66 ,.66}})
 		,gui.slider(width-rad*4 ,60 ,{y=tvol} ,{rgb={.75 ,.5  ,.75}})  }
@@ -68,7 +69,7 @@ function love.load()
 	gui.button.size = 33
 	gui.button.click = btnClick
 	gui.button.dest = dlr..'met'
-	bx ,by = width / 2 - 16 ,235
+	local bx ,by = width / 2 - 16 ,235
 	buttons =
 	{	 gui.button(bx ,by     ,{label={text='750'}  ,num=750})
 		,gui.button(bx ,by+75  ,{label={text='875'}  ,num=875})
