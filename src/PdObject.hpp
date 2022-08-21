@@ -14,7 +14,7 @@
 #pragma once
 
 #include "PdBase.hpp"
-#include "lua.hpp"
+#include "luacompat.hpp"
 
 // custom receiver class
 class PdObject : public pd::PdReceiver ,public pd::PdMidiReceiver {
