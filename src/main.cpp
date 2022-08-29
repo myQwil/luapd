@@ -216,8 +216,7 @@ static int pdbase_clearSearchPath(lua_State *L) {
 static int pdbase_openPatch(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
 	Patch  *p;
-	int isString = (lua_type(L ,2) == LUA_TSTRING);
-	if (isString)
+	if (lua_type(L ,2) == LUA_TSTRING)
 	{	const char *patch = lua_tostring     (L ,2);
 		const char *path  = !lua_isnoneornil (L ,3) ? luaL_checkstring(L ,3) : ".";
 		p = new Patch(b->openPatch(patch ,path));  }
@@ -229,8 +228,7 @@ static int pdbase_openPatch(lua_State *L) {
 
 static int pdbase_closePatch(lua_State *L) {
 	PdBase *b = *(PdBase**)luaL_checkudata(L ,1 ,LUA_PDBASE);
-	int isString = (lua_type(L ,2) == LUA_TSTRING);
-	if (isString)
+	if (lua_type(L ,2) == LUA_TSTRING)
 	{	const char *patch = luaL_checkstring(L ,2);
 		b->closePatch(patch);  }
 	else

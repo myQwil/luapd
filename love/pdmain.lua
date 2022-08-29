@@ -18,7 +18,8 @@ local ticks ,bufs     ---@type number ,number
 local message         ---@type string
 
 local lpd =
-{	 ticks = 1
+{	-- default options
+	 ticks = 1
 	,bufs = 33
 	,play = true
 	,patch = 'main.pd'
