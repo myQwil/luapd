@@ -46,9 +46,9 @@ function love.load()
 	lpd.init()
 	patch = lpd.open{play = false}
 
-	local
-	vol  ,dlr                ,width ,height =
-	0.33 ,patch:dollarZero() ,love.graphics.getDimensions()
+	local vol = 0.33
+	local dlr = patch:dollarZero()
+	local width ,height = love.graphics.getDimensions()
 
 	local met  =
 	{	 dest=dlr..'met' ,min=1500 ,max=125 ,num=1000 ,snap=125
@@ -82,9 +82,10 @@ function love.load()
 end
 
 function love.update(dt)
+	local x ,y = love.mouse.getPosition()
 	-- reverse list order to prioritize items rendered last
 	for i = #sliders,1,-1 do
-		sliders[i]:update(love.mouse.getPosition()) end
+		sliders[i]:update(x ,y) end
 	for i = #buttons,1,-1 do
 		buttons[i]:update(dt) end
 	lpd.update()

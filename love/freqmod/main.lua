@@ -8,8 +8,8 @@ local pd ,obj  = lpd.pd ,lpd.obj
 local patch ---@type PdPatch
 
 local
-maxfrq ,maxidx ,mx ,my ,portamento =
-300    ,3200   ,0  ,0  ,0
+maxfrq ,maxidx ,mouse_y ,portamento =
+300    ,3200   ,0       ,0
 
 local width ,height = love.graphics.getWidth()-1 ,love.graphics.getHeight()-1
 local isPressed = {false ,false}
@@ -98,8 +98,8 @@ end
 
 local function pancar(x ,y)
 	pd:sendFloat('pan' ,slope(x ,-45 ,45 ,width))
-	if y ~= my then
-		pd:sendFloat('carrier-freq' ,(y > my) and -1 or 1)   end
+	if y ~= mouse_y then
+		pd:sendFloat('carrier-freq' ,(y > mouse_y) and -1 or 1)   end
 end
 
 local function fmod(x ,y)
@@ -133,7 +133,7 @@ end
 
 function love.mousemoved(x ,y)
 	clkLeft[love.mouse.isDown(1)](x ,y)
-	mx ,my = x ,y
+	mouse_y = y
 end
 
 function love.wheelmoved(x ,y)

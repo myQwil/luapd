@@ -21,9 +21,9 @@ function love.load()
 	lpd.init()
 	patch = lpd.open{play = false}
 
-	local
-	vol  ,dlr                ,width ,height =
-	0.05 ,patch:dollarZero() ,love.graphics.getDimensions()
+	local vol = 0.05
+	local dlr = patch:dollarZero()
+	local width ,height = love.graphics.getDimensions()
 
 	local met  =
 	{	 dest=dlr..'met' ,min=11   ,max=6000 ,num=1000 ,log=true
@@ -46,8 +46,9 @@ function love.load()
 end
 
 function love.update()
+	local x ,y = love.mouse.getPosition()
 	for i = #sliders,1,-1 do
-		sliders[i]:update(love.mouse.getPosition()) end
+		sliders[i]:update(x ,y) end
 	lpd.update()
 end
 
