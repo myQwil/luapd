@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-using namespace std;
+using std::vector;
 using namespace pd;
 
 extern "C" { int luaopen_luapd(lua_State *L); }
