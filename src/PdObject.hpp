@@ -19,9 +19,9 @@
 // custom receiver class
 class PdObject : public pd::PdReceiver ,public pd::PdMidiReceiver {
 public:
-	void setFuncs(int idx);
+	PdObject(lua_State*);
+	void setFuncs();
 	void setFunc(const char *name);
-	PdObject(lua_State* ,bool has_table);
 
 private:
 	lua_State *L;

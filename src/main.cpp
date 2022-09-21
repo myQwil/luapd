@@ -142,8 +142,7 @@ static int pdpatch_clear(lua_State *L) {
 
 static int pdobject_new(lua_State *L) {
 	lua_settop(L ,1);
-	*(PdObject**)lua_newuserdata(L ,sizeof(PdObject*)) =
-		new PdObject(L ,lua_istable(L ,1));
+	*(PdObject**)lua_newuserdata(L ,sizeof(PdObject*)) = new PdObject(L);
 	luaL_setmetatable(L ,LUA_PDOBJECT);
 	return 1;
 }
@@ -156,16 +155,18 @@ static int pdobject_gc(lua_State *L) {
 
 static int pdobject_newindex(lua_State *L) {
 	PdObject *o = *(PdObject**)luaL_checkudata(L ,1 ,LUA_PDOBJECT);
-	const char *name = luaL_checkstring       (L ,2);
-	luaL_checktype                            (L ,3 ,LUA_TFUNCTION);
+	const char *name = luaL_checkstring(L ,2);
+	luaL_checktype(L ,3 ,LUA_TFUNCTION);
+	lua_settop(L ,3);
 	o->setFunc(name);
 	return 0;
 }
 
 static int pdobject_setFuncs(lua_State *L) {
 	PdObject *o = *(PdObject**)luaL_checkudata(L ,1 ,LUA_PDOBJECT);
-	if (lua_istable(L ,2))
-		o->setFuncs(2);
+	luaL_checktype(L ,2 ,LUA_TTABLE);
+	lua_settop(L ,2);
+	o->setFuncs();
 	return 0;
 }
 // -----------------------------------------------------------------------------

@@ -12,17 +12,17 @@ static const char* const msgname[]  =
 	,"noteOn"     ,"controlChange"  ,"programChange" ,"pitchBend"
 	,"aftertouch" ,"polyAftertouch" ,"midiByte"  };
 
-PdObject::PdObject(lua_State *l ,bool has_table) {
-	L = l;
+PdObject::PdObject(lua_State *l) : L(l) {
 	for (int i=0; i<NMSG;  i++)
 		*msgs[i] = LUA_REFNIL;
-	if (has_table) setFuncs(1);
+	if (lua_istable(L ,1))
+		setFuncs();
 }
 
-void PdObject::setFuncs(int idx) {
+void PdObject::setFuncs() {
 	int ref;
 	for (int i=0; i<NMSG; i++)
-	{	lua_getfield(L ,idx ,msgname[i]);
+	{	lua_getfield(L ,-1 ,msgname[i]);
 		if ((ref = luaL_ref(L ,LUA_REGISTRYINDEX)) != LUA_REFNIL)
 			*msgs[i] = ref;  }
 }
