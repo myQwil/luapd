@@ -1,7 +1,7 @@
 -- get the playback device's sample rate, code courtesy of zorg
 local ffi = require('ffi')
 local openal = (ffi.os == 'Windows') and ffi.load('OpenAL32') or ffi.C
-ffi.cdef[[
+ffi.cdef [[
 typedef struct ALCcontext ALCcontext;
 typedef struct ALCdevice  ALCdevice;
 typedef int    ALCenum;
@@ -23,7 +23,7 @@ ALCdevice  *alcGetContextsDevice(ALCcontext *context);
 local srate = ffi.new('ALCint[1]') ---@type integer[]
 local ALC_FREQUENCY = 0x1007
 local context = openal.alcGetCurrentContext()
-local device  = openal.alcGetContextsDevice(context)
-openal.alcGetIntegerv(device ,ALC_FREQUENCY ,1 ,srate)
+local device = openal.alcGetContextsDevice(context)
+openal.alcGetIntegerv(device, ALC_FREQUENCY, 1, srate)
 
 return srate[0]
