@@ -29,8 +29,8 @@ LIBLUA    = -lluajit-5.1
 # LIBLUA    = $(LUA_DIR)/liblua.a
 LDLIBS   += -lm -lpthread $(LIBLUA)
 CXXFLAGS += -I$(LUA_DIR) \
--I$(LIBPD_DIR)/pure-data/src -I$(LIBPD_DIR)/libpd_wrapper \
--I$(LIBPD_DIR)/libpd_wrapper/util -I$(LIBPD_DIR)/cpp -I./src -fPIC -O3
+            -I$(LIBPD_DIR)/libpd_wrapper -I$(LIBPD_DIR)/libpd_wrapper/util \
+            -I$(LIBPD_DIR)/pure-data/src -I$(LIBPD_DIR)/cpp -I./src -O3 -fPIC
 
 ifeq ($(DEBUG), true)
   CXXFLAGS += -g -O0

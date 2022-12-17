@@ -18,13 +18,13 @@ local isAuto = false
 local hintx = width - 250
 local grid = {}
 local fm = {
-	modfrq = 1
+	  modfrq = 1
 	, modidx = 150
 	, carfrq = 400
 }
 
 local clr = {
-	over = { 0.4, 0.1, 0.1 }
+	  over  = { 0.4 , 0.1 , 0.1  }
 	, under = { 0.05, 0.15, 0.15 }
 }
 
@@ -147,11 +147,11 @@ function love.wheelmoved(x, y)
 	pd:sendFloat('carrier-freq', y * 25)
 end
 
-local kpress =
-{ ['+'] = function()
-	portamento = math.max(0, portamento + 25)
-	pd:sendFloat('portamento', portamento)
-end
+local kpress = {
+	['+'] = function()
+		portamento = math.max(0, portamento + 25)
+		pd:sendFloat('portamento', portamento)
+	end
 	, ['-'] = function()
 		portamento = math.max(0, portamento - 25)
 		pd:sendFloat('portamento', portamento)
@@ -166,7 +166,8 @@ end
 		onClick[1] = clkLeft[true]
 	end
 	, lctrl = function() tone(love.mouse.getPosition()) end
-	, escape = function() love.event.push('quit') end }
+	, escape = function() love.event.push('quit') end
+}
 kpress['='] = kpress['+']
 
 function love.keypressed(k)
