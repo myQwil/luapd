@@ -18,7 +18,7 @@ index 0000000..53855dd
 @@ -0,0 +1,8 @@
 +PD_EXTRA_FILES += $(patsubst %, ../pd-quilt/src/%.c, \
 +0x40paq 0x40unpaq blunt chrd chrono delp fldec flenc fton has is linp linp~ \
-+muse ntof paq radix rand rind same slx sly tabosc2~ tabread2~ unpaq all/quilt)
++metro~ muse ntof paq radix rand rind same slx sly tabosc2~ tabread2~ unpaq all/quilt)
 +
 +PD_EXTRA_FILES += $(patsubst %, ../pd-cyclone/cyclone_objects/binaries/audio/%.c, \
 +curve lessthan greaterthan)
