@@ -8,7 +8,7 @@ ifeq ($(UNAME), Darwin) # Mac
   EXT      = dylib
   LDFLAGS += -std=c++11 -arch x86_64 -dynamiclib
   CXXFLAGS = -std=c++11 -arch x86_64
-  LUA_DIR  = /usr/local/include/luajit-2.0
+  LUA_DIR  = /usr/local/include/luajit-2.1
 else
   LDFLAGS += -shared
   ifeq ($(OS), Windows_NT) # Windows, use Mingw
