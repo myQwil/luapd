@@ -1,5 +1,5 @@
 
-LIBPD_DIR ?= ../libpd
+LIBPD_DIR ?= $(shell pwd)/../libpd
 
 # detect platform
 UNAME   = $(shell uname)
@@ -22,7 +22,7 @@ else
 endif
 # LUA_DIR = ../lua
 
-SRC       = src/PdObject.cpp src/main.cpp
+SRC       = $(wildcard $(shell pwd)/src/*.cpp)
 LIBPD     = $(LIBPD_DIR)/libs/libpd
 TARGET    = luapd.$(EXT)
 LIBLUA    = -lluajit-5.1
@@ -30,7 +30,8 @@ LIBLUA    = -lluajit-5.1
 LDLIBS   += -lm -lpthread $(LIBLUA)
 CXXFLAGS += -I$(LUA_DIR) \
             -I$(LIBPD_DIR)/libpd_wrapper -I$(LIBPD_DIR)/libpd_wrapper/util \
-            -I$(LIBPD_DIR)/pure-data/src -I$(LIBPD_DIR)/cpp -I./src -O3 -fPIC
+            -I$(LIBPD_DIR)/pure-data/src -I$(LIBPD_DIR)/cpp -I./src -O3 -fPIC \
+            -Wall -Wextra -Wshadow -Wstrict-aliasing
 
 ifeq ($(DEBUG), true)
   CXXFLAGS += -g -O0
@@ -45,8 +46,11 @@ all: $(SRC:.cpp=.o) $(LIBPD).a
 $(LIBPD).a:
 	cd $(LIBPD_DIR) && make STATIC=true
 
-dynamic: ${SRC:.cpp=.o}
-	$(CXX) $(LDFLAGS) $^ $(LIBPD).$(EXT) $(LIBLUA) -o $(TARGET)
+dynamic: $(SRC:.cpp=.o) $(LIBPD).$(EXT)
+	$(CXX) $(LDFLAGS) $^ $(LIBLUA) -o $(TARGET)
+
+$(LIBPD).$(EXT):
+	cd $(LIBPD_DIR) && make
 
 clean:
-	rm -f src/*.o
+	rm -f $(shell pwd)/src/*.o

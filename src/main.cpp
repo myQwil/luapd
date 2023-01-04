@@ -38,8 +38,8 @@ static int pdarray_len(lua_State *L) {
 
 static int pdarray_index(lua_State *L) {
 	vector<float> *a = *(vector<float>**)luaL_checkudata(L, 1, LUA_PDARRAY);
-	int i = luaL_checkinteger(L, 2);
-	if (i < 1 || i > a->size()) {
+	std::size_t i = luaL_checkinteger(L, 2);
+	if (i <= 0 || a->size() < i) {
 		return luaL_error(L, "PdArray: index out of bounds");
 	}
 	lua_pushnumber(L, (*a)[i - 1]);
@@ -48,10 +48,10 @@ static int pdarray_index(lua_State *L) {
 
 static int pdarray_newindex(lua_State *L) {
 	vector<float> *a = *(vector<float>**)luaL_checkudata(L, 1, LUA_PDARRAY);
-	int i = !lua_isnoneornil(L, 2) ? lua_tointeger(L, 2) : 0;
+	std::size_t i = !lua_isnoneornil(L, 2) ? lua_tointeger(L, 2) : 0;
 	float f = luaL_checknumber(L, 3);
-	if (i < 1) {
-		return luaL_error(L, "PdArray: index cannot be less than zero");
+	if (i <= 0) {
+		return luaL_error(L, "PdArray: index cannot be less than 1");
 	}
 	if (i > a->size()) {
 		a->resize(i, 0);
@@ -438,7 +438,8 @@ static int pdbase_finishMessage(lua_State *L) {
 
 static List tableToList(lua_State *L, int idx) {
 	List list = List();
-	for (int i = 0; i <= lua_rawlen(L, idx); i++) {
+	size_t i = 0, len = lua_rawlen(L, idx);
+	for (; i < len; i++) {
 		lua_pushinteger(L, i + 1);
 		lua_gettable(L, idx);
 		if (lua_type(L, -1) == LUA_TNIL) {
@@ -627,7 +628,7 @@ static int pdbase_maxMessageLen(lua_State *L) {
 	return 1;
 }
 
-static int pdbase_shl(lua_State *L) {
+static int pdbase_shl(lua_State *) {
 	// TODO
 	return 0;
 }

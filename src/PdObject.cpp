@@ -82,8 +82,9 @@ void PdObject::receiveSymbol(const string &dest, const string &symbol) {
 }
 
 static void listToTable(lua_State *L, const List &list) {
-	lua_createtable(L, list.len(), 0);
-	for (int i = 0; i < list.len(); i++) {
+	unsigned int i = 0, len = list.len();
+	lua_createtable(L, len, 0);
+	for (; i < len; i++) {
 		if (list.isFloat(i)) {
 			lua_pushnumber(L, list.getFloat(i));
 		} else if (list.isSymbol(i)) {
