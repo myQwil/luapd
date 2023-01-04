@@ -106,7 +106,7 @@ print('BEGIN Patch Test')
 	-- in a normal case (not a test like this), you would call this in
 	-- your application main loop
 	pd:processFloat(1 ,inbuf() ,outbuf())
-	pd:receiveMessages()
+	-- pd:receiveMessages()
 print('FINISH Patch Test\n')
 
 
@@ -208,8 +208,8 @@ pd:sendBang('tone');
 print('Processing PD')
 for _ = 0 ,(10 * sampleRate / block) do
 	pd:processFloat(1 ,inbuf() ,outbuf())
-	pd:receiveMessages()
-	pd:receiveMidi()
+	-- pd:receiveMessages()
+	-- pd:receiveMidi()
 end
 
 -- be nice and clean up on exit
