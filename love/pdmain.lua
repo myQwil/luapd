@@ -7,7 +7,7 @@ function Fif(cond, T, F)
 end
 
 local ext = {
-	['Linux'] = 'so'
+	  ['Linux'] = 'so'
 	, ['Windows'] = 'dll'
 	, ['OS X'] = 'dylib'
 }
@@ -15,11 +15,11 @@ local stros = love.system.getOS()
 package.cpath = '../../?.' .. ext[stros] .. ';' .. package.cpath
 
 Pd = require('luapd') ---@type Pd
-local ticks, bufs ---@type number ,number
+local ticks, bufs ---@type number, number
 local message ---@type string
 
 local lpd = { -- default options
-	ticks = 1
+	  ticks = 1
 	, bufs = 33
 	, play = true
 	, patch = 'main.pd'
@@ -85,7 +85,7 @@ end
 
 function lpd.update()
 	while source:getFreeBufferCount() > 0 do
-		pd:processShort(ticks, sdata:getPointer())
+		pd:processShort(ticks, nil, sdata:getPointer())
 		source:queue(sdata)
 		source:play()
 	end

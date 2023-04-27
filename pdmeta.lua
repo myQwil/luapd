@@ -196,47 +196,41 @@ function Pd._Base:closePatch(name) end
 --- note: raw does not interlace the buffers
 
 ---process float buffers for a given number of ticks
----@overload fun(_, ticks:integer, outBuffer:number[]): boolean
 ---@param ticks integer # the number of ticks to process
----@param inBuffer number[] # audio-in buffer
----@param outBuffer number[] # audio-out buffer
+---@param inBuffer lightuserdata|nil # audio-in buffer
+---@param outBuffer lightuserdata|nil # audio-out buffer
 ---@return boolean # false on error
 function Pd._Base:processFloat(ticks, inBuffer, outBuffer) end
 
 ---process short buffers for a given number of ticks
----@overload fun(_, ticks:integer, outBuffer:number[]): boolean
 ---@param ticks integer # the number of ticks to process
----@param inBuffer integer[] # audio-in buffer
----@param outBuffer integer[] # audio-out buffer
+---@param inBuffer lightuserdata|nil # audio-in buffer
+---@param outBuffer lightuserdata|nil # audio-out buffer
 ---@return boolean # false on error
 function Pd._Base:processShort(ticks, inBuffer, outBuffer) end
 
 ---process double buffers for a given number of ticks
----@overload fun(_, ticks:integer, outBuffer:number[]): boolean
 ---@param ticks integer # the number of ticks to process
----@param inBuffer number[] # audio-in buffer
----@param outBuffer number[] # audio-out buffer
+---@param inBuffer lightuserdata|nil # audio-in buffer
+---@param outBuffer lightuserdata|nil # audio-out buffer
 ---@return boolean # false on error
 function Pd._Base:processDouble(ticks, inBuffer, outBuffer) end
 
 ---process one pd tick, writes raw float data to/from buffers
----@overload fun(_, outBuffer:number[]): boolean
----@param inBuffer number[] # audio-in buffer
----@param outBuffer number[] # audio-out buffer
+---@param inBuffer lightuserdata|nil # audio-in buffer
+---@param outBuffer lightuserdata|nil # audio-out buffer
 ---@return boolean # false on error
 function Pd._Base:processRaw(inBuffer, outBuffer) end
 
 ---process one pd tick, writes raw short data to/from buffers
----@overload fun(_, outBuffer:number[]): boolean
----@param inBuffer integer[] # audio-in buffer
----@param outBuffer integer[] # audio-out buffer
+---@param inBuffer lightuserdata|nil # audio-in buffer
+---@param outBuffer lightuserdata|nil # audio-out buffer
 ---@return boolean # false on error
 function Pd._Base:processRawShort(inBuffer, outBuffer) end
 
 ---process one pd tick, writes raw double data to/from buffers
----@overload fun(_, outBuffer:number[]): boolean
----@param inBuffer number[] # audio-in buffer
----@param outBuffer number[] # audio-out buffer
+---@param inBuffer lightuserdata|nil # audio-in buffer
+---@param outBuffer lightuserdata|nil # audio-out buffer
 ---@return boolean # false on error
 function Pd._Base:processRawDouble(inBuffer, outBuffer) end
 

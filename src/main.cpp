@@ -249,9 +249,8 @@ static int pdbase_closePatch(lua_State *L) {
 static int pdbase_processFloat(lua_State *L) {
 	PdBase *b = *(PdBase **)luaL_checkudata(L, 1, LUA_PDBASE);
 	int ticks = luaL_checkinteger(L, 2);
-	int i = lua_gettop(L) == 4;
-	float *in = i ? (float *)lua_touserdata(L, 3) : 0;
-	float *out = (float *)lua_touserdata(L, 3 + i);
+	float *in  = lua_isnoneornil(L, 3) ? 0 : (float *)lua_touserdata(L, 3);
+	float *out = lua_isnoneornil(L, 4) ? 0 : (float *)lua_touserdata(L, 4);
 	lua_pushboolean(L, b->processFloat(ticks, in, out));
 	return 1;
 }
@@ -259,9 +258,8 @@ static int pdbase_processFloat(lua_State *L) {
 static int pdbase_processShort(lua_State *L) {
 	PdBase *b = *(PdBase **)luaL_checkudata(L, 1, LUA_PDBASE);
 	int ticks = luaL_checkinteger(L, 2);
-	int i = lua_gettop(L) == 4;
-	short *in = i ? (short *)lua_touserdata(L, 3) : 0;
-	short *out = (short *)lua_touserdata(L, 3 + i);
+	short *in  = lua_isnoneornil(L, 3) ? 0 : (short *)lua_touserdata(L, 3);
+	short *out = lua_isnoneornil(L, 4) ? 0 : (short *)lua_touserdata(L, 4);
 	lua_pushboolean(L, b->processShort(ticks, in, out));
 	return 1;
 }
@@ -269,36 +267,32 @@ static int pdbase_processShort(lua_State *L) {
 static int pdbase_processDouble(lua_State *L) {
 	PdBase *b = *(PdBase **)luaL_checkudata(L, 1, LUA_PDBASE);
 	int ticks = luaL_checkinteger(L, 2);
-	int i = lua_gettop(L) == 4;
-	double *in = i ? (double *)lua_touserdata(L, 3) : 0;
-	double *out = (double *)lua_touserdata(L, 3 + i);
+	double *in  = lua_isnoneornil(L, 3) ? 0 : (double *)lua_touserdata(L, 3);
+	double *out = lua_isnoneornil(L, 4) ? 0 : (double *)lua_touserdata(L, 4);
 	lua_pushboolean(L, b->processDouble(ticks, in, out));
 	return 1;
 }
 
 static int pdbase_processRaw(lua_State *L) {
 	PdBase *b = *(PdBase **)luaL_checkudata(L, 1, LUA_PDBASE);
-	int i = lua_gettop(L) == 3;
-	float *in = i ? (float *)lua_touserdata(L, 2) : 0;
-	float *out = (float *)lua_touserdata(L, 2 + i);
+	float *in  = lua_isnoneornil(L, 2) ? 0 : (float *)lua_touserdata(L, 2);
+	float *out = lua_isnoneornil(L, 3) ? 0 : (float *)lua_touserdata(L, 3);
 	lua_pushboolean(L, b->processRaw(in, out));
 	return 1;
 }
 
 static int pdbase_processRawShort(lua_State *L) {
 	PdBase *b = *(PdBase **)luaL_checkudata(L, 1, LUA_PDBASE);
-	int i = lua_gettop(L) == 3;
-	short *in = i ? (short *)lua_touserdata(L, 2) : 0;
-	short *out = (short *)lua_touserdata(L, 2 + i);
+	short *in  = lua_isnoneornil(L, 2) ? 0 : (short *)lua_touserdata(L, 2);
+	short *out = lua_isnoneornil(L, 3) ? 0 : (short *)lua_touserdata(L, 3);
 	lua_pushboolean(L, b->processRawShort(in, out));
 	return 1;
 }
 
 static int pdbase_processRawDouble(lua_State *L) {
 	PdBase *b = *(PdBase **)luaL_checkudata(L, 1, LUA_PDBASE);
-	int i = lua_gettop(L) == 3;
-	double *in = i ? (double *)lua_touserdata(L, 2) : 0;
-	double *out = (double *)lua_touserdata(L, 2 + i);
+	double *in  = lua_isnoneornil(L, 2) ? 0 : (double *)lua_touserdata(L, 2);
+	double *out = lua_isnoneornil(L, 3) ? 0 : (double *)lua_touserdata(L, 3);
 	lua_pushboolean(L, b->processRawDouble(in, out));
 	return 1;
 }
