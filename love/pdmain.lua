@@ -15,7 +15,7 @@ local stros = love.system.getOS()
 package.cpath = '../../?.' .. ext[stros] .. ';' .. package.cpath
 
 Pd = require('luapd') ---@type Pd
-local ticks, bufs ---@type number, number
+local ticks, bufs ---@type integer, integer
 local message ---@type string
 
 local lpd = { -- default options
@@ -52,7 +52,7 @@ function lpd.init(opt)
 	pd:setReceiver(opt.obj or lpd.obj)
 	if not pd:init(chIn, chOut, srate, queued) then
 		print('Could not initialize pd')
-		love.event.push('quit')
+		love.event.quit()
 	end
 	pd:addToSearchPath('../../pd/lib')
 	pd:computeAudio(true)
@@ -87,8 +87,8 @@ function lpd.update()
 	while source:getFreeBufferCount() > 0 do
 		pd:processShort(ticks, nil, sdata:getPointer())
 		source:queue(sdata)
-		source:play()
 	end
+	source:play() -- keep playing if there are underruns
 end
 
 function lpd.draw()

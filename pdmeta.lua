@@ -144,7 +144,7 @@ function Pd.Base() end
 ---@param numInChannels integer # the number of audio-in channels
 ---@param numOutChannels integer # the number of audio-out channels
 ---@param sampleRate integer # the audio sample rate
----@param queued boolean # whether to use ringbuffers for message and midi event passing
+---@param queued? boolean # whether to use ringbuffers for message and midi event passing
 ---@return boolean # true if setup successfully
 function Pd._Base:init(numInChannels, numOutChannels, sampleRate, queued) end
 
