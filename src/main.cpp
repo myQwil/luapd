@@ -17,7 +17,7 @@ extern "C" { int luaopen_luapd(lua_State *L); }
 // -----------------------------------------------------------------------------
 
 static int pdarray_new(lua_State *L) {
-	int n = !lua_isnoneornil(L, 1) ? luaL_checkinteger(L, 1) : 0;
+	int n = lua_isnoneornil(L, 1) ? 0 : luaL_checkinteger(L, 1);
 	*(vector<float>**)lua_newuserdata(L, sizeof(vector<float>*))
 		= new vector<float>(n);
 	luaL_setmetatable(L, LUA_PDARRAY);
@@ -48,7 +48,7 @@ static int pdarray_index(lua_State *L) {
 
 static int pdarray_newindex(lua_State *L) {
 	vector<float> *a = *(vector<float>**)luaL_checkudata(L, 1, LUA_PDARRAY);
-	std::size_t i = !lua_isnoneornil(L, 2) ? lua_tointeger(L, 2) : 0;
+	std::size_t i = luaL_checkinteger(L, 2);
 	float f = luaL_checknumber(L, 3);
 	if (i <= 0) {
 		return luaL_error(L, "PdArray: index cannot be less than 1");
@@ -62,7 +62,10 @@ static int pdarray_newindex(lua_State *L) {
 
 static int pdarray_call(lua_State *L) {
 	vector<float> *a = *(vector<float>**)luaL_checkudata(L, 1, LUA_PDARRAY);
-	int i = !lua_isnoneornil(L, 2) ? lua_tointeger(L, 2) : 0;
+	std::size_t i = lua_isnoneornil(L, 2) ? 0 : lua_tointeger(L, 2);
+	if (i >= a->size()) {
+		return luaL_error(L, "PdArray: offset out of bounds");
+	}
 	lua_pushlightuserdata(L, &(*a)[i]);
 	return 1;
 }
@@ -81,11 +84,11 @@ static int pdpatch_new(lua_State *L) {
 		void *handle = lua_touserdata(L, 1);
 		int dollarZero = luaL_checkinteger(L, 2);
 		const char *name = luaL_checkstring(L, 3);
-		const char *path = !lua_isnoneornil(L, 4) ? luaL_checkstring(L, 4) : ".";
+		const char *path = lua_isnoneornil(L, 4) ? "." : luaL_checkstring(L, 4);
 		p = Patch(handle, dollarZero, name, path);
 	} else {
 		const char *name = luaL_checkstring(L, 1);
-		const char *path = !lua_isnoneornil(L, 2) ? luaL_checkstring(L, 2) : ".";
+		const char *path = lua_isnoneornil(L, 2) ? "." : luaL_checkstring(L, 2);
 		p = Patch(name, path);
 	}
 	*(Patch **)lua_newuserdata(L, sizeof(Patch *)) = new Patch(p);
@@ -195,7 +198,7 @@ static int pdbase_init(lua_State *L) {
 	int chIn = luaL_checkinteger(L, 2);
 	int chOut = luaL_checkinteger(L, 3);
 	int srate = luaL_checkinteger(L, 4);
-	bool queued = !lua_isnoneornil(L, 5) ? lua_toboolean(L, 5) : false;
+	bool queued = lua_isnoneornil(L, 5) ? false : lua_toboolean(L, 5);
 	lua_pushboolean(L, b->init(chIn, chOut, srate, queued));
 	return 1;
 }
@@ -224,7 +227,7 @@ static int pdbase_openPatch(lua_State *L) {
 	Patch *p;
 	if (lua_type(L, 2) == LUA_TSTRING) {
 		const char *patch = lua_tostring(L, 2);
-		const char *path = !lua_isnoneornil(L, 3) ? luaL_checkstring(L, 3) : ".";
+		const char *path = lua_isnoneornil(L, 3) ? "." : luaL_checkstring(L, 3);
 		p = new Patch(b->openPatch(patch, path));
 	} else {
 		p = new Patch(b->openPatch(**(Patch **)luaL_checkudata(L, 2, LUA_PDPATCH)));
@@ -470,7 +473,7 @@ static int pdbase_sendNoteOn(lua_State *L) {
 	PdBase *b = *(PdBase **)luaL_checkudata(L, 1, LUA_PDBASE);
 	int channel = luaL_checkinteger(L, 2);
 	int pitch = luaL_checkinteger(L, 3);
-	int velocity = !lua_isnoneornil(L, 4) ? luaL_checkinteger(L, 4) : 64;
+	int velocity = lua_isnoneornil(L, 4) ? 64 : luaL_checkinteger(L, 4);
 	b->sendNoteOn(channel, pitch, velocity);
 	return 0;
 }
@@ -567,8 +570,8 @@ static int pdbase_readArray(lua_State *L) {
 	const char *name = luaL_checkstring(L, 2);
 	luaL_checktype(L, 3, LUA_TUSERDATA);
 	vector<float> *a = *(vector<float>**)lua_touserdata(L, 3);
-	int readLen = !lua_isnoneornil(L, 4) ? luaL_checkinteger(L, 4) : -1;
-	int offset = !lua_isnoneornil(L, 5) ? luaL_checkinteger(L, 5) : 0;
+	int readLen = lua_isnoneornil(L, 4) ? -1 : luaL_checkinteger(L, 4);
+	int offset  = lua_isnoneornil(L, 5) ?  0 : luaL_checkinteger(L, 5);
 	lua_pushboolean(L, b->readArray(name, *a, readLen, offset));
 	return 1;
 }
@@ -578,8 +581,8 @@ static int pdbase_writeArray(lua_State *L) {
 	const char *name = luaL_checkstring(L, 2);
 	luaL_checktype(L, 3, LUA_TUSERDATA);
 	vector<float> *a = *(vector<float>**)lua_touserdata(L, 3);
-	int writeLen = !lua_isnoneornil(L, 4) ? luaL_checkinteger(L, 4) : -1;
-	int offset = !lua_isnoneornil(L, 5) ? luaL_checkinteger(L, 5) : 0;
+	int writeLen = lua_isnoneornil(L, 4) ? -1 : luaL_checkinteger(L, 4);
+	int offset   = lua_isnoneornil(L, 5) ?  0 : luaL_checkinteger(L, 5);
 	lua_pushboolean(L, b->writeArray(name, *a, writeLen, offset));
 	return 1;
 }
@@ -587,7 +590,7 @@ static int pdbase_writeArray(lua_State *L) {
 static int pdbase_clearArray(lua_State *L) {
 	PdBase *b = *(PdBase **)luaL_checkudata(L, 1, LUA_PDBASE);
 	const char *name = luaL_checkstring(L, 2);
-	int value = !lua_isnoneornil(L, 3) ? luaL_checkinteger(L, 3) : 0;
+	int value = lua_isnoneornil(L, 3) ? 0 : luaL_checkinteger(L, 3);
 	b->clearArray(name, value);
 	return 0;
 }
