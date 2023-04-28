@@ -27,20 +27,20 @@ function love.load()
 	local width, height = love.graphics.getDimensions()
 
 	local met = {
-		dest = dlr .. 'met', min = 11, max = 6000, num = 1000, log = true
+		  dest = dlr..'met', min = 11, max = 6000, num = 1000, log = true
 		, label = { text = 'milliseconds per beat' }
 	}
 	local tvol = {
-		dest = dlr .. 'vol', min = .001, max = 1, num = vol, log = true
+		  dest = dlr..'vol', min = .001, max = 1, num = vol, log = true
 		, label = { text = 'volume', x = -100 }
-		, snap = .1, len = height - 100, prec = 4, change = volChange
+		, snap = .1, len = height - 100, fmt = '%s: %.4g', change = volChange
 	}
 
 	gui.slider.rad = 25
 	gui.slider.len = width - 150
 	local h = gui.slider.rad / 2
 	sliders = {
-		gui.slider(20, height / 2 - h, { x = met }, { rgb = { .25, .66, .66 } })
+		  gui.slider(20, height / 2 - h, { x = met }, { rgb = { .25, .66, .66 } })
 		, gui.slider(width - 90, 60, { y = tvol }, { rgb = { .75, .5, .75 } })
 	}
 

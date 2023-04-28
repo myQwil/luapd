@@ -75,7 +75,7 @@ function love.load()
 	local tempo = { dest = 'tempo', min = .25, max = 4, num = 1
 		, snap = 2, gap = 10, log = true }
 	local tvol = { dest = dlr .. 'vol', min = .001, max = 1, num = vol
-		, snap = .1, log = true, len = height - 100, prec = 4
+		, snap = .1, log = true, len = height - 100, fmt = '%s: %.4g'
 		, label = { text = 'volume', x = -100 }, change = volChange }
 
 	local sx = 20

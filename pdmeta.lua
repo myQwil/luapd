@@ -15,6 +15,14 @@ Pd._Array = {}
 ---@return PdArray
 function Pd.Array(size) end
 
+---------------------------------------------------------
+------------------------- Helper ------------------------
+
+---get a raw pointer with an offset in bytes
+---@param data lightuserdata
+---@param bytes? integer
+---@return lightuserdata
+function Pd.offset(data, bytes) end
 
 ---------------------------------------------------------
 ------------------------- Patch -------------------------

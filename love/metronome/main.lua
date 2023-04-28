@@ -36,8 +36,8 @@ end
 
 local lbl = 'milliseconds per beat:\nbeats per minute:'
 local function metDraw(self)
-	local str = string.format('%.' .. self.prec .. 'g', self.num) .. '\n'
-		 .. string.format('%.' .. self.prec .. 'g', self.bpm)
+	local str = string.format('%.4g', self.num) .. '\n'
+		 .. string.format('%.4g', self.bpm)
 	love.graphics.printf(lbl, 10, 10, 200, 'right')
 	love.graphics.printf(str, 215, 10, 50, 'left')
 end
@@ -52,12 +52,12 @@ function love.load()
 
 	local met = {
 		dest = dlr .. 'met', min = 1500, max = 125, num = 1000, snap = 125
-		, prec = 4, change = metChange, draw = metDraw
+		, change = metChange, draw = metDraw
 	}
 	met.bpm = 60000 / met.num
 	local tvol = {
 		dest = dlr .. 'vol', min = .001, max = 1, num = vol, snap = .1, log = true
-		, prec = 4, change = volChange, label = { text = 'volume', y = 530 }
+		, change = volChange, label = { text = 'volume', y = 530 }
 	}
 
 	local rad = 25

@@ -70,6 +70,13 @@ static int pdarray_call(lua_State *L) {
 	return 1;
 }
 
+static int pdhelper_offset(lua_State *L) {
+	char *ptr = (char *)lua_touserdata(L, 1);
+	int i = lua_isnoneornil(L, 2) ? 0 : lua_tointeger(L, 2);
+	lua_pushlightuserdata(L, ptr + i);
+	return 1;
+}
+
 // -----------------------------------------------------------------------------
 // ------------------------ PdPatch --------------------------------------------
 // -----------------------------------------------------------------------------
@@ -801,5 +808,9 @@ int luaopen_luapd(lua_State *L) {
 	pdpatch_reg(L);
 	pdobject_reg(L);
 	pdbase_reg(L);
+
+	lua_pushliteral(L, "offset");
+	lua_pushcfunction(L, pdhelper_offset);
+	lua_settable(L, -3);
 	return 1;
 }

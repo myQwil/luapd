@@ -1,4 +1,7 @@
-math.epsilon = 2.2204460492503131e-16
+local function clamp(x, min, max)
+	return (x < min and min) or (x > max and max) or x
+end
+local epsilon = 2.2204460492503131e-16
 
 local pd ---@type PdBase
 local gui = {} -- Pd gui library
@@ -20,7 +23,7 @@ end
 local function slider_check(sl, x, axis)
 	local v = sl.t[axis]
 	local dx = 'd' .. axis
-	x = math.clamp(x, v.xmin, v.xmax)
+	x = clamp(x, v.xmin, v.xmax)
 	if sl[dx] ~= x then
 		sl[dx] = x
 		x = x - v.xmin
@@ -34,7 +37,7 @@ local function slider_check(sl, x, axis)
 		local num = v.log
 			and (math.exp(v.k * x) * v.min)
 			or v.k * x + v.min
-		if num < math.epsilon then
+		if num < epsilon then
 			num = 0
 		end
 		if v.num ~= num then
@@ -73,10 +76,8 @@ local function sliders_update(t)
 end
 
 local function axis_draw(ax)
-	love.graphics.print(
-		ax.label.text .. ': ' .. string.format('%.' .. ax.prec .. 'g', ax.num)
-		, ax.label.x, ax.label.y
-	)
+	love.graphics.print(string.format(ax.fmt, ax.label.text, ax.num)
+		, ax.label.x, ax.label.y)
 end
 
 local function slider_draw(sl)
@@ -132,7 +133,7 @@ local function slider_axis(self, sl, v, axis)
 		local xlen = x .. 'len'
 		local xx = x .. x
 		v.len = v.len or self.len
-		v.prec = v.prec or self.prec
+		v.fmt = v.fmt or self.fmt
 		v.draw = v.draw or axis_draw
 		if v.len < diam then v.len = diam end
 		sl[xlen] = v.len
@@ -148,7 +149,7 @@ local function slider_axis(self, sl, v, axis)
 		end
 
 		if v.num then v.num = v.min > v.max and
-				 math.clamp(v.num, v.max, v.min) or math.clamp(v.num, v.min, v.max)
+				 clamp(v.num, v.max, v.min) or clamp(v.num, v.min, v.max)
 		else v.num = v.min end
 
 		-- linear or logarithmic
@@ -341,7 +342,7 @@ function gui:reset()
 		-- a snap point's gravitational radius in pixels.
 		-- if gap is 0, knob will settle exclusively on snap points.
 		, gap = 7
-		, prec = 8 -- precision when displaying number
+		, fmt = '%s: %.8g' -- string format when displaying name and value
 		, rad = 25 -- knob radius
 		, len = 100 -- axis length
 		, dest = 'foo' -- send-to destination
