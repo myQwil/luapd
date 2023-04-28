@@ -134,7 +134,7 @@ function love.mousepressed(x, y, btn)
 	isPressed[btn] = true
 end
 
-function love.mousereleased(x, y, btn)
+function love.mousereleased(_, _, btn)
 	isPressed[btn] = false
 end
 
@@ -143,7 +143,7 @@ function love.mousemoved(x, y)
 	mouse_y = y
 end
 
-function love.wheelmoved(x, y)
+function love.wheelmoved(_, y)
 	pd:sendFloat('carrier-freq', y * 25)
 end
 

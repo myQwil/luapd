@@ -154,7 +154,7 @@ function Pd._Base:clear() end
 
 ----- Adding Search Paths -----
 
----add to the pd search path  
+---add to the pd search path
 ---takes an absolute or relative path (in data folder)
 ---
 ---note: fails silently if path not found

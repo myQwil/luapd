@@ -39,7 +39,7 @@ local function mixob6(self)
 	pd:readArray('default', scale)
 end
 
-local function stop(self)
+local function stop()
 	pd:sendBang('stop')
 	toggles.pause:click(true)
 end
@@ -139,7 +139,7 @@ function love.mousepressed(x, y)
 	end
 end
 
-function love.keypressed(k)
+function love.keypressed()
 	pd:sendList('scdef', { 0, 2, 4, 5, 7, 9, 11 })
 	pd:sendMessage('scdef', 'send')
 end
