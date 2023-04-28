@@ -2,18 +2,18 @@ if os.getenv('LOCAL_LUA_DEBUGGER_VSCODE') == '1' then
 	require('lldebugger').start()
 end
 
-local ext =
-{	 Linux   = 'so'
-	,Windows = 'dll'
-	,OSX     = 'dylib'  }
+local ext = {
+	  Linux   = 'so'
+	, Windows = 'dll'
+	, OSX     = 'dylib'
+}
 local ffi = require('ffi')
 package.cpath = './?.'..ext[ffi.os]..';'..package.cpath
 
 local Pd = require('luapd') ---@type Pd
 
-local
-inChannels ,outChannels ,sampleRate ,queued =
-1          ,2           ,48000      ,false
+local inChannels ,outChannels ,sampleRate ,queued
+=     1          ,2           ,48000      ,false
 
 -- our pd engine
 local pd = Pd.Base()
@@ -21,37 +21,37 @@ local pd = Pd.Base()
 -- custom receiver object for messages and midi
 local obj = Pd.Object{
 	-- message callbacks
-	 print   = function(msg)       print('Lua: print ' ..msg) end
-	,bang    = function(dest)      print('Lua: bang '  ..dest) end
-	,float   = function(dest ,num) print('Lua: float ' ..dest..': '..num) end
-	,symbol  = function(dest ,sym) print('Lua: symbol '..dest..': '..sym) end
-	,list    = function(dest ,list)
-		print('Lua: list '..dest..': '..table.concat(list ,' '))
+	  print   = function(msg)       print('Lua: print ' ..msg) end
+	, bang    = function(dest)      print('Lua: bang '  ..dest) end
+	, float   = function(dest, num) print('Lua: float ' ..dest..': '..num) end
+	, symbol  = function(dest, sym) print('Lua: symbol '..dest..': '..sym) end
+	, list    = function(dest, list)
+		print('Lua: list '..dest..': '..table.concat(list, ' '))
 	end
-	,message = function(dest ,msg ,list)
-		print('Lua: message '..dest..': |'..msg..'|'..table.concat(list ,' '))
+	, message = function(dest, msg, list)
+		print('Lua: message '..dest..': |'..msg..'|'..table.concat(list, ' '))
 	end
 
 	-- midi callbacks
-	,noteOn         = function(channel ,pitch ,velocity)
+	, noteOn         = function(channel, pitch, velocity)
 		print('Lua MIDI: note on: '..channel..' '..pitch..' '..velocity)
 	end
-	,controlChange  = function(channel ,controller ,value)
+	, controlChange  = function(channel, controller, value)
 		print('Lua MIDI: control change: '..channel..' '..controller..' '..value)
 	end
-	,programChange  = function(channel ,value)
+	, programChange  = function(channel, value)
 		print('Lua MIDI: program change: '..channel..' '..value)
 	end
-	,pitchBend      = function(channel ,value)
+	, pitchBend      = function(channel, value)
 		print('Lua MIDI: pitch bend: '..channel..' '..value)
 	end
-	,aftertouch     = function(channel ,value)
+	, aftertouch     = function(channel, value)
 		print('Lua MIDI: aftertouch: '..channel..' '..value)
 	end
-	,polyAftertouch = function(channel ,pitch ,value)
+	, polyAftertouch = function(channel, pitch, value)
 		print('Lua MIDI: poly aftertouch: '..channel..' '..pitch..' '..value)
 	end
-	,midiByte       = function(port ,byte)
+	, midiByte       = function(port, byte)
 		print('Lua MIDI: midi byte: '..port..' '..byte)
 	end
 }
@@ -69,7 +69,7 @@ local outbuf = Pd.Array(block * outChannels)
 -- they should all return at once when pd is processing at the end of this
 -- function
 --
-if not pd:init(inChannels ,outChannels ,sampleRate ,queued) then
+if not pd:init(inChannels, outChannels, sampleRate, queued) then
 	print('Could not init pd')
 	os.exit()
 end
@@ -93,7 +93,7 @@ pd:computeAudio(true)
 
 print('BEGIN Patch Test')
 	-- open patch
-	local patch = pd:openPatch('pd/test.pd' ,'.')
+	local patch = pd:openPatch('pd/test.pd', '.')
 
 	-- close patch
 	pd:closePatch(patch)
@@ -105,7 +105,7 @@ print('BEGIN Patch Test')
 	--
 	-- in a normal case (not a test like this), you would call this in
 	-- your application main loop
-	pd:processFloat(1 ,inbuf() ,outbuf())
+	pd:processFloat(1, inbuf(), outbuf())
 	-- pd:receiveMessages()
 print('FINISH Patch Test\n')
 
@@ -117,10 +117,10 @@ end
 
 -- (re)assign multiple callback functions
 obj:setFuncs{
-	 noteOn   = function(channel ,pitch ,velocity)
+	  noteOn   = function(channel, pitch, velocity)
 		print('noteOn: '..channel..' '..pitch..' '..velocity)
 	end
-	,midiByte = function(port ,byte)
+	, midiByte = function(port, byte)
 		print('\nfoo-midi-byte: '..port..' '..byte..'\n')
 	end
 }
@@ -129,8 +129,8 @@ obj:setFuncs{
 print('BEGIN Message Test')
 	-- test basic atoms
 	pd:sendBang   ('fromLua')
-	pd:sendFloat  ('fromLua' ,100)
-	pd:sendSymbol ('fromLua' ,'test string')
+	pd:sendFloat  ('fromLua', 100)
+	pd:sendSymbol ('fromLua', 'test string')
 
 	-- send a list
 	pd:startMessage()
@@ -145,23 +145,23 @@ print('BEGIN Message Test')
 	pd:finishList(patch:dollarZeroStr()..'-fromLua')
 
 	-- send a list using a table
-	local t = {1.23 ,'sent from a Lua table'}
-	pd:sendList    ('fromLua' ,t)
-	pd:sendMessage ('fromLua' ,'msg' ,t)
+	local t = {1.23, 'sent from a Lua table'}
+	pd:sendList    ('fromLua', t)
+	pd:sendMessage ('fromLua', 'msg', t)
 print('FINISH Message Test\n')
 
 
 print('BEGIN MIDI Test')
 	-- send functions
-	pd:sendNoteOn         (midiChan ,60)
-	pd:sendControlChange  (midiChan ,0 ,64)
-	pd:sendProgramChange  (midiChan ,100)
-	pd:sendPitchBend      (midiChan ,2000)
-	pd:sendAftertouch     (midiChan ,100)
-	pd:sendPolyAftertouch (midiChan ,64 ,100)
-	pd:sendMidiByte    (0 ,239)
-	pd:sendSysex       (0 ,239)
-	pd:sendSysRealTime (0 ,239)
+	pd:sendNoteOn         (midiChan, 60)
+	pd:sendControlChange  (midiChan, 0, 64)
+	pd:sendProgramChange  (midiChan, 100)
+	pd:sendPitchBend      (midiChan, 2000)
+	pd:sendAftertouch     (midiChan, 100)
+	pd:sendPolyAftertouch (midiChan, 64, 100)
+	pd:sendMidiByte    (0, 239)
+	pd:sendSysex       (0, 239)
+	pd:sendSysRealTime (0, 239)
 print('FINISH MIDI Test\n')
 
 
@@ -172,9 +172,11 @@ print('BEGIN Array Test')
 	local array1 = Pd.Array()
 
 	local function readArray1()
-		pd:readArray('array1' ,array1)
+		pd:readArray('array1', array1)
 		local msg = 'array1'
-		for i=1 ,#array1 do msg = msg..' '..array1[i] end
+		for i=1, #array1 do
+			msg = msg..' '..array1[i]
+		end
 		print(msg)
 	end
 
@@ -182,23 +184,25 @@ print('BEGIN Array Test')
 	readArray1()
 
 	-- write array
-	for i=1 ,#array1 do array1[i] = i end
-	pd:writeArray('array1' ,array1);
+	for i=1, #array1 do
+		array1[i] = i
+	end
+	pd:writeArray('array1', array1);
 	readArray1()
 
 	-- clear array
-	pd:clearArray('array1' ,10);
+	pd:clearArray('array1', 10);
 	readArray1()
 print('FINISH Array Test\n')
 
 print('BEGIN PD Test')
-	pd:sendSymbol('fromLua' ,'test');
+	pd:sendSymbol('fromLua', 'test');
 print('FINISH PD Test\n')
 
 
 -- play a tone by sending a list
 -- [list tone pitch 72 (
-pd:sendList('tone' ,{'pitch' ,72});
+pd:sendList('tone', {'pitch', 72});
 pd:sendBang('tone');
 
 -- now run pd for ten seconds (logical time)
@@ -206,8 +210,8 @@ pd:sendBang('tone');
 -- since processFloat actually runs the pd dsp engine and the recieve
 -- functions pass messages to our PdObject
 print('Processing PD')
-for _ = 0 ,(10 * sampleRate / block) do
-	pd:processFloat(1 ,inbuf() ,outbuf())
+for _ = 0, (10 * sampleRate / block) do
+	pd:processFloat(1, inbuf(), outbuf())
 	-- pd:receiveMessages()
 	-- pd:receiveMidi()
 end
