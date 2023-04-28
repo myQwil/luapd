@@ -82,7 +82,7 @@ function love.load()
 	gui.slider.rad = 25
 	gui.slider.len = width - 150
 	sliders = {
-		gui.slider(sx, height * 2 / 6, { x = maj }, { rgb = { .25, .66, .66 } })
+		  gui.slider(sx, height * 2 / 6, { x = maj }, { rgb = { .25, .66, .66 } })
 		, gui.slider(sx, height * 3 / 6, { x = scl }, { rgb = { .33, .5, .66 } })
 		, gui.slider(sx, height * 4 / 6, { x = phase }, { rgb = { .5, .66, .25 } })
 		, gui.slider(sx, height * 5 / 6, { x = tempo }, { rgb = { .75, .25, .25 } })
@@ -93,7 +93,7 @@ function love.load()
 	gui.button.size = 33
 	gui.button.dest = 'scdef'
 	buttons = {
-		gui.button(bx, 50, { label = { text = 'inv-' }
+		  gui.button(bx, 50, { label = { text = 'inv-' }
 			, click = invdn })
 		, gui.button(bx + 75, 50, { label = { text = 'inv+' }
 			, click = invup })
@@ -108,7 +108,7 @@ function love.load()
 	gui.toggle.on = true
 	gui.toggle.size = 33
 	toggles = {
-		gui.toggle(bx + 150, 50, { dest = 'repeat', on = false })
+		  gui.toggle(bx + 150, 50, { dest = 'repeat', on = false })
 		, gui.toggle(bx + 225, 50, { dest = 'pause', on = false })
 		, gui.toggle(bx, 100, { dest = 'pulse1', label = { y = 60 } })
 		, gui.toggle(bx + 75, 100, { dest = 'pulse2', label = { y = 60 } })
@@ -125,14 +125,8 @@ function love.load()
 end
 
 function love.update(dt)
-	local x, y = love.mouse.getPosition()
-	-- reverse list order to prioritize items rendered last
-	for i = #sliders, 1, -1 do
-		sliders[i]:update(x, y)
-	end
-	for i = #buttons, 1, -1 do
-		buttons[i]:update(dt)
-	end
+	gui.updateSliders(sliders)
+	for i = #buttons, 1, -1 do buttons[i]:update(dt) end
 	lpd.update()
 end
 

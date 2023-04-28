@@ -32,8 +32,8 @@ local function slider_check(sl, x, axis)
 		end
 
 		local num = v.log
-			 and (math.exp(v.k * x) * v.min)
-			 or v.k * x + v.min
+			and (math.exp(v.k * x) * v.min)
+			or v.k * x + v.min
 		if num < math.epsilon then
 			num = 0
 		end
@@ -45,18 +45,31 @@ local function slider_check(sl, x, axis)
 end
 
 local function slider_update(sl, x, y)
+	if focus == sl then
+		if sl.t.x then slider_check(sl, x, 'x') end
+		if sl.t.y then slider_check(sl, y, 'y') end
+		return true
+	elseif focus == nil
+	and x >= sl.x and x < sl.xx
+	and y >= sl.y and y < sl.yy then
+		if sl.t.x then slider_check(sl, x, 'x') end
+		if sl.t.y then slider_check(sl, y, 'y') end
+		focus = sl
+		return true
+	end
+	return false
+end
+
+local function sliders_update(t)
 	if love.mouse.isDown(1) then
-		if focus == sl then
-			if sl.t.x then slider_check(sl, x, 'x') end
-			if sl.t.y then slider_check(sl, y, 'y') end
-		elseif focus == nil
-			 and x >= sl.x and x < sl.xx
-			 and y >= sl.y and y < sl.yy then
-			if sl.t.x then slider_check(sl, x, 'x') end
-			if sl.t.y then slider_check(sl, y, 'y') end
-			focus = sl
+		local x, y = love.mouse.getPosition()
+		-- reverse list order to prioritize items rendered last
+		for i = #t, 1, -1 do
+			if t[i]:update(x, y) then break end
 		end
-	elseif focus then focus = nil end
+	elseif focus then
+		focus = nil
+	end
 end
 
 local function axis_draw(ax)
@@ -172,7 +185,7 @@ end
 local function slider_new(self, x, y, t, opt)
 	if type(opt) ~= 'table' then opt = self end
 	local sl = {
-		x = x
+		  x = x
 		, y = y
 		, t = t
 		, send = slider_send
@@ -196,7 +209,7 @@ end
 
 local function gui_box(self, x, y, opt)
 	local box = {
-		x = x
+		  x = x
 		, y = y
 	}
 
@@ -244,8 +257,8 @@ local function button_update(bt, dt)
 end
 
 local function button_mousepressed(bt, x, y)
-	if x >= bt.x and x < bt.xx
-		 and y >= bt.y and y < bt.yy then
+	if  x >= bt.x and x < bt.xx
+	and y >= bt.y and y < bt.yy then
 		bt.circ.on = true
 		bt.circ.dt = 0
 		bt:click()
@@ -268,8 +281,8 @@ local function button_new(self, x, y, opt)
 end
 
 local function toggle_mousepressed(tg, x, y)
-	if x >= tg.x and x < tg.xx
-		 and y >= tg.y and y < tg.yy then
+	if  x >= tg.x and x < tg.xx
+	and y >= tg.y and y < tg.yy then
 		tg:click()
 		return true
 	else return false end
@@ -319,7 +332,7 @@ end
 -- Reset all widget properties to their default values
 function gui:reset()
 	self.slider = {
-		change = slider_change
+		  change = slider_change
 		, rgb = { .5, .5, .5 } -- knob color
 		, log = false -- logarithmic scaling
 		-- snap to a grid with spacing of this amount relative to the scale.
@@ -336,7 +349,7 @@ function gui:reset()
 		, lbly = 0 -- label y offset
 	}
 	self.button = {
-		click = button_click
+		  click = button_click
 		, delay = 0.2 -- circle display duration on click
 		, size = 25
 		, dest = 'foo' -- send-to destination
@@ -344,7 +357,7 @@ function gui:reset()
 		, lbly = 0 -- label y offset
 	}
 	self.toggle = {
-		click = toggle_click
+		  click = toggle_click
 		, on = false -- initial state
 		, non0 = 1 -- non-zero value
 		, size = 25
@@ -352,6 +365,7 @@ function gui:reset()
 		, lblx = 0 -- label x offset
 		, lbly = 0 -- label y offset
 	}
+	self.updateSliders = sliders_update
 	setmetatable(self.slider, { __call = slider_new })
 	setmetatable(self.button, { __call = button_new })
 	setmetatable(self.toggle, { __call = toggle_new })

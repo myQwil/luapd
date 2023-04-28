@@ -51,10 +51,7 @@ function love.load()
 end
 
 function love.update()
-	local x, y = love.mouse.getPosition()
-	for i = #sliders, 1, -1 do
-		sliders[i]:update(x, y)
-	end
+	gui.updateSliders(sliders)
 	lpd.update()
 end
 
