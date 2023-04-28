@@ -23,7 +23,7 @@ function love.load()
 	patch = lpd.open { play = false }
 
 	local vol = 0.05
-	local dlr = patch:dollarZero()
+	local dlr = patch:dollarZeroStr()
 	local width, height = love.graphics.getDimensions()
 
 	local met = {

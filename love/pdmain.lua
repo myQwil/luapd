@@ -73,12 +73,10 @@ function lpd.open(opt)
 	volume = opt.volume and math.clamp(opt.volume, -1, 1) or lpd.volume
 
 	patch = pd:openPatch(patch)
-	local dlr = patch:dollarZero()
-	if dlr ~= 0 then
-		pd:sendFloat(dlr .. 'vol', volume)
-		if play then
-			pd:sendBang(dlr .. 'play')
-		end
+	local dlr = patch:dollarZeroStr()
+	pd:sendFloat(dlr .. 'vol', volume)
+	if play then
+		pd:sendBang(dlr .. 'play')
 	end
 	return patch
 end
