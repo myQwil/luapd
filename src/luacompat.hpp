@@ -6,7 +6,7 @@
 
 #define lua_rawlen(L,i) lua_objlen(L,(i))
 
-#if LUAJIT_VERSION_NUM < 20100 || defined(_WIN32)
+#if LUAJIT_VERSION_NUM < 20100
 
 #define luaL_setmetatable(L,n) (luaL_getmetatable(L,(n)) ,lua_setmetatable(L,-2))
 LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
@@ -24,10 +24,6 @@ LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
   }
   lua_pop(L, nup);  /* remove upvalues */
 }
-
-#endif // _WIN32
-
-#if LUAJIT_VERSION_NUM < 20100
 
 #define LUAL_NUMSIZES	(sizeof(lua_Integer)*16 + sizeof(lua_Number))
 #define UNUSED(x)	((void)(x))

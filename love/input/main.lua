@@ -99,7 +99,7 @@ end
 
 function love.update(dt)
 	while source:getFreeBufferCount() > 0 do
-		if i >= n then
+		if i + step > n then
 			i = 0
 			sdIn = mic:getData()
 			if sdIn then
