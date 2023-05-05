@@ -43,7 +43,7 @@ You can test luapd with:
 
 ## Running LÖVE Examples
 
-### Clone a fork of libpd
+### Clone a custom fork of libpd
     git clone --recurse-submodules https://github.com/myQwil/libpd.git
 
 ### Clone the Quilt and Cyclone libraries adjacent to libpd:
