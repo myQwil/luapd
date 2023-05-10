@@ -44,14 +44,6 @@ local function stop()
 	toggles.pause:click(true)
 end
 
-local function volChange(self, num)
-	if num < 0.0011 then
-		num = 0
-	end
-	self.num = num
-	pd:sendFloat(self.dest, self.num)
-end
-
 local function sclChange(self, num)
 	self.num = num
 	pd:sendFloat(self.dest, self.num)
@@ -62,7 +54,6 @@ function love.load()
 	lpd.init()
 	patch = lpd.open { play = false }
 
-	local vol = 0.2
 	local dlr = patch:dollarZeroStr()
 	local width, height = love.graphics.getDimensions()
 
@@ -74,9 +65,9 @@ function love.load()
 		, snap = 1 / 48, gap = 0 }
 	local tempo = { dest = 'tempo', min = .25, max = 4, num = 1
 		, snap = 2, gap = 10, log = true }
-	local tvol = { dest = dlr .. 'vol', min = .001, max = 1, num = vol
-		, snap = .1, log = true, len = height - 100, fmt = '%s: %.4g'
-		, label = { text = 'volume', x = -100 }, change = volChange }
+	local vol = { dest = dlr .. 'vol', min = -60, max = 0, num = -15
+		, snap = 10, len = height - 100
+		, label = { text = 'volume', x = -100 }, change = gui.volChange }
 
 	local sx = 20
 	gui.slider.rad = 25
@@ -86,7 +77,7 @@ function love.load()
 		, gui.slider(sx, height * 3 / 6, { x = scl }, { rgb = { .33, .5, .66 } })
 		, gui.slider(sx, height * 4 / 6, { x = phase }, { rgb = { .5, .66, .25 } })
 		, gui.slider(sx, height * 5 / 6, { x = tempo }, { rgb = { .75, .25, .25 } })
-		, gui.slider(width - 90, 60, { y = tvol }, { rgb = { .75, .5, .75 } })
+		, gui.slider(width - 90, 60, { y = vol }, { rgb = { .75, .5, .75 } })
 	}
 
 	local bx = 175

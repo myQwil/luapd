@@ -10,19 +10,10 @@ local patch ---@type PdPatch
 local gui = require('pdgui')(pd)
 local sliders
 
-local function volChange(self, num)
-	if num < 0.0011 then
-		num = 0
-	end
-	self.num = num
-	pd:sendFloat(self.dest, self.num)
-end
-
 function love.load()
 	lpd.init()
 	patch = lpd.open { play = false }
 
-	local vol = 0.05
 	local dlr = patch:dollarZeroStr()
 	local width, height = love.graphics.getDimensions()
 
@@ -30,10 +21,10 @@ function love.load()
 		  dest = dlr..'met', min = 11, max = 6000, num = 1000, log = true
 		, label = { text = 'milliseconds per beat' }
 	}
-	local tvol = {
-		  dest = dlr..'vol', min = .001, max = 1, num = vol, log = true
+	local vol = {
+		  dest = dlr..'vol', min = -60, max = 0, num = -15
 		, label = { text = 'volume', x = -100 }
-		, snap = .1, len = height - 100, fmt = '%s: %.4g', change = volChange
+		, snap = 10, len = height - 100, change = gui.volChange
 	}
 
 	gui.slider.rad = 25
@@ -41,7 +32,7 @@ function love.load()
 	local h = gui.slider.rad / 2
 	sliders = {
 		  gui.slider(20, height / 2 - h, { x = met }, { rgb = { .25, .66, .66 } })
-		, gui.slider(width - 90, 60, { y = tvol }, { rgb = { .75, .5, .75 } })
+		, gui.slider(width - 90, 60, { y = vol }, { rgb = { .75, .5, .75 } })
 	}
 
 	for _, v in pairs(sliders) do

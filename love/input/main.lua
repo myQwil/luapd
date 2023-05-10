@@ -31,14 +31,6 @@ local function set_mode(self)
 	pd:sendFloat(self.dest, self.val)
 end
 
-local function volChange(self, num)
-	if num < 0.0011 then
-		num = 0
-	end
-	self.num = num
-	pd:sendFloat(self.dest, self.num)
-end
-
 function love.load()
 	love.graphics.setFont(love.graphics.newFont(16))
 	if not pd:init(chIn, chOut, srate) then
@@ -88,13 +80,14 @@ function love.load()
 		, label = { text = '', x = -5 }, fmt = '%s%.4g' }
 	local opt2 = { dest = dlr..'opt2', min = 0, max = 1, num = 0
 		, label = { text = '', x = -5 }, fmt = '%s%.4g' }
-	local vol  = { dest = dlr..'vol' , min = 0.001, max = 1, num = 1, log = true
-		, label = { text = 'volume', x = -100 }, fmt = '%s: %.4g', change = volChange }
+	local vol  = { dest = dlr..'vol' , min = -60, max = 0, num = 0
+		, label = { text = 'volume', x = -100 }, change = gui.volChange }
 	sliders = {
 		  gui.slider(20, 25, { y = opt1 }, { rgb = { .25, .66, .66 } })
 		, gui.slider(90, 25, { y = opt2 }, { rgb = { .33, .5, .66 } })
 		, gui.slider(w - 140, 25, { y = vol }, { rgb = { .75, .5, .75 } })
 	}
+	sliders[3]:send()
 end
 
 function love.update(dt)

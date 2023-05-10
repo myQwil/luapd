@@ -1,6 +1,11 @@
 local function clamp(x, min, max)
 	return (x < min and min) or (x > max and max) or x
 end
+
+local function Fif(cond, T, F)
+	if cond then return T else return F end
+end
+
 local epsilon = 2.2204460492503131e-16
 
 local pd ---@type PdBase
@@ -13,9 +18,9 @@ local focus -- the slider receiving focus or nil
 
 local function slider_send(sl, x)
 	if x then
-		pd:sendFloat(sl.t[x].dest, sl.t[x].num)
+		sl.t[x]:change(sl.t[x].num)
 	else for _, v in next, sl.t do
-			pd:sendFloat(v.dest, v.num)
+			v:change(v.num)
 		end
 	end
 end
@@ -28,16 +33,16 @@ local function slider_check(sl, x, axis)
 		sl[dx] = x
 		x = x - v.xmin
 		if v.snap then
-			local grav = math.floor(x / v.sk + 0.5) * v.sk
+			local grav = math.floor(x / v.sm + 0.5) * v.sm
 			if v.gap == 0 or (x >= grav - v.gap and x <= grav + v.gap) then
 				x = grav
 			end
 		end
 
 		local num = v.log
-			and (math.exp(v.k * x) * v.min)
-			or v.k * x + v.min
-		if num < epsilon then
+			and (math.exp(v.m * x) * v.b)
+			or v.m * x + v.b
+		if math.abs(num) < epsilon then
 			num = 0
 		end
 		if v.num ~= num then
@@ -120,9 +125,13 @@ local function slider_pos(sl, x)
 
 	-- determine knob position
 	local cx = 'c' .. x
-	if v.k == 0 then sl[cx] = v.xmin
-	elseif v.log then sl[cx] = v.xmin + math.log(v.num / v.min) / v.k
-	else sl[cx] = v.xmin + (v.num - v.min) / v.k end
+	if v.m == 0 then
+		sl[cx] = v.xmin
+	elseif v.log then
+		sl[cx] = v.xmin + math.log(v.num / v.b) / v.m
+	else
+		sl[cx] = v.xmin + (v.num - v.b) / v.m
+	end
 	sl['d' .. x] = sl[cx] -- internal position for snapping
 end
 
@@ -143,29 +152,37 @@ local function slider_axis(self, sl, v, axis)
 
 		-- swap min/max if slider is vertical
 		if axis == 'y' then
-			local temp = v.min
-			v.min = v.max
-			v.max = temp
+			v.min, v.max = v.max, v.min
+		end
+
+		-- linear or logarithmic
+		if v.log == nil then
+			v.log = self.log
+		end
+		if v.log then
+			v.m = slider_minmax(v, v.min, v.max, diam)
+		else
+			v.m = (v.max - v.min) / (v.len - diam)
+		end
+		v.b = v.min
+
+		-- swap min/max back
+		if axis == 'y' then
+			v.min, v.max = v.max, v.min
 		end
 
 		if v.num then v.num = v.min > v.max and
 				 clamp(v.num, v.max, v.min) or clamp(v.num, v.min, v.max)
 		else v.num = v.min end
 
-		-- linear or logarithmic
-		if v.log == nil then v.log = self.log end
-		if v.log then
-			v.k = slider_minmax(v, v.min, v.max, diam)
-		else v.k = (v.max - v.min) / (v.len - diam) end
-
 		-- snap to grid
 		if v.snap then
 			v.gap = v.gap or self.gap
 			if v.log then
-				v.sk = math.log(v.snap) / v.k
-			else v.sk = v.snap / v.k end
-			if v.sk == 0 then
-				v.sk = 1
+				v.sm = math.log(v.snap) / v.m
+			else v.sm = v.snap / v.m end
+			if v.sm == 0 then
+				v.sm = 1
 			end
 		end
 		sl:pos(x)
@@ -321,6 +338,17 @@ local function slider_change(self, num)
 	pd:sendFloat(self.dest, self.num)
 end
 
+local function vol_change(self, num)
+	self.num = num
+	if num > self.min then
+		self.fmt = '%s: %+.1f dB'
+		pd:sendFloat(self.dest, 10^(self.num / 20))
+	else
+		self.fmt = '%s: -∞ dB'
+		pd:sendFloat(self.dest, 0)
+	end
+end
+
 local function button_click(self)
 	pd:sendBang(self.dest)
 end
@@ -367,6 +395,7 @@ function gui:reset()
 		, lbly = 0 -- label y offset
 	}
 	self.updateSliders = sliders_update
+	self.volChange = vol_change
 	setmetatable(self.slider, { __call = slider_new })
 	setmetatable(self.button, { __call = button_new })
 	setmetatable(self.toggle, { __call = toggle_new })

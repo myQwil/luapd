@@ -20,14 +20,6 @@ local function btnClick(self)
 	sliders[1]:pos('y')
 end
 
-local function volChange(self, num)
-	if num < 0.0011 then
-		num = 0
-	end
-	self.num = num
-	pd:sendFloat(self.dest, self.num)
-end
-
 local function metChange(self, num)
 	self.num = num
 	self.bpm = 60000 / self.num
@@ -46,18 +38,17 @@ function love.load()
 	lpd.init()
 	patch = lpd.open { play = false }
 
-	local vol = 0.33
 	local dlr = patch:dollarZeroStr()
 	local width, height = love.graphics.getDimensions()
 
 	local met = {
-		dest = dlr .. 'met', min = 1500, max = 125, num = 1000, snap = 125
+		  dest = dlr .. 'met', min = 1500, max = 125, num = 1000, snap = 125
 		, change = metChange, draw = metDraw
 	}
 	met.bpm = 60000 / met.num
-	local tvol = {
-		dest = dlr .. 'vol', min = .001, max = 1, num = vol, snap = .1, log = true
-		, change = volChange, label = { text = 'volume', y = 530 }
+	local vol = {
+		  dest = dlr .. 'vol', min = -60, max = 0, num = -15, snap = 10
+		, change = gui.volChange, label = { text = 'volume', y = 530 }
 	}
 
 	local rad = 25
@@ -66,7 +57,7 @@ function love.load()
 	gui.slider.len = height - 100
 	sliders = {
 		gui.slider(rad * 2, 60, { y = met }, { rgb = { .25, .66, .66 } })
-		, gui.slider(width - rad * 4, 60, { y = tvol }, { rgb = { .75, .5, .75 } })
+		, gui.slider(width - rad * 4, 60, { y = vol }, { rgb = { .75, .5, .75 } })
 	}
 
 	gui.button.size = 33
