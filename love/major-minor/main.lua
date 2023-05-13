@@ -108,7 +108,7 @@ function love.load()
 	}
 	toggles.pause = toggles[2]
 
-	for _, v in pairs(sliders) do
+	for _, v in next, sliders do
 		v:send()
 	end
 	pd:sendBang(dlr .. 'play')

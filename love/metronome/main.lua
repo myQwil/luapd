@@ -15,8 +15,8 @@ local sliders, buttons
 
 local function btnClick(self)
 	pd:sendFloat(self.dest, self.num)
-	sliders[1].t.y.num = self.num
-	sliders[1].t.y.bpm = 60000 / self.num
+	sliders[1].axis.y.num = self.num
+	sliders[1].axis.y.bpm = 60000 / self.num
 	sliders[1]:pos('y')
 end
 
@@ -27,6 +27,7 @@ local function metChange(self, num)
 end
 
 local lbl = 'milliseconds per beat:\nbeats per minute:'
+
 local function metDraw(self)
 	local str = string.format('%.4g', self.num) .. '\n'
 		 .. string.format('%.4g', self.bpm)
@@ -42,12 +43,12 @@ function love.load()
 	local width, height = love.graphics.getDimensions()
 
 	local met = {
-		  dest = dlr .. 'met', min = 1500, max = 125, num = 1000, snap = 125
-		, change = metChange, axdraw = metDraw
+		  dest = dlr..'met', min = 2000, max = 20, num = 1000, snap = 10
+		, log = true, change = metChange, drawText = metDraw
 	}
 	met.bpm = 60000 / met.num
 	local vol = {
-		  dest = dlr .. 'vol', min = -60, max = 0, num = -15, snap = 10
+		  dest = dlr..'vol', min = -60, max = 0, num = -15, snap = 10
 		, change = gui.volChange, label = { text = 'volume', y = 530 }
 	}
 
@@ -56,24 +57,24 @@ function love.load()
 	gui.slider.lblx = -100
 	gui.slider.len = height - 100
 	sliders = {
-		gui.slider(rad * 2, 60, { y = met }, { rgb = { .25, .66, .66 } })
+		  gui.slider(rad * 2, 60, { y = met }, { rgb = { .25, .66, .66 } })
 		, gui.slider(width - rad * 4, 60, { y = vol }, { rgb = { .75, .5, .75 } })
 	}
 
 	gui.button.size = 33
 	gui.button.click = btnClick
-	gui.button.dest = dlr .. 'met'
+	gui.button.dest = dlr..'met'
 	local bx, by = width / 2 - 16, 235
 	buttons = {
-		gui.button(bx, by, { label = { text = '750' }, num = 750 })
+		  gui.button(bx, by, { label = { text = '750' }, num = 750 })
 		, gui.button(bx, by + 75, { label = { text = '875' }, num = 875 })
 		, gui.button(bx, by + 150, { label = { text = '1000' }, num = 1000 })
 	}
 
-	for _, v in pairs(sliders) do
-		v:send()
-	end
-	pd:sendBang(dlr .. 'play')
+	sliders[2]:send()
+	pd:sendFloat(dlr..'accent1', 12)
+	pd:sendFloat(dlr..'accent2', 4)
+	pd:sendFloat(dlr..'play', met.num)
 end
 
 function love.update(dt)

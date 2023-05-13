@@ -22,18 +22,19 @@ local focus -- the slider receiving focus or nil
 -------------------------------- Sliders --------------------------------
 -------------------------------------------------------------------------
 
-local function slider_send(sl, x)
-	if x then
-		sl.t[x]:change(sl.t[x].num)
-	else for _, v in next, sl.t do
+local function slider_send(sl, ax)
+	if ax then
+		sl.axis[ax]:change(sl.axis[ax].num)
+	else
+		for _, v in next, sl.axis do
 			v:change(v.num)
 		end
 	end
 end
 
-local function slider_check(sl, x, axis)
-	local v = sl.t[axis]
-	local dx = 'd' .. axis
+local function slider_check(sl, x, ax)
+	local v = sl.axis[ax]
+	local dx = 'd'..ax
 	x = clamp(x, v.xmin, v.xmax)
 	if sl[dx] ~= x then
 		sl[dx] = x
@@ -54,20 +55,20 @@ local function slider_check(sl, x, axis)
 		if v.num ~= num then
 			v:change(num)
 		end
-		sl['c' .. axis] = x + v.xmin
+		sl['c'..ax] = x + v.xmin
 	end
 end
 
 local function slider_update(sl, x, y)
 	if focus == sl then
-		if sl.t.x then slider_check(sl, x, 'x') end
-		if sl.t.y then slider_check(sl, y, 'y') end
+		if sl.axis.x then slider_check(sl, x, 'x') end
+		if sl.axis.y then slider_check(sl, y, 'y') end
 		return true
 	elseif focus == nil
 	and x >= sl.x and x < sl.xx
 	and y >= sl.y and y < sl.yy then
-		if sl.t.x then slider_check(sl, x, 'x') end
-		if sl.t.y then slider_check(sl, y, 'y') end
+		if sl.axis.x then slider_check(sl, x, 'x') end
+		if sl.axis.y then slider_check(sl, y, 'y') end
 		focus = sl
 		return true
 	end
@@ -86,7 +87,7 @@ local function sliders_update(t)
 	end
 end
 
-local function axis_draw(ax)
+local function axis_draw_text(ax)
 	love.graphics.print(string.format(ax.fmt, ax.label.text, ax.num)
 		, ax.label.x, ax.label.y)
 end
@@ -102,8 +103,8 @@ local function slider_draw(sl)
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.circle('line', sl.cx, sl.cy, sl.rad)
 
-	for _, v in next, sl.t do
-		v:axdraw()
+	for _, v in next, sl.axis do
+		v:drawText()
 	end
 end
 
@@ -125,33 +126,29 @@ local function slider_minmax(v, min, max, diam)
 	return math.log(v.max / v.min) / (v.len - diam)
 end
 
-local function slider_pos(sl, x)
-	local v = sl.t[x]
+local function slider_pos(sl, ax)
+	local v = sl.axis[ax]
 	if not v then return end
 
 	-- determine knob position
-	local cx = 'c' .. x
-	if v.m == 0 then
-		sl[cx] = v.xmin
-	elseif v.log then
-		sl[cx] = v.xmin + math.log(v.num / v.b) / v.m
-	else
-		sl[cx] = v.xmin + (v.num - v.b) / v.m
-	end
-	sl['d' .. x] = sl[cx] -- internal position for snapping
+	local cx = 'c'..ax
+	sl[cx] = (v.m == 0 and v.xmin)
+		or (v.log and v.xmin + math.log(v.num / v.b) / v.m)
+		or (v.xmin + (v.num - v.b) / v.m)
+	sl['d'..ax] = sl[cx] -- internal position for snapping
 end
 
-local function slider_axis(sl, v, axis)
-	local x = axis
+local function slider_axis(sl, v, ax)
+	local x = ax
 	local diam = sl.rad * 2
 	if type(v) ~= 'table' then
-		sl['c' .. x] = sl[x] + sl.rad
-		sl[x .. x] = sl[x] + diam
-		sl[x .. 'len'] = diam
+		sl['c'..x] = sl[x] + sl.rad
+		sl[x..x] = sl[x] + diam
+		sl[x..'len'] = diam
 	else
 		setmetatable(v, {__index = sl})
-		local xlen = x .. 'len'
-		local xx = x .. x
+		local xlen = x..'len'
+		local xx = x..x
 		if v.len < diam then v.len = diam end
 		sl[xlen] = v.len
 		sl[xx] = sl[x] + v.len
@@ -159,7 +156,7 @@ local function slider_axis(sl, v, axis)
 		v.xmax = sl[xx] - sl.rad
 
 		-- swap min/max if slider is vertical
-		if axis == 'y' then
+		if ax == 'y' then
 			v.min, v.max = v.max, v.min
 		end
 
@@ -168,7 +165,7 @@ local function slider_axis(sl, v, axis)
 		v.b = v.min
 
 		-- swap min/max back
-		if axis == 'y' then
+		if ax == 'y' then
 			v.min, v.max = v.max, v.min
 		end
 
@@ -182,7 +179,7 @@ local function slider_axis(sl, v, axis)
 				v.sm = 1
 			end
 		end
-		sl:pos(x)
+		sl:pos(ax)
 
 		v.label = v.label or {}
 		v.label.text = v.label.text or v.dest
@@ -191,17 +188,17 @@ local function slider_axis(sl, v, axis)
 	end
 end
 
-local function slider_new(self, x, y, t, opt)
+local function slider_new(self, x, y, axis, opt)
 	opt = getOptions(opt, self)
 	local sl = {
 		  x = x
 		, y = y
-		, t = t
+		, axis = axis
 	}
 	setmetatable(sl, {__index = opt})
 	sl.rad = math.abs(sl.rad)
-	slider_axis(sl, sl.t.x, 'x')
-	slider_axis(sl, sl.t.y, 'y')
+	slider_axis(sl, sl.axis.x, 'x')
+	slider_axis(sl, sl.axis.y, 'y')
 	return sl
 end
 
@@ -335,7 +332,7 @@ function gui:reset()
 		, send = slider_send
 		, update = slider_update
 		, draw = slider_draw
-		, axdraw = axis_draw
+		, drawText = axis_draw_text
 		, pos = slider_pos
 		, rgb = { .5, .5, .5 } -- knob color
 		, log = false -- logarithmic scaling

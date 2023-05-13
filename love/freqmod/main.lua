@@ -66,7 +66,7 @@ end
 function love.draw()
 	-- grid
 	love.graphics.setLineWidth(1)
-	for _, v in pairs(grid) do
+	for _, v in next, grid do
 		love.graphics.setColor(v.color)
 		love.graphics.line(v.line)
 	end

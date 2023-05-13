@@ -35,7 +35,7 @@ function love.load()
 		, gui.slider(width - 90, 60, { y = vol }, { rgb = { .75, .5, .75 } })
 	}
 
-	for _, v in pairs(sliders) do
+	for _, v in next, sliders do
 		v:send()
 	end
 	pd:sendBang(dlr .. 'play')

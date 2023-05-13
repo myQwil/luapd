@@ -160,7 +160,7 @@ function love.load()
 	}
 	sorter = toggles[1]
 	mode = toggles[2]
-	for k, v in pairs({ time = 1, dur = 1, step = 0 }) do
+	for k, v in next, { time = 1, dur = 1, step = 0 } do
 		sorter[k] = v
 	end
 
@@ -170,7 +170,7 @@ function love.load()
 		, len = h - 100, change = gui.volChange
 	}
 	local tpo = {
-		  dest = dlr..'met', min = 31.25, max = 8000, num = sorter.dur * 1000
+		  dest = dlr..'met', min = 4000, max = 31.25, num = sorter.dur * 1000
 		, label = { text = 'tempo' }, snap = 2, log = true
 		, len = h - 100, fmt = '%s: %.4g ms', change = tempoChange
 	}
@@ -182,7 +182,7 @@ function love.load()
 		  gui.slider(w - 90, 60, { y = vol }, { rgb = { .75, .5, .75 } })
 		, gui.slider(40    , 60, { y = tpo }, { rgb = { .5, .75, .75 } })
 	}
-	for _, v in pairs(sliders) do
+	for _, v in next, sliders do
 		v:send()
 	end
 	pd:sendBang(dlr..'play')
