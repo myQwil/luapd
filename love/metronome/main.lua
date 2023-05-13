@@ -43,7 +43,7 @@ function love.load()
 
 	local met = {
 		  dest = dlr .. 'met', min = 1500, max = 125, num = 1000, snap = 125
-		, change = metChange, draw = metDraw
+		, change = metChange, axdraw = metDraw
 	}
 	met.bpm = 60000 / met.num
 	local vol = {

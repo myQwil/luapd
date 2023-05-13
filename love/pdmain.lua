@@ -2,10 +2,6 @@ local function clamp(x, min, max)
 	return (x < min and min) or (x > max and max) or x
 end
 
-local function Fif(cond, T, F)
-	if cond then return T else return F end
-end
-
 local ext = {
 	  ['Linux'] = 'so'
 	, ['Windows'] = 'dll'
@@ -43,13 +39,17 @@ local chOut = 2
 local queued = false
 local bitdepth = 16
 
+local function getOptions(opt)
+	if type(opt) ~= 'table' then opt = lpd
+	else setmetatable(opt, {__index = lpd}) end
+	return opt
+end
+
 ---@param opt table|nil # A list of options
 function lpd.init(opt)
-	if type(opt) ~= 'table' then opt = lpd end
-	ticks = opt.ticks or lpd.ticks
-	bufs = opt.bufs or lpd.bufs
-
-	pd:setReceiver(opt.obj or lpd.obj)
+	opt = getOptions(opt)
+	ticks, bufs = opt.ticks, opt.bufs
+	pd:setReceiver(opt.obj)
 	if not pd:init(chIn, chOut, srate, queued) then
 		print('Could not initialize pd')
 		love.event.quit()
@@ -66,12 +66,8 @@ end
 ---@param opt table|nil # A list of options
 ---@return PdPatch
 function lpd.open(opt)
-	if type(opt) ~= 'table' then opt = lpd end
-	local play, patch, volume
-	play = Fif(opt.play ~= nil, opt.play, lpd.play)
-	patch = opt.patch or lpd.patch
-	volume = opt.volume and clamp(opt.volume, -1, 1) or lpd.volume
-
+	opt = getOptions(opt)
+	local play, patch, volume = opt.play, opt.patch, clamp(opt.volume, -1, 1)
 	patch = pd:openPatch(patch)
 	local dlr = patch:dollarZeroStr()
 	pd:sendFloat(dlr .. 'vol', volume)

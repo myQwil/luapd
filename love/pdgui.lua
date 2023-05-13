@@ -6,6 +6,12 @@ local function Fif(cond, T, F)
 	if cond then return T else return F end
 end
 
+local function getOptions(opt, default)
+	if type(opt) ~= 'table' then opt = default
+	else setmetatable(opt, {__index = default}) end
+	return opt
+end
+
 local epsilon = 2.2204460492503131e-16
 
 local pd ---@type PdBase
@@ -97,7 +103,7 @@ local function slider_draw(sl)
 	love.graphics.circle('line', sl.cx, sl.cy, sl.rad)
 
 	for _, v in next, sl.t do
-		v:draw()
+		v:axdraw()
 	end
 end
 
@@ -135,15 +141,17 @@ local function slider_pos(sl, x)
 	sl['d' .. x] = sl[cx] -- internal position for snapping
 end
 
-local function slider_axis(self, sl, v, axis)
+local function slider_axis(sl, v, axis)
 	local x = axis
 	local diam = sl.rad * 2
-	if v then
+	if type(v) ~= 'table' then
+		sl['c' .. x] = sl[x] + sl.rad
+		sl[x .. x] = sl[x] + diam
+		sl[x .. 'len'] = diam
+	else
+		setmetatable(v, {__index = sl})
 		local xlen = x .. 'len'
 		local xx = x .. x
-		v.len = v.len or self.len
-		v.fmt = v.fmt or self.fmt
-		v.draw = v.draw or axis_draw
 		if v.len < diam then v.len = diam end
 		sl[xlen] = v.len
 		sl[xx] = sl[x] + v.len
@@ -155,15 +163,8 @@ local function slider_axis(self, sl, v, axis)
 			v.min, v.max = v.max, v.min
 		end
 
-		-- linear or logarithmic
-		if v.log == nil then
-			v.log = self.log
-		end
-		if v.log then
-			v.m = slider_minmax(v, v.min, v.max, diam)
-		else
-			v.m = (v.max - v.min) / (v.len - diam)
-		end
+		v.m = v.log and
+			slider_minmax(v, v.min, v.max, diam) or (v.max - v.min) / (v.len - diam)
 		v.b = v.min
 
 		-- swap min/max back
@@ -171,16 +172,12 @@ local function slider_axis(self, sl, v, axis)
 			v.min, v.max = v.max, v.min
 		end
 
-		if v.num then v.num = v.min > v.max and
-				 clamp(v.num, v.max, v.min) or clamp(v.num, v.min, v.max)
-		else v.num = v.min end
+		v.num = not v.num and v.min or (v.min > v.max and
+			clamp(v.num, v.max, v.min) or clamp(v.num, v.min, v.max))
 
 		-- snap to grid
 		if v.snap then
-			v.gap = v.gap or self.gap
-			if v.log then
-				v.sm = math.log(v.snap) / v.m
-			else v.sm = v.snap / v.m end
+			v.sm = v.log and math.log(v.snap) / v.m or v.snap / v.m
 			if v.sm == 0 then
 				v.sm = 1
 			end
@@ -188,36 +185,23 @@ local function slider_axis(self, sl, v, axis)
 		sl:pos(x)
 
 		v.label = v.label or {}
-		v.dest = v.dest or self.dest
-		v.change = v.change or self.change
 		v.label.text = v.label.text or v.dest
-		v.label.x = math.floor((v.label.x or self.lblx) + sl.x + sl.rad)
-		v.label.y = math.floor((v.label.y or self.lbly) + sl.y - 24)
-	else
-		sl['c' .. x] = sl[x] + sl.rad
-		sl[x .. x] = sl[x] + diam
-		sl[x .. 'len'] = diam
+		v.label.x = math.floor((v.label.x or v.lblx) + sl.x + sl.rad)
+		v.label.y = math.floor((v.label.y or v.lbly) + sl.y - 24)
 	end
 end
 
 local function slider_new(self, x, y, t, opt)
-	if type(opt) ~= 'table' then opt = self end
+	opt = getOptions(opt, self)
 	local sl = {
 		  x = x
 		, y = y
 		, t = t
-		, send = slider_send
-		, update = slider_update
-		, draw = slider_draw
-		, pos = slider_pos
 	}
-
-	for k, v in pairs(opt) do sl[k] = v end
-	sl.rad = math.abs(sl.rad or self.rad)
-	sl.rgb = sl.rgb or self.rgb
-
-	slider_axis(self, sl, sl.t.x, 'x')
-	slider_axis(self, sl, sl.t.y, 'y')
+	setmetatable(sl, {__index = opt})
+	sl.rad = math.abs(sl.rad)
+	slider_axis(sl, sl.t.x, 'x')
+	slider_axis(sl, sl.t.y, 'y')
 	return sl
 end
 
@@ -225,24 +209,19 @@ end
 -------------------------------- Boxes --------------------------------
 -----------------------------------------------------------------------
 
-local function gui_box(self, x, y, opt)
+local function gui_box(x, y, opt)
 	local box = {
 		  x = x
 		, y = y
 	}
-
-	for k, v in pairs(opt) do box[k] = v end
-	box.click = box.click or self.click
-	box.dest = box.dest or self.dest
-	box.size = box.size or self.size
-
+	setmetatable(box, {__index = opt})
 	box.xx = box.x + box.size
 	box.yy = box.y + box.size
 
 	local label = opt.label or {}
 	label.text = label.text or box.dest
-	label.x = math.floor((label.x or self.lblx) + box.x)
-	label.y = math.floor((label.y or self.lbly) + box.y - 24)
+	label.x = math.floor((label.x or box.lblx) + box.x)
+	label.y = math.floor((label.y or box.lbly) + box.y - 24)
 	box.label = label
 
 	return box
@@ -267,8 +246,8 @@ end
 
 local function button_update(bt, dt)
 	if bt.circ.on then
-		bt.circ.dt = bt.circ.dt + dt
-		if bt.circ.dt >= bt.circ.delay then
+		bt.circ.dt = bt.circ.dt - dt
+		if bt.circ.dt <= 0 then
 			bt.circ.on = false
 		end
 	end
@@ -278,20 +257,16 @@ local function button_mousepressed(bt, x, y)
 	if  x >= bt.x and x < bt.xx
 	and y >= bt.y and y < bt.yy then
 		bt.circ.on = true
-		bt.circ.dt = 0
+		bt.circ.dt = bt.circ.delay
 		bt:click()
 		return true
 	else return false end
 end
 
 local function button_new(self, x, y, opt)
-	if type(opt) ~= 'table' then opt = self end
-	local btn = gui_box(self, x, y, opt)
-	btn.draw = button_draw
-	btn.update = button_update
-	btn.mousepressed = button_mousepressed
-
-	btn.circ = { dt = 0, on = false, delay = opt.delay or self.delay }
+	opt = getOptions(opt, self)
+	local btn = gui_box(x, y, opt)
+	btn.circ = { dt = 0, on = false, delay = opt.delay }
 	btn.circ.rad = btn.size * 5 / 11
 	btn.circ.x = btn.x + btn.size / 2
 	btn.circ.y = btn.y + btn.size / 2
@@ -321,13 +296,8 @@ local function toggle_draw(tg)
 end
 
 local function toggle_new(self, x, y, opt)
-	if type(opt) ~= 'table' then opt = self end
-	local tgl = gui_box(self, x, y, opt)
-	tgl.draw = toggle_draw
-	tgl.mousepressed = toggle_mousepressed
-
-	tgl.non0 = opt.non0 or self.non0
-	tgl.on = Fif(opt.on ~= nil, opt.on, self.on)
+	opt = getOptions(opt, self)
+	local tgl = gui_box(x, y, opt)
 	return tgl
 end
 
@@ -362,6 +332,11 @@ end
 function gui:reset()
 	self.slider = {
 		  change = slider_change
+		, send = slider_send
+		, update = slider_update
+		, draw = slider_draw
+		, axdraw = axis_draw
+		, pos = slider_pos
 		, rgb = { .5, .5, .5 } -- knob color
 		, log = false -- logarithmic scaling
 		-- snap to a grid with spacing of this amount relative to the scale.
@@ -379,6 +354,9 @@ function gui:reset()
 	}
 	self.button = {
 		  click = button_click
+		, draw = button_draw
+		, update = button_update
+		, mousepressed = button_mousepressed
 		, delay = 0.2 -- circle display duration on click
 		, size = 25
 		, dest = 'foo' -- send-to destination
@@ -387,6 +365,8 @@ function gui:reset()
 	}
 	self.toggle = {
 		  click = toggle_click
+		, draw = toggle_draw
+		, mousepressed = toggle_mousepressed
 		, on = false -- initial state
 		, non0 = 1 -- non-zero value
 		, size = 25

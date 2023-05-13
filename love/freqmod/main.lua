@@ -122,9 +122,10 @@ end
 
 local function none() end
 
-local funcs =
-{ [false] = { [false] = none, [true] = fmod }
-	, [true] = { [false] = fmod, [true] = pancar } }
+local funcs = {
+	  [false] = { [false] = none, [true] = fmod   }
+	, [true]  = { [false] = fmod, [true] = pancar }
+}
 
 local clkLeft = funcs[isAuto]
 local onClick = { clkLeft[true], tone }
