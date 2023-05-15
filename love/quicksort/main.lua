@@ -171,8 +171,8 @@ function love.load()
 	}
 	local tpo = {
 		  dest = dlr..'met', min = 4000, max = 31.25, num = sorter.dur * 1000
-		, label = { text = 'tempo' }, snap = 2, log = true
-		, len = h - 100, fmt = '%s: %.4g ms', change = tempoChange
+		, label = { text = 'tempo' }, snap = 2, log = true, len = h - 100
+		, fmt = '%s: %s ms', drawText = gui.drawFixed, change = tempoChange
 	}
 
 	gui.slider.rad = 25

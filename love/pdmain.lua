@@ -40,8 +40,11 @@ local queued = false
 local bitdepth = 16
 
 local function getOptions(opt)
-	if type(opt) ~= 'table' then opt = lpd
-	else setmetatable(opt, {__index = lpd}) end
+	if type(opt) ~= 'table' then
+		opt = lpd
+	else
+		setmetatable(opt, {__index = lpd})
+	end
 	return opt
 end
 

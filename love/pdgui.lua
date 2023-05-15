@@ -7,8 +7,11 @@ local function Fif(cond, T, F)
 end
 
 local function getOptions(opt, default)
-	if type(opt) ~= 'table' then opt = default
-	else setmetatable(opt, {__index = default}) end
+	if type(opt) ~= 'table' then
+		opt = default
+	else
+		setmetatable(opt, {__index = default})
+	end
 	return opt
 end
 
@@ -90,6 +93,13 @@ end
 local function axis_draw_text(ax)
 	love.graphics.print(string.format(ax.fmt, ax.label.text, ax.num)
 		, ax.label.x, ax.label.y)
+end
+
+local function axis_draw_text_fixed(self)
+	local precision = self.prec - string.len(tostring(math.floor(self.num + 0.0001)))
+	precision = string.format('%.'..precision..'f', self.num)
+	love.graphics.print(string.format(self.fmt, self.label.text, precision)
+		, self.label.x, self.label.y)
 end
 
 local function slider_draw(sl)
@@ -342,7 +352,8 @@ function gui:reset()
 		-- a snap point's gravitational radius in pixels.
 		-- if gap is 0, knob will settle exclusively on snap points.
 		, gap = 7
-		, fmt = '%s: %.8g' -- string format when displaying name and value
+		, fmt = '%s: %g' -- string format when displaying name and value
+		, prec = 5 -- precision - used alongside fixed precision mode
 		, rad = 25 -- knob radius
 		, len = 100 -- axis length
 		, dest = 'foo' -- send-to destination
@@ -373,6 +384,7 @@ function gui:reset()
 	}
 	self.updateSliders = sliders_update
 	self.volChange = vol_change
+	self.drawFixed = axis_draw_text_fixed
 	setmetatable(self.slider, { __call = slider_new })
 	setmetatable(self.button, { __call = button_new })
 	setmetatable(self.toggle, { __call = toggle_new })
